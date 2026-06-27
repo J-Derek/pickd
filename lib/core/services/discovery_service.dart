@@ -24,29 +24,34 @@ class DiscoveryService {
   /// depending on [filter]. Defaults to [MediaFilter.moviesOnly] for
   /// backward compatibility with existing taste-profile logic.
   static Future<List<MediaItem>> buildDeck({
-    required List<int> tasteSeedIds,
+    required List<int> tasteSeedMovieIds,
+    required List<int> tasteSeedTvIds,
     required List<String> moodIds,
     bool gemsMode = false,
     MediaFilter filter = MediaFilter.moviesOnly,
   }) async {
     final seenIds = HiveService.getSwipeHistory();
+    final profile = HiveService.getProfile();
 
     // Run movie and TV pipelines concurrently when needed
     final results = await Future.wait([
       if (filter == MediaFilter.moviesOnly || filter == MediaFilter.both)
         _buildMoviePipeline(
-          tasteSeedIds: tasteSeedIds,
+          tasteSeedIds: tasteSeedMovieIds,
           moodIds: moodIds,
           gemsMode: gemsMode,
           seenIds: seenIds,
+          allowOldMovies: profile.allowOldMovies,
         )
       else
         Future.value(<MediaItem>[]),
       if (filter == MediaFilter.tvOnly || filter == MediaFilter.both)
         _buildTvPipeline(
+          tasteSeedTvIds: tasteSeedTvIds,
           moodIds: moodIds,
           gemsMode: gemsMode,
           seenIds: seenIds,
+          allowOldMovies: profile.allowOldMovies,
         )
       else
         Future.value(<MediaItem>[]),
@@ -94,6 +99,7 @@ class DiscoveryService {
     required List<String> moodIds,
     required bool gemsMode,
     required Set<int> seenIds,
+    required bool allowOldMovies,
   }) async {
     final collected = <int, MovieModel>{};
 
@@ -101,9 +107,10 @@ class DiscoveryService {
     final moodGenreIds = selectedMoods.expand((m) => m.genreIds).toSet();
 
     bool isRecent(MovieModel movie) {
+      if (!allowOldMovies && movie.releaseYear <= 1990) return false;
       if (gemsMode) return true;
       if (movie.releaseDate?.isEmpty ?? true) return false;
-      return movie.releaseYear >= 1995;
+      return true;
     }
 
     // 1. Recommendations + similar from taste seeds
@@ -136,7 +143,7 @@ class DiscoveryService {
           genreIds: genreIds,
           maxPopularity: gemsMode ? Env.hiddenGemMaxPopularity : null,
           maxYear: gemsMode ? Env.hiddenGemMaxYear : null,
-          minYear: gemsMode ? null : 1995,
+          minYear: (gemsMode || allowOldMovies) ? null : 1991,
         );
         for (final movie in moodMovies) {
           if (isRecent(movie)) collected[movie.id] = movie;
@@ -197,13 +204,45 @@ class DiscoveryService {
   // ─── TV Pipeline ──────────────────────────────────────────────
 
   static Future<List<MediaItem>> _buildTvPipeline({
+    required List<int> tasteSeedTvIds,
     required List<String> moodIds,
     required bool gemsMode,
     required Set<int> seenIds,
+    required bool allowOldMovies,
   }) async {
     final collected = <int, TvModel>{};
 
-    // 1. Mood-based TV discover
+    final selectedMoods = kMoods.where((m) => moodIds.contains(m.id));
+    final moodGenreIds = selectedMoods.expand((m) => m.genreIds).toSet();
+
+    bool isRecent(TvModel show) {
+      if (!allowOldMovies && show.airYear <= 1990) return false;
+      if (gemsMode) return true;
+      if (show.firstAirDate?.isEmpty ?? true) return false;
+      return true;
+    }
+
+    // 1. Recommendations + similar from taste seeds
+    if (tasteSeedTvIds.isNotEmpty) {
+      final seedsToUse = tasteSeedTvIds.take(3).toList();
+
+      final [recs, similar] = await Future.wait([
+        Future.wait(seedsToUse.map(TmdbService.getTvRecommendations)),
+        Future.wait(seedsToUse.map(TmdbService.getTvSimilar)),
+      ]);
+
+      for (final list in [...recs, ...similar]) {
+        for (final show in list) {
+          if (!isRecent(show)) continue;
+          if (moodGenreIds.isEmpty ||
+              show.genreIds.any((id) => moodGenreIds.contains(id))) {
+            collected[show.id] = show;
+          }
+        }
+      }
+    }
+
+    // 2. Mood-based TV discover
     if (moodIds.isNotEmpty) {
       final genreIds =
           kMoods.where((m) => moodIds.contains(m.id)).expand((m) => m.genreIds).toList();
@@ -213,7 +252,7 @@ class DiscoveryService {
           genreIds: genreIds,
           maxPopularity: gemsMode ? Env.hiddenGemMaxPopularity : null,
           maxYear: gemsMode ? Env.hiddenGemMaxYear : null,
-          minYear: gemsMode ? null : 1995,
+          minYear: (gemsMode || allowOldMovies) ? null : 1991,
         );
         for (final show in shows) {
           collected[show.id] = show;
@@ -221,7 +260,7 @@ class DiscoveryService {
       }
     }
 
-    // 2. Fallback — trending TV
+    // 3. Fallback — trending TV
     if (collected.length < 15) {
       final trending = await TmdbService.getTrendingTv();
       for (final show in trending) {
@@ -229,12 +268,12 @@ class DiscoveryService {
       }
     }
 
-    // 3. Filter: remove seen, require poster
+    // 4. Filter: remove seen, require poster
     var filtered = collected.values
         .where((s) => !seenIds.contains(s.id) && s.posterPath != null)
         .toList();
 
-    // 4. Gems filter for TV
+    // 5. Gems filter for TV
     if (gemsMode) {
       filtered = filtered
           .where((s) =>

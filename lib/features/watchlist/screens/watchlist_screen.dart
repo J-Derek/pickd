@@ -41,8 +41,28 @@ class WatchlistScreen extends ConsumerWidget {
                   ),
                   if (watchlist.isNotEmpty)
                     TextButton(
-                      onPressed: () {
-                        ref.read(watchlistProvider.notifier).clear();
+                      onPressed: () async {
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            backgroundColor: AppTheme.bgSurface,
+                            title: const Text('Clear Watchlist', style: TextStyle(color: AppTheme.textPrimary)),
+                            content: const Text('Are you sure you want to clear your watchlist?', style: TextStyle(color: AppTheme.textSecondary)),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(false),
+                                child: const Text('Cancel', style: TextStyle(color: AppTheme.textSecondary)),
+                              ),
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(true),
+                                child: const Text('Clear', style: TextStyle(color: AppTheme.accentPrimary)),
+                              ),
+                            ],
+                          ),
+                        if (confirm == true) {
+                          if (!context.mounted) return;
+                          ref.read(watchlistProvider.notifier).clear();
+                        }
                       },
                       style: TextButton.styleFrom(
                         foregroundColor: AppTheme.accentPrimary,

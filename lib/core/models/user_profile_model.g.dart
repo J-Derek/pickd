@@ -18,18 +18,20 @@ class UserProfileModelAdapter extends TypeAdapter<UserProfileModel> {
     };
     return UserProfileModel(
       tasteSeedMovieIds: (fields[0] as List).cast<int>(),
+      tasteSeedTvIds: fields[6] == null ? [] : (fields[6] as List).cast<int>(),
       selectedMoodIds: (fields[1] as List).cast<String>(),
       totalSwipeCount: fields[2] as int,
       onboardingComplete: fields[3] as bool,
       gemsMode: fields[4] as bool,
       swipeGateDismissed: fields[5] as bool,
+      allowOldMovies: fields[7] == null ? false : fields[7] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, UserProfileModel obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(8)
       ..writeByte(0)
       ..write(obj.tasteSeedMovieIds)
       ..writeByte(1)
@@ -41,7 +43,11 @@ class UserProfileModelAdapter extends TypeAdapter<UserProfileModel> {
       ..writeByte(4)
       ..write(obj.gemsMode)
       ..writeByte(5)
-      ..write(obj.swipeGateDismissed);
+      ..write(obj.swipeGateDismissed)
+      ..writeByte(6)
+      ..write(obj.tasteSeedTvIds)
+      ..writeByte(7)
+      ..write(obj.allowOldMovies);
   }
 
   @override

@@ -247,7 +247,7 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: const Text(
-                                  '💎 Hidden Gem',
+                                  'Hidden Gem',
                                   style: TextStyle(
                                     fontFamily: 'Inter',
                                     fontSize: 11,

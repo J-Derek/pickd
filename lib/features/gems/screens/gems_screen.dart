@@ -46,7 +46,8 @@ class _GemsScreenState extends ConsumerState<GemsScreen> {
     try {
       final profile = HiveService.getProfile();
       final gems = await DiscoveryService.buildDeck(
-        tasteSeedIds: profile.tasteSeedMovieIds,
+        tasteSeedMovieIds: profile.tasteSeedMovieIds,
+        tasteSeedTvIds: profile.tasteSeedTvIds,
         moodIds: profile.selectedMoodIds,
         gemsMode: true,
       );
@@ -70,7 +71,8 @@ class _GemsScreenState extends ConsumerState<GemsScreen> {
     try {
       final profile = HiveService.getProfile();
       final newGems = await DiscoveryService.buildDeck(
-        tasteSeedIds: profile.tasteSeedMovieIds,
+        tasteSeedMovieIds: profile.tasteSeedMovieIds,
+        tasteSeedTvIds: profile.tasteSeedTvIds,
         moodIds: profile.selectedMoodIds,
         gemsMode: true,
       );
@@ -117,8 +119,6 @@ class _GemsScreenState extends ConsumerState<GemsScreen> {
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 8),
-                            const Text('💎', style: TextStyle(fontSize: 24)),
                           ],
                         ),
                         const SizedBox(height: 4),
@@ -179,7 +179,6 @@ class _GemsScreenState extends ConsumerState<GemsScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('💎', style: TextStyle(fontSize: 48)),
               const SizedBox(height: 12),
               Text(_error!, style: Theme.of(context).textTheme.bodyMedium),
             ],
@@ -367,7 +366,7 @@ class _GemCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Text(
-                        '💎 Hidden Gem',
+                        'Hidden Gem',
                         style: TextStyle(
                           fontFamily: 'Inter',
                           fontSize: 11,

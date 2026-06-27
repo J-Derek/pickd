@@ -22,13 +22,21 @@ class UserProfileModel extends HiveObject {
   @HiveField(5)
   bool swipeGateDismissed;
 
+  @HiveField(6, defaultValue: [])
+  List<int> tasteSeedTvIds;
+
+  @HiveField(7, defaultValue: false)
+  bool allowOldMovies;
+
   UserProfileModel({
     this.tasteSeedMovieIds = const [],
+    this.tasteSeedTvIds = const [],
     this.selectedMoodIds = const [],
     this.totalSwipeCount = 0,
     this.onboardingComplete = false,
     this.gemsMode = false,
     this.swipeGateDismissed = false,
+    this.allowOldMovies = false,
   });
 
   bool get hasReachedSwipeGate =>

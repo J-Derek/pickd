@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/config/app_theme.dart';
-import '../../../core/models/movie_model.dart';
+import '../../../core/models/media_item.dart';
 import '../../../core/services/tmdb_service.dart';
 import '../providers/onboarding_provider.dart';
 
@@ -18,7 +18,7 @@ class TasteProfileScreen extends ConsumerStatefulWidget {
 
 class _TasteProfileScreenState extends ConsumerState<TasteProfileScreen> {
   final _searchController = TextEditingController();
-  List<MovieModel> _searchResults = [];
+  List<MediaItem> _searchResults = [];
   bool _isSearching = false;
 
   @override
@@ -33,7 +33,8 @@ class _TasteProfileScreenState extends ConsumerState<TasteProfileScreen> {
       return;
     }
     setState(() => _isSearching = true);
-    final results = await TmdbService.searchMovies(query);
+    final results = await TmdbService.searchMulti(query);
+    if (!mounted) return;
     setState(() {
       _searchResults = results;
       _isSearching = false;
@@ -79,12 +80,12 @@ class _TasteProfileScreenState extends ConsumerState<TasteProfileScreen> {
                   ),
                   const SizedBox(height: 24),
                   Text(
-                    'Movies you\nalready love',
+                    'Favorites you\nalready love',
                     style: Theme.of(context).textTheme.displayLarge,
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Add at least 3. We\'ll find movies with that same energy.',
+                    'Add at least 3 movies or TV shows. We\'ll find matches with that same energy.',
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   const SizedBox(height: 20),
@@ -102,19 +103,19 @@ class _TasteProfileScreenState extends ConsumerState<TasteProfileScreen> {
                         fontFamily: 'Inter',
                         fontSize: 16,
                       ),
-                      decoration: InputDecoration(
-                        hintText: 'Search movies...',
-                        hintStyle: const TextStyle(
+                      decoration: const InputDecoration(
+                        hintText: 'Search movies & TV shows...',
+                        hintStyle: TextStyle(
                           color: AppTheme.textMuted,
                           fontFamily: 'Inter',
                           fontSize: 16,
                         ),
-                        prefixIcon: const Icon(
+                        prefixIcon: Icon(
                           Icons.search,
                           color: AppTheme.textMuted,
                         ),
                         border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(
+                        contentPadding: EdgeInsets.symmetric(
                           vertical: 16,
                           horizontal: 16,
                         ),
@@ -128,16 +129,16 @@ class _TasteProfileScreenState extends ConsumerState<TasteProfileScreen> {
             const SizedBox(height: 16),
 
             // Selected movies chips
-            if (state.tasteMovies.isNotEmpty)
+            if (state.tasteMedia.isNotEmpty)
               SizedBox(
                 height: 40,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 24),
-                  itemCount: state.tasteMovies.length,
+                  itemCount: state.tasteMedia.length,
                   separatorBuilder: (_, __) => const SizedBox(width: 8),
                   itemBuilder: (context, index) {
-                    final movie = state.tasteMovies[index];
+                    final movie = state.tasteMedia[index];
                     return Chip(
                       label: Text(
                         movie.title,
@@ -147,16 +148,16 @@ class _TasteProfileScreenState extends ConsumerState<TasteProfileScreen> {
                           fontSize: 13,
                         ),
                       ),
-                      backgroundColor: AppTheme.accentPrimary.withOpacity(0.15),
+                      backgroundColor: AppTheme.accentPrimary.withValues(alpha: 0.15),
                       side: BorderSide(
-                        color: AppTheme.accentPrimary.withOpacity(0.4),
+                        color: AppTheme.accentPrimary.withValues(alpha: 0.4),
                       ),
                       deleteIcon: const Icon(
                         Icons.close,
                         size: 16,
                         color: AppTheme.textSecondary,
                       ),
-                      onDeleted: () => notifier.removeTasteMovie(movie.id),
+                      onDeleted: () => notifier.removeTasteMedia(movie.id),
                     );
                   },
                 ),
@@ -181,16 +182,16 @@ class _TasteProfileScreenState extends ConsumerState<TasteProfileScreen> {
                               const SizedBox(height: 1),
                           itemBuilder: (context, index) {
                             final movie = _searchResults[index];
-                            final isAdded = state.tasteMovies
+                            final isAdded = state.tasteMedia
                                 .any((m) => m.id == movie.id);
                             return _MovieSearchTile(
                               movie: movie,
                               isAdded: isAdded,
                               onTap: () {
                                 if (isAdded) {
-                                  notifier.removeTasteMovie(movie.id);
+                                  notifier.removeTasteMedia(movie.id);
                                 } else {
-                                  notifier.addTasteMovie(movie);
+                                  notifier.addTasteMedia(movie);
                                 }
                               },
                             );
@@ -200,13 +201,13 @@ class _TasteProfileScreenState extends ConsumerState<TasteProfileScreen> {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(
+                              const Text(
                                 '🎬',
-                                style: const TextStyle(fontSize: 48),
+                                style: TextStyle(fontSize: 48),
                               ),
                               const SizedBox(height: 12),
                               Text(
-                                'Search for movies you love',
+                                'Search for titles you love',
                                 style: Theme.of(context).textTheme.bodyMedium,
                               ),
                             ],
@@ -223,7 +224,7 @@ class _TasteProfileScreenState extends ConsumerState<TasteProfileScreen> {
                   Row(
                     children: [
                       Text(
-                        '${state.tasteMovies.length}/3 minimum',
+                        '${state.tasteMedia.length}/3 minimum',
                         style: TextStyle(
                           fontFamily: 'Inter',
                           fontSize: 13,
@@ -255,7 +256,7 @@ class _TasteProfileScreenState extends ConsumerState<TasteProfileScreen> {
                       child: Text(
                         state.canProceedFromTaste
                             ? 'Let\'s find your next watch 🎬'
-                            : 'Add ${3 - state.tasteMovies.length} more movies',
+                            : 'Add ${3 - state.tasteMedia.length} more titles',
                       ),
                     ),
                   ),
@@ -270,7 +271,7 @@ class _TasteProfileScreenState extends ConsumerState<TasteProfileScreen> {
 }
 
 class _MovieSearchTile extends StatelessWidget {
-  final MovieModel movie;
+  final MediaItem movie;
   final bool isAdded;
   final VoidCallback onTap;
 
@@ -315,7 +316,7 @@ class _MovieSearchTile extends StatelessWidget {
         ),
       ),
       subtitle: Text(
-        movie.releaseYear > 0 ? '${movie.releaseYear}' : '',
+        movie.year > 0 ? '${movie.year}' : '',
         style: const TextStyle(
           fontFamily: 'Inter',
           fontSize: 13,

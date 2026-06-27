@@ -12,6 +12,7 @@ import '../../../core/widgets/genre_chip.dart';
 import '../../../core/widgets/shimmer_card.dart';
 import '../providers/swipe_provider.dart';
 import 'auth_gate_sheet.dart';
+import 'settings_sheet.dart';
 
 
 class SwipeScreen extends ConsumerStatefulWidget {
@@ -49,6 +50,7 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
       isDismissible: true,
       builder: (_) => const AuthGateSheet(),
     ).then((_) {
+      if (!mounted) return;
       _gateShown = false;
       ref.read(swipeDeckProvider.notifier).resetSwipeGate();
     });
@@ -118,6 +120,32 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
               ),
               child: const Icon(
                 Icons.tune_rounded,
+                color: AppTheme.textSecondary,
+                size: 20,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          // Settings
+          GestureDetector(
+            onTap: () {
+              HapticFeedback.lightImpact();
+              showModalBottomSheet(
+                context: context,
+                backgroundColor: Colors.transparent,
+                builder: (context) => const SettingsSheet(),
+              );
+            },
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: AppTheme.bgSurface,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppTheme.bgMuted),
+              ),
+              child: const Icon(
+                Icons.settings,
                 color: AppTheme.textSecondary,
                 size: 20,
               ),
@@ -301,6 +329,16 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
               final liked = dir == CardSwiperDirection.right;
               if (liked) {
                 HapticFeedback.mediumImpact();
+                ScaffoldMessenger.of(context).clearSnackBars();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Saved to Watchlist', style: const TextStyle(color: AppTheme.textInverse, fontWeight: FontWeight.w600)),
+                    backgroundColor: AppTheme.accentPrimary,
+                    duration: const Duration(seconds: 1),
+                    behavior: SnackBarBehavior.floating,
+                    margin: const EdgeInsets.only(bottom: 120, left: 24, right: 24),
+                  ),
+                );
               } else {
                 HapticFeedback.lightImpact();
               }
@@ -569,7 +607,7 @@ class _SwipeCard extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: const Text(
-                                '💎 GEM',
+                                'GEM',
                                 style: TextStyle(
                                   fontFamily: 'Inter',
                                   fontSize: 10,

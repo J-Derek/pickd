@@ -49,13 +49,16 @@ class SwipeDeckNotifier extends StateNotifier<SwipeDeckState> {
     try {
       final profile = HiveService.getProfile();
       final deck = await DiscoveryService.buildDeck(
-        tasteSeedIds: profile.tasteSeedMovieIds,
+        tasteSeedMovieIds: profile.tasteSeedMovieIds,
+        tasteSeedTvIds: profile.tasteSeedTvIds,
         moodIds: profile.selectedMoodIds,
         gemsMode: gemsMode,
         filter: activeFilter,
       );
+      if (!mounted) return;
       state = state.copyWith(deck: deck, isLoading: false);
     } catch (e) {
+      if (!mounted) return;
       state = state.copyWith(
         isLoading: false,
         error: 'Something went wrong. Tap to retry.',
@@ -67,13 +70,15 @@ class SwipeDeckNotifier extends StateNotifier<SwipeDeckState> {
     try {
       final profile = HiveService.getProfile();
       final newCards = await DiscoveryService.buildDeck(
-        tasteSeedIds: profile.tasteSeedMovieIds,
+        tasteSeedMovieIds: profile.tasteSeedMovieIds,
+        tasteSeedTvIds: profile.tasteSeedTvIds,
         moodIds: profile.selectedMoodIds,
         gemsMode: gemsMode,
         filter: state.filter,
       );
       final existingIds = state.deck.map((e) => e.id).toSet();
       final filtered = newCards.where((m) => !existingIds.contains(m.id)).toList();
+      if (!mounted) return;
       if (filtered.isNotEmpty) {
         state = state.copyWith(deck: [...state.deck, ...filtered]);
       }

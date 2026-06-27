@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 
 import '../config/env.dart';
+import '../models/media_item.dart';
 import '../models/movie_model.dart';
 import '../models/tv_model.dart';
 
@@ -21,12 +22,12 @@ class TmdbService {
       LogInterceptor(responseBody: false),
     ]);
 
-  /// Search movies by title — used in taste profile onboarding.
-  static Future<List<MovieModel>> searchMovies(String query) async {
+  /// Search movies and TV series by title — used in taste profile onboarding.
+  static Future<List<MediaItem>> searchMulti(String query) async {
     if (query.trim().isEmpty) return [];
     try {
       final response = await _dio.get(
-        '/search/movie',
+        '/search/multi',
         queryParameters: {
           'query': query,
           'include_adult': false,
@@ -35,11 +36,16 @@ class TmdbService {
         },
       );
       final results = response.data['results'] as List;
-      return results
-          .where((m) => m['poster_path'] != null)
-          .map((m) => MovieModel.fromJson(m as Map<String, dynamic>))
-          .take(8)
-          .toList();
+      final out = <MediaItem>[];
+      for (final item in results) {
+        if (item['poster_path'] == null) continue;
+        if (item['media_type'] == 'movie') {
+          out.add(MediaItem.movie(MovieModel.fromJson(item as Map<String, dynamic>)));
+        } else if (item['media_type'] == 'tv') {
+          out.add(MediaItem.tv(TvModel.fromJson(item as Map<String, dynamic>)));
+        }
+      }
+      return out.take(8).toList();
     } catch (e) {
       return [];
     }
@@ -180,6 +186,40 @@ class TmdbService {
   }
 
   // ─── TV Series Endpoints ──────────────────────────────────────
+
+  /// Get recommendations based on a seed TV show ID.
+  static Future<List<TvModel>> getTvRecommendations(int seriesId) async {
+    try {
+      final response = await _dio.get(
+        '/tv/$seriesId/recommendations',
+        queryParameters: {'language': 'en-US', 'page': 1},
+      );
+      final results = response.data['results'] as List;
+      return results
+          .where((s) => s['poster_path'] != null)
+          .map((s) => TvModel.fromJson(s as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  /// Get similar TV shows to a seed.
+  static Future<List<TvModel>> getTvSimilar(int seriesId) async {
+    try {
+      final response = await _dio.get(
+        '/tv/$seriesId/similar',
+        queryParameters: {'language': 'en-US', 'page': 1},
+      );
+      final results = response.data['results'] as List;
+      return results
+          .where((s) => s['poster_path'] != null)
+          .map((s) => TvModel.fromJson(s as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      return [];
+    }
+  }
 
   /// Discover TV series by genre IDs with optional filters.
   static Future<List<TvModel>> discoverTv({
