@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/config/app_theme.dart';
-import '../../../core/models/movie_model.dart';
+import '../../../core/models/media_item.dart';
 import '../../../core/services/hive_service.dart';
 import '../../../core/services/discovery_service.dart';
 import '../../../core/widgets/shimmer_card.dart';
@@ -22,7 +22,7 @@ class GemsScreen extends ConsumerStatefulWidget {
 
 class _GemsScreenState extends ConsumerState<GemsScreen> {
   final CardSwiperController _swiperController = CardSwiperController();
-  List<MovieModel> _gems = [];
+  List<MediaItem> _gems = [];
   bool _loading = true;
   String? _error;
 
@@ -226,7 +226,12 @@ class _GemsScreenState extends ConsumerState<GemsScreen> {
         if (prev >= _gems.length) return true;
         final movie = _gems[prev];
         if (dir == CardSwiperDirection.right) {
-          ref.read(watchlistProvider.notifier).add(movie);
+          switch (movie) {
+            case MovieItem(:final movie):
+              ref.read(watchlistProvider.notifier).add(movie);
+            case TvItem(:final show):
+              ref.read(watchlistProvider.notifier).addTv(show);
+          }
           HapticFeedback.mediumImpact();
         } else {
           HapticFeedback.lightImpact();
@@ -240,7 +245,7 @@ class _GemsScreenState extends ConsumerState<GemsScreen> {
 }
 
 class _GemCard extends StatelessWidget {
-  final MovieModel movie;
+  final MediaItem movie;
   final double percentX;
 
   const _GemCard({required this.movie, required this.percentX});
@@ -396,7 +401,7 @@ class _GemCard extends StatelessWidget {
                     Row(
                       children: [
                         Text(
-                          '${movie.releaseYear}',
+                          '${movie.year}',
                           style: const TextStyle(
                             fontFamily: 'Inter',
                             fontSize: 13,
@@ -495,6 +500,7 @@ class _ActionButtons extends StatelessWidget {
                     spreadRadius: 1,
                   ),
                 ],
+                ),
               child: const Icon(LucideIcons.bookmarkPlus,
                   color: Colors.white, size: 32),
             ),

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/models/movie_model.dart';
+import '../../../core/models/tv_model.dart';
 import '../../../core/services/hive_service.dart';
 
 class WatchlistNotifier extends StateNotifier<List<MovieModel>> {
@@ -14,6 +15,11 @@ class WatchlistNotifier extends StateNotifier<List<MovieModel>> {
 
   Future<void> add(MovieModel movie) async {
     await HiveService.addToWatchlist(movie);
+    state = HiveService.getWatchlist();
+  }
+
+  Future<void> addTv(TvModel show) async {
+    await HiveService.addTvToWatchlist(show);
     state = HiveService.getWatchlist();
   }
 

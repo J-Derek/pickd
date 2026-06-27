@@ -6,11 +6,12 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/config/app_theme.dart';
-import '../../../core/models/movie_model.dart';
+import '../../../core/models/media_item.dart';
 import '../../../core/services/tmdb_service.dart';
 import '../../../core/widgets/genre_chip.dart';
 import '../../watchlist/providers/watchlist_provider.dart';
 
+/// Detail screen for any MediaItem — works for both movies and TV series.
 class MovieDetailScreen extends ConsumerStatefulWidget {
   final int movieId;
   final Object? movieExtra;
@@ -26,26 +27,46 @@ class MovieDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
-  MovieModel? _movie;
+  MediaItem? _item;
   String? _trailerKey;
   bool _loadingTrailer = false;
+  Map<String, List<String>> _watchProviders = {};
+  bool _loadingProviders = false;
+
+  bool get _isTv => _item?.isTv ?? false;
 
   @override
   void initState() {
     super.initState();
-    if (widget.movieExtra is MovieModel) {
-      _movie = widget.movieExtra as MovieModel;
+    if (widget.movieExtra is MediaItem) {
+      _item = widget.movieExtra as MediaItem;
     }
     _fetchTrailer();
+    _fetchWatchProviders();
   }
 
   Future<void> _fetchTrailer() async {
     setState(() => _loadingTrailer = true);
-    final key = await TmdbService.getTrailerKey(widget.movieId);
+    final key = _isTv
+        ? await TmdbService.getTvTrailerKey(widget.movieId)
+        : await TmdbService.getTrailerKey(widget.movieId);
     if (mounted) {
       setState(() {
         _trailerKey = key;
         _loadingTrailer = false;
+      });
+    }
+  }
+
+  Future<void> _fetchWatchProviders() async {
+    setState(() => _loadingProviders = true);
+    final providers = _isTv
+        ? await TmdbService.getTvWatchProviders(widget.movieId)
+        : await TmdbService.getMovieWatchProviders(widget.movieId);
+    if (mounted) {
+      setState(() {
+        _watchProviders = providers;
+        _loadingProviders = false;
       });
     }
   }
@@ -61,9 +82,9 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final movie = _movie;
+    final item = _item;
     final isInWatchlist =
-        movie != null ? ref.watch(isInWatchlistProvider(movie.id)) : false;
+        item != null ? ref.watch(isInWatchlistProvider(item.id)) : false;
 
     return Scaffold(
       backgroundColor: AppTheme.bgPrimary,
@@ -76,7 +97,7 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
           child: Container(
             margin: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.5),
+              color: Colors.black.withValues(alpha: 0.5),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -86,8 +107,30 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
             ),
           ),
         ),
+        actions: [
+          if (item?.isTv == true)
+            Container(
+              margin: const EdgeInsets.only(right: 16, top: 8, bottom: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.6),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.white24),
+              ),
+              child: const Text(
+                'TV SERIES',
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                  letterSpacing: 1,
+                ),
+              ),
+            ),
+        ],
       ),
-      body: movie == null
+      body: item == null
           ? const Center(
               child: CircularProgressIndicator(color: AppTheme.accentPrimary),
             )
@@ -100,14 +143,14 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                       SizedBox(
                         height: MediaQuery.of(context).size.height * 0.55,
                         width: double.infinity,
-                        child: movie.backdropPath != null
+                        child: item.backdropPath != null
                             ? CachedNetworkImage(
-                                imageUrl: movie.backdropUrl,
+                                imageUrl: item.backdropUrl,
                                 fit: BoxFit.cover,
                               )
-                            : movie.posterPath != null
+                            : item.posterPath != null
                                 ? CachedNetworkImage(
-                                    imageUrl: movie.posterUrl,
+                                    imageUrl: item.posterUrl,
                                     fit: BoxFit.cover,
                                   )
                                 : Container(color: AppTheme.bgSurface),
@@ -119,7 +162,7 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                         right: 0,
                         height: 200,
                         child: Container(
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             gradient: LinearGradient(
                               begin: Alignment.topCenter,
                               end: Alignment.bottomCenter,
@@ -142,11 +185,11 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Genre chips
-                        if (movie.genreIds.isNotEmpty)
+                        if (item.genreIds.isNotEmpty)
                           Wrap(
                             spacing: 6,
                             runSpacing: 6,
-                            children: movie.genreIds
+                            children: item.genreIds
                                 .take(4)
                                 .map((id) => GenreChip(genreId: id))
                                 .toList(),
@@ -154,8 +197,8 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                         const SizedBox(height: 12),
                         // Title
                         Text(
-                          movie.title,
-                          style: TextStyle(
+                          item.title,
+                          style: const TextStyle(
                             fontFamily: 'Syne',
                             fontSize: 28,
                             fontWeight: FontWeight.w800,
@@ -167,9 +210,9 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                         // Meta row
                         Row(
                           children: [
-                            if (movie.releaseYear > 0)
+                            if (item.year > 0)
                               Text(
-                                '${movie.releaseYear}',
+                                '${item.year}',
                                 style: const TextStyle(
                                   fontFamily: 'Inter',
                                   fontSize: 14,
@@ -184,7 +227,7 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              movie.voteAverage.toStringAsFixed(1),
+                              item.voteAverage.toStringAsFixed(1),
                               style: const TextStyle(
                                 fontFamily: 'JetBrains Mono',
                                 fontSize: 15,
@@ -192,7 +235,7 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                                 color: AppTheme.textPrimary,
                               ),
                             ),
-                            if (movie.isHiddenGem) ...[
+                            if (item.isHiddenGem) ...[
                               const SizedBox(width: 12),
                               Container(
                                 padding: const EdgeInsets.symmetric(
@@ -218,8 +261,8 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                         ),
                         const SizedBox(height: 24),
                         // Overview
-                        if (movie.overview.isNotEmpty) ...[
-                          Text(
+                        if (item.overview.isNotEmpty) ...[
+                          const Text(
                             'Overview',
                             style: TextStyle(
                               fontFamily: 'Syne',
@@ -230,7 +273,7 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            movie.overview,
+                            item.overview,
                             style: const TextStyle(
                               fontFamily: 'Inter',
                               fontSize: 15,
@@ -240,10 +283,41 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                           ),
                           const SizedBox(height: 32),
                         ],
-                        // Trailer button
+
+                        // ── Where to Watch ──────────────────────────
+                        if (_loadingProviders)
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 12),
+                            child: Center(
+                              child: SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  color: AppTheme.accentPrimary,
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            ),
+                          )
+                        else if (_watchProviders.isNotEmpty) ...[
+                          const Text(
+                            'Where to Watch',
+                            style: TextStyle(
+                              fontFamily: 'Syne',
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          _WatchProviderSection(providers: _watchProviders),
+                          const SizedBox(height: 24),
+                        ],
+
+                        // ── Trailer button ───────────────────────────
                         if (_loadingTrailer)
-                          Center(
-                            child: const CircularProgressIndicator(
+                          const Center(
+                            child: CircularProgressIndicator(
                               color: AppTheme.accentPrimary,
                               strokeWidth: 2,
                             ),
@@ -259,9 +333,9 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(color: AppTheme.bgMuted),
                               ),
-                              child: Row(
+                              child: const Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
-                                children: const [
+                                children: [
                                   Icon(
                                     Icons.play_circle_filled,
                                     color: AppTheme.accentSecondary,
@@ -282,18 +356,27 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                             ),
                           ),
                         const SizedBox(height: 16),
-                        // Watchlist CTA
+
+                        // ── Watchlist CTA ────────────────────────────
                         ElevatedButton(
                           onPressed: () {
                             HapticFeedback.mediumImpact();
                             if (isInWatchlist) {
                               ref
                                   .read(watchlistProvider.notifier)
-                                  .remove(movie.id);
+                                  .remove(item.id);
                             } else {
-                              ref
-                                  .read(watchlistProvider.notifier)
-                                  .add(movie);
+                              // Route to correct watchlist by type
+                              switch (item) {
+                                case MovieItem(:final movie):
+                                  ref
+                                      .read(watchlistProvider.notifier)
+                                      .add(movie);
+                                case TvItem(:final show):
+                                  ref
+                                      .read(watchlistProvider.notifier)
+                                      .addTv(show);
+                              }
                             }
                           },
                           style: ElevatedButton.styleFrom(
@@ -341,6 +424,90 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                 ),
               ],
             ),
+    );
+  }
+}
+
+// ── Where to Watch section widget ────────────────────────────────────────────
+
+class _WatchProviderSection extends StatelessWidget {
+  final Map<String, List<String>> providers;
+
+  const _WatchProviderSection({required this.providers});
+
+  static const _typeLabels = {
+    'flatrate': 'Stream',
+    'rent': 'Rent',
+    'buy': 'Buy',
+  };
+
+  static const _typeColors = {
+    'flatrate': AppTheme.accentPrimary,
+    'rent': Color(0xFF6B8AFF),
+    'buy': Color(0xFF9B6BFF),
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (final type in ['flatrate', 'rent', 'buy'])
+          if (providers.containsKey(type)) ...[
+            Row(
+              children: [
+                Container(
+                  width: 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: _typeColors[type],
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  _typeLabels[type]!,
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: _typeColors[type],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: providers[type]!
+                  .map(
+                    (name) => Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppTheme.bgSurface,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: AppTheme.bgMuted),
+                      ),
+                      child: Text(
+                        name,
+                        style: const TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: AppTheme.textPrimary,
+                        ),
+                      ),
+                    ),
+                  )
+                  .toList(),
+            ),
+            const SizedBox(height: 16),
+          ],
+      ],
     );
   }
 }

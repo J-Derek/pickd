@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 
 import '../config/env.dart';
 import '../models/movie_model.dart';
+import '../models/tv_model.dart';
 
 /// All TMDB API calls. Direct client-to-API, no backend.
 class TmdbService {
@@ -176,6 +177,144 @@ class TmdbService {
     } catch (e) {
       return [];
     }
+  }
+
+  // ─── TV Series Endpoints ──────────────────────────────────────
+
+  /// Discover TV series by genre IDs with optional filters.
+  static Future<List<TvModel>> discoverTv({
+    required List<int> genreIds,
+    double? maxPopularity,
+    int? maxYear,
+    int? minYear,
+    int page = 1,
+  }) async {
+    try {
+      final params = <String, dynamic>{
+        'language': 'en-US',
+        'with_genres': genreIds.join('|'),
+        'sort_by': 'vote_average.desc',
+        'vote_count.gte': 50,
+        'include_adult': false,
+        'page': page,
+      };
+
+      if (maxPopularity != null) params['popularity.lte'] = maxPopularity;
+      if (maxYear != null) params['first_air_date.lte'] = '$maxYear-12-31';
+      if (minYear != null) params['first_air_date.gte'] = '$minYear-01-01';
+
+      final response = await _dio.get(
+        '/discover/tv',
+        queryParameters: params,
+      );
+      final results = response.data['results'] as List;
+      return results
+          .where((s) => s['poster_path'] != null)
+          .map((s) => TvModel.fromJson(s as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  /// Get YouTube trailer key for a TV series.
+  static Future<String?> getTvTrailerKey(int seriesId) async {
+    try {
+      final response = await _dio.get(
+        '/tv/$seriesId/videos',
+        queryParameters: {'language': 'en-US'},
+      );
+      final results = response.data['results'] as List;
+      final trailer = results.firstWhere(
+        (v) =>
+            v['site'] == 'YouTube' &&
+            v['type'] == 'Trailer' &&
+            v['official'] == true,
+        orElse: () => results.firstWhere(
+          (v) => v['site'] == 'YouTube' && v['type'] == 'Trailer',
+          orElse: () => results.firstWhere(
+            (v) => v['site'] == 'YouTube',
+            orElse: () => null,
+          ),
+        ),
+      );
+      return trailer?['key'] as String?;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Trending TV series — fallback filler for TV deck.
+  static Future<List<TvModel>> getTrendingTv({int page = 1}) async {
+    try {
+      final response = await _dio.get(
+        '/trending/tv/week',
+        queryParameters: {'language': 'en-US', 'page': page},
+      );
+      final results = response.data['results'] as List;
+      return results
+          .where((s) => s['poster_path'] != null)
+          .map((s) => TvModel.fromJson(s as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  // ─── Watch Providers (powered by JustWatch data via TMDB) ─────
+
+  /// Returns streaming provider info for a movie keyed by country code.
+  /// Example: `providers['US']` → list of provider names like ['Netflix', 'Hulu'].
+  static Future<Map<String, List<String>>> getMovieWatchProviders(
+    int movieId, {
+    String region = 'US',
+  }) async {
+    return _parseWatchProviders(
+      await _fetchWatchProviders('/movie/$movieId/watch/providers', region),
+    );
+  }
+
+  /// Returns streaming provider info for a TV series keyed by country code.
+  static Future<Map<String, List<String>>> getTvWatchProviders(
+    int seriesId, {
+    String region = 'US',
+  }) async {
+    return _parseWatchProviders(
+      await _fetchWatchProviders('/tv/$seriesId/watch/providers', region),
+    );
+  }
+
+  static Future<Map<String, dynamic>?> _fetchWatchProviders(
+    String path,
+    String region,
+  ) async {
+    try {
+      final response = await _dio.get(path);
+      final results = response.data['results'] as Map<String, dynamic>?;
+      return results?[region] as Map<String, dynamic>?;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  static Map<String, List<String>> _parseWatchProviders(
+    Map<String, dynamic>? regionData,
+  ) {
+    if (regionData == null) return {};
+    final out = <String, List<String>>{};
+
+    // flatrate = subscription (Netflix, Disney+, etc.)
+    // rent / buy = transactional
+    for (final type in ['flatrate', 'rent', 'buy']) {
+      final providers = regionData[type] as List?;
+      if (providers != null && providers.isNotEmpty) {
+        out[type] = providers
+            .map((p) => (p['provider_name'] as String?) ?? '')
+            .where((name) => name.isNotEmpty)
+            .toList();
+      }
+    }
+    return out;
   }
 }
 

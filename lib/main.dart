@@ -5,6 +5,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 import 'app.dart';
 import 'core/models/movie_model.dart';
+import 'core/models/tv_model.dart';
 import 'core/models/user_profile_model.dart';
 import 'core/services/hive_service.dart';
 
@@ -30,6 +31,7 @@ Future<void> main() async {
   // Initialize Hive
   await Hive.initFlutter();
   Hive.registerAdapter(MovieModelAdapter());
+  Hive.registerAdapter(TvModelAdapter());
   Hive.registerAdapter(UserProfileModelAdapter());
   await HiveService.openBoxes();
 

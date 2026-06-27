@@ -1,34 +1,38 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/models/movie_model.dart';
-import '../../../core/services/hive_service.dart';
+import '../../../core/models/media_item.dart';
 import '../../../core/services/discovery_service.dart';
+import '../../../core/services/hive_service.dart';
 
 /// Manages the swipe deck — loading, state, and swipe gate.
 class SwipeDeckState {
-  final List<MovieModel> deck;
+  final List<MediaItem> deck;
   final bool isLoading;
   final String? error;
   final int swipeCount;
+  final MediaFilter filter;
 
   const SwipeDeckState({
     this.deck = const [],
     this.isLoading = false,
     this.error,
     this.swipeCount = 0,
+    this.filter = MediaFilter.moviesOnly,
   });
 
   SwipeDeckState copyWith({
-    List<MovieModel>? deck,
+    List<MediaItem>? deck,
     bool? isLoading,
     String? error,
     int? swipeCount,
+    MediaFilter? filter,
   }) {
     return SwipeDeckState(
       deck: deck ?? this.deck,
       isLoading: isLoading ?? this.isLoading,
       error: error,
       swipeCount: swipeCount ?? this.swipeCount,
+      filter: filter ?? this.filter,
     );
   }
 
@@ -39,14 +43,16 @@ class SwipeDeckState {
 class SwipeDeckNotifier extends StateNotifier<SwipeDeckState> {
   SwipeDeckNotifier() : super(const SwipeDeckState());
 
-  Future<void> loadDeck({bool gemsMode = false}) async {
-    state = state.copyWith(isLoading: true, error: null);
+  Future<void> loadDeck({bool gemsMode = false, MediaFilter? filter}) async {
+    final activeFilter = filter ?? state.filter;
+    state = state.copyWith(isLoading: true, error: null, filter: activeFilter);
     try {
       final profile = HiveService.getProfile();
       final deck = await DiscoveryService.buildDeck(
         tasteSeedIds: profile.tasteSeedMovieIds,
         moodIds: profile.selectedMoodIds,
         gemsMode: gemsMode,
+        filter: activeFilter,
       );
       state = state.copyWith(deck: deck, isLoading: false);
     } catch (e) {
@@ -64,6 +70,7 @@ class SwipeDeckNotifier extends StateNotifier<SwipeDeckState> {
         tasteSeedIds: profile.tasteSeedMovieIds,
         moodIds: profile.selectedMoodIds,
         gemsMode: gemsMode,
+        filter: state.filter,
       );
       final existingIds = state.deck.map((e) => e.id).toSet();
       final filtered = newCards.where((m) => !existingIds.contains(m.id)).toList();
@@ -75,10 +82,9 @@ class SwipeDeckNotifier extends StateNotifier<SwipeDeckState> {
     }
   }
 
-
   /// Called when a card is swiped in either direction.
-  Future<void> onSwiped(MovieModel movie, bool liked) async {
-    await HiveService.addToSwipeHistory(movie.id);
+  Future<void> onSwiped(MediaItem item, bool liked) async {
+    await HiveService.addToSwipeHistory(item.id);
 
     final profile = HiveService.getProfile();
     profile.totalSwipeCount += 1;
@@ -87,6 +93,16 @@ class SwipeDeckNotifier extends StateNotifier<SwipeDeckState> {
     final newSwipeCount = state.swipeCount + 1;
     state = state.copyWith(swipeCount: newSwipeCount);
 
+    // Save to the correct watchlist if liked
+    if (liked) {
+      switch (item) {
+        case MovieItem(:final movie):
+          await HiveService.addToWatchlist(movie);
+        case TvItem(:final show):
+          await HiveService.addTvToWatchlist(show);
+      }
+    }
+
     // Reload if running low
     if (state.deck.length - newSwipeCount < 5) {
       loadMore(gemsMode: profile.gemsMode);
@@ -94,7 +110,7 @@ class SwipeDeckNotifier extends StateNotifier<SwipeDeckState> {
   }
 
   /// Called when a swipe is undone. Restores counts and removes from history/watchlist.
-  Future<void> onUndo(MovieModel movie, bool wasLiked) async {
+  Future<void> onUndo(MediaItem item, bool wasLiked) async {
     if (state.swipeCount > 0) {
       state = state.copyWith(swipeCount: state.swipeCount - 1);
     }
@@ -105,16 +121,24 @@ class SwipeDeckNotifier extends StateNotifier<SwipeDeckState> {
       await HiveService.saveProfile(profile);
     }
 
-    await HiveService.removeFromSwipeHistory(movie.id);
+    await HiveService.removeFromSwipeHistory(item.id);
 
     if (wasLiked) {
-      await HiveService.removeFromWatchlist(movie.id);
+      switch (item) {
+        case MovieItem():
+          await HiveService.removeFromWatchlist(item.id);
+        case TvItem():
+          await HiveService.removeTvFromWatchlist(item.id);
+      }
     }
   }
 
   void resetSwipeGate() {
     state = state.copyWith(swipeCount: 0);
   }
+
+  /// Switch the media filter and reload the deck.
+  Future<void> setFilter(MediaFilter filter) => loadDeck(filter: filter);
 }
 
 final swipeDeckProvider =

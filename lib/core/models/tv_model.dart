@@ -1,0 +1,106 @@
+import 'package:hive/hive.dart';
+
+part 'tv_model.g.dart';
+
+/// Represents a TV series fetched from TMDB.
+/// Stored in a separate Hive box so it can be persisted to the watchlist.
+@HiveType(typeId: 2)
+class TvModel extends HiveObject {
+  @HiveField(0)
+  final int id;
+
+  @HiveField(1)
+  final String name;
+
+  @HiveField(2)
+  final String? posterPath;
+
+  @HiveField(3)
+  final String? backdropPath;
+
+  @HiveField(4)
+  final String overview;
+
+  @HiveField(5)
+  final String? firstAirDate;
+
+  @HiveField(6)
+  final double voteAverage;
+
+  @HiveField(7)
+  final double popularity;
+
+  @HiveField(8)
+  final List<int> genreIds;
+
+  @HiveField(9)
+  final String? trailerKey;
+
+  TvModel({
+    required this.id,
+    required this.name,
+    this.posterPath,
+    this.backdropPath,
+    required this.overview,
+    this.firstAirDate,
+    required this.voteAverage,
+    required this.popularity,
+    required this.genreIds,
+    this.trailerKey,
+  });
+
+  factory TvModel.fromJson(Map<String, dynamic> json) {
+    return TvModel(
+      id: json['id'] as int,
+      name: (json['name'] ?? 'Unknown') as String,
+      posterPath: json['poster_path'] as String?,
+      backdropPath: json['backdrop_path'] as String?,
+      overview: (json['overview'] ?? '') as String,
+      firstAirDate: json['first_air_date'] as String?,
+      voteAverage: ((json['vote_average'] ?? 0) as num).toDouble(),
+      popularity: ((json['popularity'] ?? 0) as num).toDouble(),
+      genreIds: ((json['genre_ids'] ?? []) as List)
+          .map((e) => e as int)
+          .toList(),
+    );
+  }
+
+  String get posterUrl =>
+      posterPath != null
+          ? 'https://image.tmdb.org/t/p/w500$posterPath'
+          : '';
+
+  String get backdropUrl =>
+      backdropPath != null
+          ? 'https://image.tmdb.org/t/p/original$backdropPath'
+          : '';
+
+  int get airYear {
+    if (firstAirDate == null || firstAirDate!.isEmpty) return 0;
+    return int.tryParse(firstAirDate!.split('-').first) ?? 0;
+  }
+
+  String get youtubeUrl =>
+      trailerKey != null
+          ? 'https://www.youtube.com/watch?v=$trailerKey'
+          : '';
+
+  bool get hasTrailer => trailerKey != null && trailerKey!.isNotEmpty;
+
+  bool get isHiddenGem => popularity < 30 && airYear < 2020;
+
+  TvModel copyWith({String? trailerKey}) {
+    return TvModel(
+      id: id,
+      name: name,
+      posterPath: posterPath,
+      backdropPath: backdropPath,
+      overview: overview,
+      firstAirDate: firstAirDate,
+      voteAverage: voteAverage,
+      popularity: popularity,
+      genreIds: genreIds,
+      trailerKey: trailerKey ?? this.trailerKey,
+    );
+  }
+}

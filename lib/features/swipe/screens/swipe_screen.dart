@@ -6,10 +6,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/config/app_theme.dart';
-import '../../../core/models/movie_model.dart';
+import '../../../core/models/media_item.dart';
+import '../../../core/services/discovery_service.dart';
 import '../../../core/widgets/genre_chip.dart';
 import '../../../core/widgets/shimmer_card.dart';
-import '../../watchlist/providers/watchlist_provider.dart';
 import '../providers/swipe_provider.dart';
 import 'auth_gate_sheet.dart';
 
@@ -24,6 +24,7 @@ class SwipeScreen extends ConsumerStatefulWidget {
 class _SwipeScreenState extends ConsumerState<SwipeScreen> {
   final CardSwiperController _swiperController = CardSwiperController();
   bool _gateShown = false;
+  MediaFilter _activeFilter = MediaFilter.moviesOnly;
 
   @override
   void initState() {
@@ -53,6 +54,13 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
     });
   }
 
+  void _onFilterTap(MediaFilter filter) {
+    if (_activeFilter == filter) return;
+    HapticFeedback.selectionClick();
+    setState(() => _activeFilter = filter);
+    ref.read(swipeDeckProvider.notifier).setFilter(filter);
+  }
+
   @override
   Widget build(BuildContext context) {
     final deckState = ref.watch(swipeDeckProvider);
@@ -70,6 +78,8 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
         child: Column(
           children: [
             _buildHeader(context),
+            const SizedBox(height: 12),
+            _buildFilterToggle(),
             Expanded(child: _buildBody(deckState)),
           ],
         ),
@@ -140,6 +150,70 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
     );
   }
 
+  Widget _buildFilterToggle() {
+    const segments = [
+      (MediaFilter.moviesOnly, 'Movies'),
+      (MediaFilter.both, 'Both'),
+      (MediaFilter.tvOnly, 'TV Shows'),
+    ];
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Container(
+        height: 38,
+        decoration: BoxDecoration(
+          color: AppTheme.bgSurface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppTheme.bgMuted),
+        ),
+        child: Row(
+          children: segments.map((seg) {
+            final (filter, label) = seg;
+            final isActive = _activeFilter == filter;
+            final isFirst = filter == MediaFilter.moviesOnly;
+            final isLast = filter == MediaFilter.tvOnly;
+
+            return Expanded(
+              child: GestureDetector(
+                onTap: () => _onFilterTap(filter),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 220),
+                  curve: Curves.easeInOut,
+                  margin: EdgeInsets.fromLTRB(
+                    isFirst ? 3 : 0,
+                    3,
+                    isLast ? 3 : 0,
+                    3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isActive
+                        ? AppTheme.accentPrimary
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(17),
+                  ),
+                  alignment: Alignment.center,
+                  child: AnimatedDefaultTextStyle(
+                    duration: const Duration(milliseconds: 220),
+                    style: TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 12,
+                      fontWeight:
+                          isActive ? FontWeight.w700 : FontWeight.w500,
+                      color: isActive
+                          ? AppTheme.textInverse
+                          : AppTheme.textSecondary,
+                    ),
+                    child: Text(label),
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
   Widget _buildBody(SwipeDeckState deckState) {
     if (deckState.isLoading) {
       return Padding(
@@ -192,7 +266,7 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
             ElevatedButton(
               onPressed: () =>
                   ref.read(swipeDeckProvider.notifier).loadDeck(),
-              child: const Text('Load more movies'),
+              child: const Text('Load more'),
             ),
           ],
         ),
@@ -223,22 +297,21 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
               );
             },
             onSwipe: (prev, curr, dir) {
-              final movie = deck[prev];
+              final item = deck[prev];
               final liked = dir == CardSwiperDirection.right;
               if (liked) {
-                ref.read(watchlistProvider.notifier).add(movie);
                 HapticFeedback.mediumImpact();
               } else {
                 HapticFeedback.lightImpact();
               }
-              ref.read(swipeDeckProvider.notifier).onSwiped(movie, liked);
+              ref.read(swipeDeckProvider.notifier).onSwiped(item, liked);
               return true;
             },
             onUndo: (prev, curr, dir) {
               if (prev == null) return false;
-              final movie = deck[prev];
+              final item = deck[prev];
               final wasLiked = dir == CardSwiperDirection.right;
-              ref.read(swipeDeckProvider.notifier).onUndo(movie, wasLiked);
+              ref.read(swipeDeckProvider.notifier).onUndo(item, wasLiked);
               HapticFeedback.lightImpact();
               return true;
             },
@@ -253,7 +326,7 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
 }
 
 class _SwipeCard extends StatelessWidget {
-  final MovieModel movie;
+  final MediaItem movie;
   final double percentX;
   final VoidCallback onTap;
 
@@ -322,6 +395,33 @@ class _SwipeCard extends StatelessWidget {
                   ),
                 ),
               ),
+
+              // TV badge (top-right)
+              if (movie.isTv)
+                Positioned(
+                  top: 16,
+                  right: 16,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppTheme.bgElevated,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Text(
+                      'TV',
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                ),
 
               // WATCH indicator (right swipe)
               if (percentX > 0)
@@ -411,7 +511,7 @@ class _SwipeCard extends StatelessWidget {
                               .toList(),
                         ),
                       const SizedBox(height: 8),
-                      // Movie title
+                      // Title
                       Text(
                         movie.title,
                         style: const TextStyle(
@@ -433,9 +533,9 @@ class _SwipeCard extends StatelessWidget {
                       // Meta row
                       Row(
                         children: [
-                          if (movie.releaseYear > 0)
+                          if (movie.year > 0)
                             Text(
-                              '${movie.releaseYear}',
+                              '${movie.year}',
                               style: const TextStyle(
                                 fontFamily: 'Inter',
                                 fontSize: 13,
