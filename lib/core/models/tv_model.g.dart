@@ -27,13 +27,14 @@ class TvModelAdapter extends TypeAdapter<TvModel> {
       popularity: fields[7] as double,
       genreIds: (fields[8] as List).cast<int>(),
       trailerKey: fields[9] as String?,
+      watchProviderLogoPath: fields[10] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, TvModel obj) {
     writer
-      ..writeByte(10)
+      ..writeByte(11)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -53,7 +54,9 @@ class TvModelAdapter extends TypeAdapter<TvModel> {
       ..writeByte(8)
       ..write(obj.genreIds)
       ..writeByte(9)
-      ..write(obj.trailerKey);
+      ..write(obj.trailerKey)
+      ..writeByte(10)
+      ..write(obj.watchProviderLogoPath);
   }
 
   @override

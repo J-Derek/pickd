@@ -28,6 +28,9 @@ class UserProfileModel extends HiveObject {
   @HiveField(7, defaultValue: false)
   bool allowOldMovies;
 
+  @HiveField(8, defaultValue: false)
+  bool hasSeenWalkthrough;
+
   UserProfileModel({
     this.tasteSeedMovieIds = const [],
     this.tasteSeedTvIds = const [],
@@ -37,6 +40,7 @@ class UserProfileModel extends HiveObject {
     this.gemsMode = false,
     this.swipeGateDismissed = false,
     this.allowOldMovies = false,
+    this.hasSeenWalkthrough = false,
   });
 
   bool get hasReachedSwipeGate =>

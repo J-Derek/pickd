@@ -36,6 +36,9 @@ class TvModel extends HiveObject {
   @HiveField(9)
   final String? trailerKey;
 
+  @HiveField(10)
+  final String? watchProviderLogoPath;
+
   TvModel({
     required this.id,
     required this.name,
@@ -47,9 +50,15 @@ class TvModel extends HiveObject {
     required this.popularity,
     required this.genreIds,
     this.trailerKey,
+    this.watchProviderLogoPath,
   });
 
   factory TvModel.fromJson(Map<String, dynamic> json) {
+    String? logoPath;
+    try {
+      logoPath = json['watch/providers']['results']['US']['flatrate'][0]['logo_path'] as String?;
+    } catch (_) {}
+
     return TvModel(
       id: json['id'] as int,
       name: (json['name'] ?? 'Unknown') as String,
@@ -62,6 +71,7 @@ class TvModel extends HiveObject {
       genreIds: ((json['genre_ids'] ?? []) as List)
           .map((e) => e as int)
           .toList(),
+      watchProviderLogoPath: logoPath,
     );
   }
 
@@ -89,7 +99,7 @@ class TvModel extends HiveObject {
 
   bool get isHiddenGem => popularity < 30 && airYear < 2020;
 
-  TvModel copyWith({String? trailerKey}) {
+  TvModel copyWith({String? trailerKey, String? watchProviderLogoPath}) {
     return TvModel(
       id: id,
       name: name,
@@ -101,6 +111,7 @@ class TvModel extends HiveObject {
       popularity: popularity,
       genreIds: genreIds,
       trailerKey: trailerKey ?? this.trailerKey,
+      watchProviderLogoPath: watchProviderLogoPath ?? this.watchProviderLogoPath,
     );
   }
 }

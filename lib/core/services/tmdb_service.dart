@@ -127,14 +127,56 @@ class TmdbService {
     }
   }
 
+  /// Get massively popular movies for the visual onboarding grid.
+  static Future<List<MovieModel>> getPopularMoviesForOnboarding(int page) async {
+    try {
+      final response = await _dio.get(
+        '/discover/movie',
+        queryParameters: {
+          'language': 'en-US',
+          'sort_by': 'popularity.desc',
+          'vote_count.gte': 1000,
+          'include_adult': false,
+          'page': page,
+        },
+      );
+      final results = response.data['results'] as List;
+      return results
+          .where((m) => m['poster_path'] != null)
+          .map((m) => MovieModel.fromJson(m as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
   /// Get the full movie detail.
-  static Future<MovieModel?> getMovie(int movieId) async {
+  static Future<MovieModel?> getMovieDetails(int movieId) async {
     try {
       final response = await _dio.get(
         '/movie/$movieId',
-        queryParameters: {'language': 'en-US'},
+        queryParameters: {
+          'language': 'en-US',
+          'append_to_response': 'watch/providers',
+        },
       );
       return MovieModel.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Get the full TV detail.
+  static Future<TvModel?> getTvDetails(int seriesId) async {
+    try {
+      final response = await _dio.get(
+        '/tv/$seriesId',
+        queryParameters: {
+          'language': 'en-US',
+          'append_to_response': 'watch/providers',
+        },
+      );
+      return TvModel.fromJson(response.data as Map<String, dynamic>);
     } catch (e) {
       return null;
     }

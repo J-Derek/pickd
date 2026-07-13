@@ -10,7 +10,7 @@ class MainShell extends StatelessWidget {
 
   const MainShell({super.key, required this.child});
 
-  static const _tabs = ['/swipe', '/watchlist', '/gems'];
+  static const _tabs = ['/swipe', '/watchlist', '/gems', '/profile'];
 
   int _currentIndex(BuildContext context) {
     final location = GoRouterState.of(context).uri.path;
@@ -22,7 +22,7 @@ class MainShell extends StatelessWidget {
     final index = _currentIndex(context);
     return PopScope(
       canPop: false,
-      onPopInvoked: (didPop) async {
+      onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
         final confirm = await showDialog<bool>(
           context: context,
@@ -84,6 +84,13 @@ class MainShell extends StatelessWidget {
                     onTap: () => context.go('/gems'),
                     isGems: true,
                   ),
+                  _NavItem(
+                    icon: Icons.person_outline,
+                    activeIcon: Icons.person,
+                    label: 'Profile',
+                    isActive: index == 3,
+                    onTap: () => context.go('/profile'),
+                  ),
                 ],
               ),
             ),
@@ -126,8 +133,8 @@ class _NavItem extends StatelessWidget {
               decoration: BoxDecoration(
                 color: isActive
                     ? (isGems
-                        ? AppTheme.accentPrimary.withOpacity(0.12)
-                        : AppTheme.accentPrimary.withOpacity(0.12))
+                        ? AppTheme.accentPrimary.withValues(alpha: 0.12)
+                        : AppTheme.accentPrimary.withValues(alpha: 0.12))
                     : Colors.transparent,
                 borderRadius: BorderRadius.circular(20),
               ),

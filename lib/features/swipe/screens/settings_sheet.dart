@@ -41,29 +41,43 @@ class _SettingsSheetState extends State<SettingsSheet> {
             ),
           ),
           const SizedBox(height: 24),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Allow Classics (1990 & Older)',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: AppTheme.textPrimary,
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            decoration: BoxDecoration(
+              color: AppTheme.bgElevated,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppTheme.glassBorder),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Allow Classics (1990 & Older)',
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    color: AppTheme.textPrimary,
+                  ),
                 ),
-              ),
-              Switch(
-                value: _allowOldMovies,
-                activeThumbColor: AppTheme.accentPrimary,
-                onChanged: (val) {
-                  setState(() {
-                    _allowOldMovies = val;
-                  });
-                  final profile = HiveService.getProfile();
-                  profile.allowOldMovies = val;
-                  HiveService.saveProfile(profile);
-                },
-              ),
-            ],
+                Switch(
+                  value: _allowOldMovies,
+                  activeThumbColor: AppTheme.textPrimary,
+                  activeTrackColor: AppTheme.accentPrimary,
+                  inactiveThumbColor: AppTheme.textMuted,
+                  inactiveTrackColor: AppTheme.bgPrimary,
+                  trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
+                  onChanged: (val) {
+                    setState(() {
+                      _allowOldMovies = val;
+                    });
+                    final profile = HiveService.getProfile();
+                    profile.allowOldMovies = val;
+                    HiveService.saveProfile(profile);
+                  },
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 40),
         ],

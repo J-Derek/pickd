@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/config/app_theme.dart';
 
@@ -35,10 +36,10 @@ class AuthGateSheet extends StatelessWidget {
             width: 72,
             height: 72,
             decoration: BoxDecoration(
-              color: AppTheme.accentPrimary.withOpacity(0.12),
+              color: AppTheme.accentPrimary.withValues(alpha: 0.12),
               shape: BoxShape.circle,
               border: Border.all(
-                color: AppTheme.accentPrimary.withOpacity(0.3),
+                color: AppTheme.accentPrimary.withValues(alpha: 0.3),
               ),
             ),
             child: const Icon(
@@ -48,7 +49,7 @@ class AuthGateSheet extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          Text(
+          const Text(
             'Save your taste forever',
             style: TextStyle(
               fontFamily: 'Syne',
@@ -59,7 +60,7 @@ class AuthGateSheet extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 10),
-          Text(
+          const Text(
             'Create a free account to sync your watchlist, taste profile, and picks across devices.',
             style: TextStyle(
               fontFamily: 'Inter',
@@ -74,7 +75,7 @@ class AuthGateSheet extends StatelessWidget {
           ElevatedButton(
             onPressed: () {
               Navigator.of(context).pop();
-              // TODO: Navigate to sign-up screen in V2
+              context.push('/auth');
             },
             child: const Text('Create free account'),
           ),
@@ -82,8 +83,8 @@ class AuthGateSheet extends StatelessWidget {
           // Dismiss — keep swiping
           GestureDetector(
             onTap: () => Navigator.of(context).pop(),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
+            child: const Padding(
+              padding: EdgeInsets.symmetric(vertical: 8),
               child: Text(
                 'Keep swiping as guest',
                 style: TextStyle(

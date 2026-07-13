@@ -5,6 +5,16 @@ class Env {
     defaultValue: '',
   );
 
+  static const supabaseUrl = String.fromEnvironment(
+    'SUPABASE_URL',
+    defaultValue: '',
+  );
+
+  static const supabaseAnonKey = String.fromEnvironment(
+    'SUPABASE_ANON_KEY',
+    defaultValue: '',
+  );
+
   static const tmdbBaseUrl = 'https://api.themoviedb.org/3';
   static const tmdbImageBaseW500 = 'https://image.tmdb.org/t/p/w500';
   static const tmdbImageBaseOriginal = 'https://image.tmdb.org/t/p/original';

@@ -4,15 +4,18 @@ import 'package:flutter/services.dart';
 import 'package:flutter_card_swiper/flutter_card_swiper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'dart:ui';
 
 import '../../../core/config/app_theme.dart';
 import '../../../core/models/media_item.dart';
 import '../../../core/services/discovery_service.dart';
 import '../../../core/widgets/genre_chip.dart';
 import '../../../core/widgets/shimmer_card.dart';
+import '../../../core/services/hive_service.dart';
 import '../providers/swipe_provider.dart';
 import 'auth_gate_sheet.dart';
-import 'settings_sheet.dart';
+import 'walkthrough_overlay.dart';
+
 
 
 class SwipeScreen extends ConsumerStatefulWidget {
@@ -25,11 +28,13 @@ class SwipeScreen extends ConsumerStatefulWidget {
 class _SwipeScreenState extends ConsumerState<SwipeScreen> {
   final CardSwiperController _swiperController = CardSwiperController();
   bool _gateShown = false;
+  bool _showWalkthrough = false;
   MediaFilter _activeFilter = MediaFilter.moviesOnly;
 
   @override
   void initState() {
     super.initState();
+    _showWalkthrough = !HiveService.getProfile().hasSeenWalkthrough;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(swipeDeckProvider.notifier).loadDeck();
     });
@@ -76,15 +81,28 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
 
     return Scaffold(
       backgroundColor: AppTheme.bgPrimary,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(context),
-            const SizedBox(height: 12),
-            _buildFilterToggle(),
-            Expanded(child: _buildBody(deckState)),
-          ],
-        ),
+      body: Stack(
+        children: [
+          SafeArea(
+            child: Column(
+              children: [
+                _buildHeader(context),
+                const SizedBox(height: 12),
+                _buildFilterToggle(),
+                Expanded(child: _buildBody(deckState)),
+              ],
+            ),
+          ),
+          if (_showWalkthrough)
+            WalkthroughOverlay(
+              onDismiss: () {
+                setState(() => _showWalkthrough = false);
+                final profile = HiveService.getProfile();
+                profile.hasSeenWalkthrough = true;
+                profile.save();
+              },
+            ),
+        ],
       ),
     );
   }
@@ -94,7 +112,7 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
       child: Row(
         children: [
-          Text(
+          const Text(
             'pickd',
             style: TextStyle(
               fontFamily: 'Syne',
@@ -104,72 +122,37 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
             ),
           ),
           const Spacer(),
-          // Edit Profile
+          // Change Vibe
           GestureDetector(
             onTap: () {
               HapticFeedback.lightImpact();
-              context.go('/onboarding/mood');
+              context.push('/onboarding/mood');
             },
             child: Container(
-              width: 40,
-              height: 40,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
-                color: AppTheme.bgSurface,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppTheme.bgMuted),
+                color: AppTheme.bgElevated,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: AppTheme.glassBorder),
               ),
-              child: const Icon(
-                Icons.tune_rounded,
-                color: AppTheme.textSecondary,
-                size: 20,
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          // Settings
-          GestureDetector(
-            onTap: () {
-              HapticFeedback.lightImpact();
-              showModalBottomSheet(
-                context: context,
-                backgroundColor: Colors.transparent,
-                builder: (context) => const SettingsSheet(),
-              );
-            },
-            child: Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: AppTheme.bgSurface,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppTheme.bgMuted),
-              ),
-              child: const Icon(
-                Icons.settings,
-                color: AppTheme.textSecondary,
-                size: 20,
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          // Refresh deck
-          GestureDetector(
-            onTap: () {
-              HapticFeedback.lightImpact();
-              ref.read(swipeDeckProvider.notifier).loadDeck();
-            },
-            child: Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: AppTheme.bgSurface,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppTheme.bgMuted),
-              ),
-              child: const Icon(
-                Icons.refresh_rounded,
-                color: AppTheme.textSecondary,
-                size: 20,
+              child: const Row(
+                children: [
+                  Icon(
+                    Icons.tune_rounded,
+                    color: AppTheme.textSecondary,
+                    size: 16,
+                  ),
+                  SizedBox(width: 8),
+                  Text(
+                    'Change Vibe',
+                    style: TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -190,9 +173,9 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
       child: Container(
         height: 38,
         decoration: BoxDecoration(
-          color: AppTheme.bgSurface,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppTheme.bgMuted),
+          color: AppTheme.bgElevated,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: AppTheme.glassBorder),
         ),
         child: Row(
           children: segments.map((seg) {
@@ -244,8 +227,8 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
 
   Widget _buildBody(SwipeDeckState deckState) {
     if (deckState.isLoading) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      return const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         child: ShimmerCard(
           width: double.infinity,
           height: double.infinity,
@@ -276,27 +259,85 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
 
     if (deckState.isDeckEmpty) {
       return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('🎉', style: TextStyle(fontSize: 48)),
-            const SizedBox(height: 12),
-            Text(
-              'You\'ve seen everything!',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Tap below to load more',
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () =>
-                  ref.read(swipeDeckProvider.notifier).loadDeck(),
-              child: const Text('Load more'),
-            ),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 40),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  color: AppTheme.bgSurface,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: AppTheme.accentPrimary.withValues(alpha: 0.2),
+                    width: 2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.accentPrimary.withValues(alpha: 0.1),
+                      blurRadius: 40,
+                      spreadRadius: 10,
+                    ),
+                  ],
+                ),
+                child: const Center(
+                  child: Icon(
+                    Icons.auto_awesome_rounded,
+                    size: 48,
+                    color: AppTheme.accentPrimary,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 32),
+              const Text(
+                'That\'s a Wrap!',
+                style: TextStyle(
+                  fontFamily: 'Syne',
+                  fontSize: 28,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.textPrimary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'You\'ve seen everything for this vibe. Try a different mood or load more.',
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 15,
+                  color: AppTheme.textSecondary,
+                  height: 1.5,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 32),
+              GestureDetector(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  ref.read(swipeDeckProvider.notifier).loadDeck();
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                  decoration: BoxDecoration(
+                    color: AppTheme.accentPrimary,
+                    borderRadius: BorderRadius.circular(30),
+                    boxShadow: AppTheme.cyanGlow,
+                  ),
+                  child: const Text(
+                    'Load More',
+                    style: TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textInverse,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -311,8 +352,7 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
             controller: _swiperController,
             cardsCount: deck.length,
             numberOfCardsDisplayed: deck.length >= 3 ? 3 : deck.length,
-            allowedSwipeDirection:
-                const AllowedSwipeDirection.only(left: true, right: true),
+            allowedSwipeDirection: const AllowedSwipeDirection.all(),
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
             scale: 0.92,
             cardBuilder: (context, index, percentThresholdX, percentThresholdY) {
@@ -320,36 +360,75 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
               return _SwipeCard(
                 movie: deck[index],
                 percentX: percentThresholdX.toDouble(),
+                percentY: percentThresholdY.toDouble(), // Added Y
                 onTap: () => context.push('/movie/${deck[index].id}',
                     extra: deck[index]),
               );
             },
             onSwipe: (prev, curr, dir) {
               final item = deck[prev];
-              final liked = dir == CardSwiperDirection.right;
-              if (liked) {
+              
+              SwipeAction action;
+              if (dir == CardSwiperDirection.right) {
+                action = SwipeAction.save;
                 HapticFeedback.mediumImpact();
                 ScaffoldMessenger.of(context).clearSnackBars();
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Saved to Watchlist', style: const TextStyle(color: AppTheme.textInverse, fontWeight: FontWeight.w600)),
+                  const SnackBar(
+                    content: Text('Saved to Watchlist', style: TextStyle(color: AppTheme.textInverse, fontWeight: FontWeight.w600)),
                     backgroundColor: AppTheme.accentPrimary,
-                    duration: const Duration(seconds: 1),
+                    duration: Duration(seconds: 1),
                     behavior: SnackBarBehavior.floating,
-                    margin: const EdgeInsets.only(bottom: 120, left: 24, right: 24),
+                    margin: EdgeInsets.only(bottom: 120, left: 24, right: 24),
                   ),
                 );
+              } else if (dir == CardSwiperDirection.top) {
+                action = SwipeAction.watched;
+                HapticFeedback.mediumImpact();
+                WidgetsBinding.instance.addPostFrameCallback((_) async {
+                  int? rating = await _showRatingDialog(context);
+                  ref.read(swipeDeckProvider.notifier).onSwiped(item, action, rating: rating);
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).clearSnackBars();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Marked as Watched${rating != null ? ' with $rating stars' : ''}', style: const TextStyle(color: AppTheme.textInverse, fontWeight: FontWeight.w600)),
+                        backgroundColor: AppTheme.accentGreen,
+                        duration: const Duration(seconds: 1),
+                        behavior: SnackBarBehavior.floating,
+                        margin: const EdgeInsets.only(bottom: 120, left: 24, right: 24),
+                      ),
+                    );
+                  }
+                });
+                return true;
+              } else if (dir == CardSwiperDirection.bottom) {
+                action = SwipeAction.heart;
+                HapticFeedback.mediumImpact();
               } else {
+                action = SwipeAction.skip;
                 HapticFeedback.lightImpact();
               }
-              ref.read(swipeDeckProvider.notifier).onSwiped(item, liked);
+              
+              ref.read(swipeDeckProvider.notifier).onSwiped(item, action);
               return true;
             },
             onUndo: (prev, curr, dir) {
               if (prev == null) return false;
               final item = deck[prev];
-              final wasLiked = dir == CardSwiperDirection.right;
-              ref.read(swipeDeckProvider.notifier).onUndo(item, wasLiked);
+              
+              SwipeAction previousAction;
+              if (dir == CardSwiperDirection.right) {
+                previousAction = SwipeAction.save;
+              } else if (dir == CardSwiperDirection.top) {
+                previousAction = SwipeAction.watched;
+              } else if (dir == CardSwiperDirection.bottom) {
+                previousAction = SwipeAction.heart;
+              } else {
+                previousAction = SwipeAction.skip;
+              }
+              
+              ref.read(swipeDeckProvider.notifier).onUndo(item, previousAction);
               HapticFeedback.lightImpact();
               return true;
             },
@@ -361,22 +440,69 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
       ],
     );
   }
+
+  Future<int?> _showRatingDialog(BuildContext context) async {
+    int currentRating = 0;
+    return showDialog<int>(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              backgroundColor: AppTheme.bgSurface,
+              title: const Text('Rate this movie', style: TextStyle(color: AppTheme.textPrimary, fontFamily: 'Syne', fontWeight: FontWeight.bold)),
+              content: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(5, (index) {
+                  return IconButton(
+                    icon: Icon(
+                      index < currentRating ? Icons.star : Icons.star_border,
+                      color: Colors.amber,
+                      size: 32,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        currentRating = index + 1;
+                      });
+                    },
+                  );
+                }),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, null),
+                  child: const Text('Skip', style: TextStyle(color: AppTheme.textSecondary)),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(context, currentRating > 0 ? currentRating : null),
+                  child: const Text('Submit', style: TextStyle(color: AppTheme.accentPrimary, fontWeight: FontWeight.bold)),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
 }
 
 class _SwipeCard extends StatelessWidget {
   final MediaItem movie;
   final double percentX;
+  final double percentY;
   final VoidCallback onTap;
 
   const _SwipeCard({
     required this.movie,
     required this.percentX,
+    required this.percentY,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     final watchIndicatorOpacity = (percentX.abs() / 100).clamp(0.0, 1.0);
+    final topBottomOpacity = (percentY.abs() / 100).clamp(0.0, 1.0);
 
     return GestureDetector(
       onTap: onTap,
@@ -420,16 +546,7 @@ class _SwipeCard extends StatelessWidget {
               const Positioned.fill(
                 child: DecoratedBox(
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      stops: [0.0, 0.3, 1.0],
-                      colors: [
-                        Colors.transparent,
-                        Colors.transparent,
-                        Color(0xE6080808),
-                      ],
-                    ),
+                    gradient: AppTheme.cardBottomGradient,
                   ),
                 ),
               ),
@@ -445,7 +562,7 @@ class _SwipeCard extends StatelessWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: AppTheme.bgElevated,
+                      color: AppTheme.accentPrimary,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: const Text(
@@ -454,7 +571,7 @@ class _SwipeCard extends StatelessWidget {
                         fontFamily: 'Inter',
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
-                        color: Colors.white,
+                        color: AppTheme.textInverse,
                         letterSpacing: 0.5,
                       ),
                     ),
@@ -521,6 +638,78 @@ class _SwipeCard extends StatelessWidget {
                           fontWeight: FontWeight.w800,
                           color: AppTheme.accentSecondary,
                           letterSpacing: 2,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                
+              // WATCHED indicator (top swipe)
+              if (percentY < 0)
+                Positioned(
+                  bottom: 120,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: Opacity(
+                      opacity: topBottomOpacity,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: AppTheme.accentGreen,
+                            width: 2.5,
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Text(
+                          'WATCHED IT',
+                          style: TextStyle(
+                            fontFamily: 'Syne',
+                            fontSize: 22,
+                            fontWeight: FontWeight.w800,
+                            color: AppTheme.accentGreen,
+                            letterSpacing: 2,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+              // LIKE indicator (bottom swipe)
+              if (percentY > 0)
+                Positioned(
+                  top: 120,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: Opacity(
+                      opacity: topBottomOpacity,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: Colors.pinkAccent,
+                            width: 2.5,
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Text(
+                          'LOVE IT',
+                          style: TextStyle(
+                            fontFamily: 'Syne',
+                            fontSize: 22,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.pinkAccent,
+                            letterSpacing: 2,
+                          ),
                         ),
                       ),
                     ),
@@ -622,17 +811,17 @@ class _SwipeCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 10),
                       // Tap hint
-                      Row(
+                      const Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.play_circle_outline,
                             size: 14,
                             color: AppTheme.textMuted,
                           ),
-                          const SizedBox(width: 4),
+                          SizedBox(width: 4),
                           Text(
                             'Tap to view trailer',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontFamily: 'Inter',
                               fontSize: 12,
                               color: AppTheme.textMuted,
@@ -657,87 +846,101 @@ class _ActionButtons extends StatelessWidget {
 
   const _ActionButtons({required this.controller});
 
+  Widget _buildGlassButton({
+    required VoidCallback onTap,
+    required double size,
+    required IconData icon,
+    required Color iconColor,
+    List<BoxShadow>? boxShadow,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          boxShadow: boxShadow,
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(size / 2),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: AppTheme.glassBlur, sigmaY: AppTheme.glassBlur),
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppTheme.glassBackground,
+                shape: BoxShape.circle,
+                border: Border.all(color: AppTheme.glassBorder, width: 1.5),
+              ),
+              child: Icon(icon, color: iconColor, size: size * 0.45),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          // Skip button
-          GestureDetector(
-            onTap: () {
-              HapticFeedback.lightImpact();
-              controller.swipe(CardSwiperDirection.left);
-            },
-            child: Container(
-              width: 58,
-              height: 58,
-              decoration: BoxDecoration(
-                color: AppTheme.bgElevated,
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: AppTheme.accentSecondary.withOpacity(0.4),
-                  width: 1.5,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: const Icon(
-                Icons.close_rounded,
-                color: AppTheme.accentSecondary,
-                size: 28,
-              ),
-            ),
-          ),
-
-          // Center — undo
-          GestureDetector(
+          // Undo (Small)
+          _buildGlassButton(
             onTap: () {
               HapticFeedback.lightImpact();
               controller.undo();
             },
-            child: Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: AppTheme.bgSurface,
-                shape: BoxShape.circle,
-                border: Border.all(color: AppTheme.bgMuted),
-              ),
-              child: const Icon(
-                Icons.undo_rounded,
-                color: AppTheme.textMuted,
-                size: 20,
-              ),
-            ),
+            size: 52,
+            icon: Icons.undo_rounded,
+            iconColor: AppTheme.textMuted,
+          ),
+          
+          // Skip / X (Large)
+          _buildGlassButton(
+            onTap: () {
+              HapticFeedback.lightImpact();
+              controller.swipe(CardSwiperDirection.left);
+            },
+            size: 72,
+            icon: Icons.close_rounded,
+            iconColor: AppTheme.accentSecondary,
           ),
 
-          // Watch / Save button
-          GestureDetector(
+          // Heart / Like (Small, Bottom Swipe)
+          _buildGlassButton(
+            onTap: () {
+              HapticFeedback.mediumImpact();
+              controller.swipe(CardSwiperDirection.bottom);
+            },
+            size: 52,
+            icon: Icons.favorite_rounded,
+            iconColor: Colors.pinkAccent,
+          ),
+
+          // Save / Bookmark (Large)
+          _buildGlassButton(
             onTap: () {
               HapticFeedback.mediumImpact();
               controller.swipe(CardSwiperDirection.right);
             },
-            child: Container(
-              width: 68,
-              height: 68,
-              decoration: BoxDecoration(
-                color: AppTheme.accentPrimary,
-                shape: BoxShape.circle,
-                boxShadow: AppTheme.amberGlow,
-              ),
-              child: const Icon(
-                Icons.bookmark_add_rounded,
-                color: AppTheme.textInverse,
-                size: 32,
-              ),
-            ),
+            size: 72,
+            icon: Icons.bookmark_add_rounded,
+            iconColor: AppTheme.accentPrimary,
+            boxShadow: AppTheme.cyanGlow,
+          ),
+
+          // Eye / Watched (Small, Top Swipe)
+          _buildGlassButton(
+            onTap: () {
+              HapticFeedback.mediumImpact();
+              controller.swipe(CardSwiperDirection.top);
+            },
+            size: 52,
+            icon: Icons.visibility_rounded,
+            iconColor: AppTheme.accentGreen,
           ),
         ],
       ),

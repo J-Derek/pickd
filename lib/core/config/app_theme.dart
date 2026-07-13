@@ -4,26 +4,26 @@ import 'package:google_fonts/google_fonts.dart';
 /// App theme derived from DESIGN.md — Dark Cinematic palette
 class AppTheme {
   // ─── Colors ──────────────────────────────────────────────────
-  static const bgPrimary = Color(0xFF0A0A0F);
-  static const bgSurface = Color(0xFF131318);
-  static const bgElevated = Color(0xFF1C1C24);
-  static const bgMuted = Color(0xFF252530);
+  static const bgPrimary = Color(0xFF0E1417);
+  static const bgSurface = Color(0xFF161D1F);
+  static const bgElevated = Color(0xFF1A2123);
+  static const bgMuted = Color(0xFF2F3639);
 
-  static const accentPrimary = Color(0xFFF5A623);
-  static const accentGlow = Color(0x40F5A623);
-  static const accentSecondary = Color(0xFFFF6B6B);
+  static const accentPrimary = Color(0xFF00D1FF);
+  static const accentGlow = Color(0x4000D1FF);
+  static const accentSecondary = Color(0xFF00566A);
   static const accentGreen = Color(0xFF4CAF88);
 
-  static const textPrimary = Color(0xFFF2F2F5);
-  static const textSecondary = Color(0xFF9999AA);
-  static const textMuted = Color(0xFF55556A);
-  static const textInverse = Color(0xFF0A0A0F);
+  static const textPrimary = Color(0xFFDDE3E7);
+  static const textSecondary = Color(0xFFBBC9CF);
+  static const textMuted = Color(0xFF859399);
+  static const textInverse = Color(0xFF00566A);
 
   // ─── Gradients ────────────────────────────────────────────────
   static const cardBottomGradient = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
-    stops: [0.0, 0.35, 1.0],
+    stops: [0.0, 0.4, 1.0],
     colors: [Colors.transparent, Colors.transparent, bgPrimary],
   );
 
@@ -33,31 +33,38 @@ class AppTheme {
     colors: [Color(0xFF7B2FBE), accentPrimary],
   );
 
-  // ─── Shadows ──────────────────────────────────────────────────
+  // ─── Shadows & Glass ──────────────────────────────────────────
   static List<BoxShadow> cardShadow = [
     BoxShadow(
-      color: Colors.black.withOpacity(0.4),
-      blurRadius: 24,
-      offset: const Offset(0, 8),
+      color: Colors.black.withValues(alpha: 0.5),
+      blurRadius: 32,
+      offset: const Offset(0, 12),
     ),
   ];
 
   static List<BoxShadow> cardDraggingShadow = [
     BoxShadow(
-      color: accentPrimary.withOpacity(0.15),
-      blurRadius: 32,
-      spreadRadius: 2,
-      offset: const Offset(0, 12),
+      color: accentPrimary.withValues(alpha: 0.2),
+      blurRadius: 40,
+      spreadRadius: 4,
+      offset: const Offset(0, 16),
     ),
   ];
 
-  static List<BoxShadow> amberGlow = [
+  static List<BoxShadow> cyanGlow = [
     BoxShadow(
-      color: accentPrimary.withOpacity(0.3),
-      blurRadius: 20,
+      color: accentPrimary.withValues(alpha: 0.4),
+      blurRadius: 15,
       spreadRadius: 1,
     ),
   ];
+
+  // Glassmorphism background color
+  static Color get glassBackground => const Color(0xFF161D1F).withValues(alpha: 0.4);
+  // Glassmorphism border color
+  static Color get glassBorder => Colors.white.withValues(alpha: 0.05);
+  // Glassmorphism blur sigma
+  static const double glassBlur = 32.0;
 
   // ─── Theme ────────────────────────────────────────────────────
   static ThemeData get theme {
@@ -79,7 +86,7 @@ class AppTheme {
         centerTitle: false,
         titleTextStyle: TextStyle(
           fontFamily: 'Syne',
-          fontSize: 20,
+          fontSize: 24,
           fontWeight: FontWeight.w700,
           color: textPrimary,
         ),
@@ -99,7 +106,7 @@ class AppTheme {
           foregroundColor: textInverse,
           minimumSize: const Size(double.infinity, 52),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(8),
           ),
           textStyle: GoogleFonts.inter(
             fontSize: 16,
@@ -108,15 +115,15 @@ class AppTheme {
         ),
       ),
       chipTheme: ChipThemeData(
-        backgroundColor: Colors.white.withOpacity(0.08),
+        backgroundColor: Colors.white.withValues(alpha: 0.08),
         labelStyle: GoogleFonts.inter(
-          fontSize: 11,
+          fontSize: 12,
           fontWeight: FontWeight.w600,
           color: textSecondary,
-          letterSpacing: 0.8,
+          letterSpacing: 0.5,
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9999)),
         side: BorderSide.none,
       ),
       pageTransitionsTheme: const PageTransitionsTheme(
@@ -180,7 +187,7 @@ class AppTheme {
         fontSize: 11,
         fontWeight: FontWeight.w600,
         color: textSecondary,
-        letterSpacing: 0.8,
+        letterSpacing: 0.5,
       ),
     );
   }

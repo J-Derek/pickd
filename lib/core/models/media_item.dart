@@ -1,5 +1,6 @@
 import 'movie_model.dart';
 import 'tv_model.dart';
+import '../config/env.dart';
 
 /// A sealed class representing any swipeable media item — either a Movie or a TV Series.
 ///
@@ -96,6 +97,15 @@ sealed class MediaItem {
         MovieItem(:final movie) => movie.isHiddenGem,
         TvItem(:final show) => show.isHiddenGem,
       };
+
+  String? get watchProviderLogoUrl {
+    final path = switch (this) {
+      MovieItem(:final movie) => movie.watchProviderLogoPath,
+      TvItem(:final show) => show.watchProviderLogoPath,
+    };
+    if (path == null) return null;
+    return '${Env.tmdbImageBaseW500}$path';
+  }
 
   /// The display year — release year for movies, air year for TV shows.
   int get year => switch (this) {

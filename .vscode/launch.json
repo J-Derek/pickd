@@ -1,0 +1,15 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Pickd (Dev)",
+            "request": "launch",
+            "type": "dart",
+            "args": [
+                "--dart-define=TMDB_TOKEN=eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI5ODEwZWZkZTMwZGE0ZGMyNTZjNjI1MmVhY2NjOTc4MSIsIm5iZiI6MTc3NDA5NzQ3NC4wODYwMDAyLCJzdWIiOiI2OWJlOTQ0MjQ3MjI1NzFhYzkwZTJhOTYiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.xUFgUaLVe6oasd764gAOIFIYIpE_Vb1E-FP5YOY9H2c",
+                "--dart-define=SUPABASE_URL=https://ludhagtgszsaexhfgpcl.supabase.co",
+                "--dart-define=SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx1ZGhhZ3Rnc3pzYWV4aGZncGNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1MDYyNjcsImV4cCI6MjA5OTA4MjI2N30.B6TR3U3ULovXYzPHhEa8fgNSI8jf4aH-KjLvVWthyo0"
+            ]
+        }
+    ]
+}

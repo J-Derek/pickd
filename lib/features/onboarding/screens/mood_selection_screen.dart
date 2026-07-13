@@ -14,18 +14,38 @@ class MoodSelectionScreen extends ConsumerWidget {
     final state = ref.watch(onboardingProvider);
     final notifier = ref.read(onboardingProvider.notifier);
 
+    // Dynamic time of day
+    final hour = DateTime.now().hour;
+    String timeOfDay;
+    if (hour >= 5 && hour < 12) {
+      timeOfDay = 'this morning';
+    } else if (hour >= 12 && hour < 17) {
+      timeOfDay = 'this afternoon';
+    } else if (hour >= 17 && hour < 21) {
+      timeOfDay = 'this evening';
+    } else {
+      timeOfDay = 'tonight';
+    }
+
     return Scaffold(
       backgroundColor: AppTheme.bgPrimary,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: context.canPop() ? IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppTheme.textPrimary),
+          onPressed: () => context.pop(),
+        ) : null,
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 40),
               // Header
               Text(
-                'What\'s the vibe\ntonight?',
+                'What\'s the vibe\n$timeOfDay?',
                 style: Theme.of(context).textTheme.displayLarge,
               ),
               const SizedBox(height: 8),
@@ -63,15 +83,9 @@ class MoodSelectionScreen extends ConsumerWidget {
                 duration: const Duration(milliseconds: 200),
                 child: ElevatedButton(
                   onPressed: state.canProceedFromMood
-                      ? () => context.go('/onboarding/taste')
+                      ? () => context.push('/onboarding/taste')
                       : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.accentPrimary,
-                    foregroundColor: AppTheme.textInverse,
-                    minimumSize: const Size(double.infinity, 52),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
                     elevation: 0,
                   ),
                   child: Text(
@@ -111,24 +125,23 @@ class _MoodCard extends StatelessWidget {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 180),
       curve: Curves.easeOut,
-      transform: Matrix4.identity()
-        ..scale(isSelected ? 1.03 : 1.0),
+      transform: Matrix4.diagonal3Values(
+          isSelected ? 1.03 : 1.0, isSelected ? 1.03 : 1.0, 1.0),
       transformAlignment: Alignment.center,
       child: GestureDetector(
         onTap: onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
           decoration: BoxDecoration(
-            color: isSelected
-                ? mood.accentColor.withOpacity(0.12)
-                : AppTheme.bgSurface,
+            color: AppTheme.bgSurface,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: isSelected
-                  ? mood.accentColor
+                  ? AppTheme.accentPrimary
                   : AppTheme.bgMuted,
               width: isSelected ? 1.5 : 1,
             ),
+            boxShadow: isSelected ? AppTheme.cyanGlow : null,
           ),
           padding: const EdgeInsets.all(16),
           child: Column(

@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/config/app_theme.dart';
 import '../../../core/services/hive_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -38,6 +39,15 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _navigate() async {
+    // Ensure user is signed in anonymously if not already signed in
+    if (Supabase.instance.client.auth.currentSession == null) {
+      try {
+        await Supabase.instance.client.auth.signInAnonymously();
+      } catch (e) {
+        // Ignore, fallback to local storage
+      }
+    }
+
     await Future.delayed(const Duration(milliseconds: 2200));
     if (!mounted) return;
     final profile = HiveService.getProfile();
@@ -73,13 +83,13 @@ class _SplashScreenState extends State<SplashScreen>
                   decoration: BoxDecoration(
                     color: AppTheme.bgSurface,
                     borderRadius: BorderRadius.circular(24),
-                    boxShadow: AppTheme.amberGlow,
+                    boxShadow: AppTheme.cyanGlow,
                     border: Border.all(
-                      color: AppTheme.accentPrimary.withOpacity(0.3),
+                      color: AppTheme.accentPrimary.withValues(alpha: 0.3),
                       width: 1,
                     ),
                   ),
-                  child: Center(
+                  child: const Center(
                     child: Text(
                       'p',
                       style: TextStyle(
@@ -94,7 +104,7 @@ class _SplashScreenState extends State<SplashScreen>
                 ),
                 const SizedBox(height: 20),
                 // App name
-                Text(
+                const Text(
                   'pickd',
                   style: TextStyle(
                     fontFamily: 'Syne',
@@ -105,7 +115,7 @@ class _SplashScreenState extends State<SplashScreen>
                   ),
                 ),
                 const SizedBox(height: 8),
-                Text(
+                const Text(
                   'Stop scrolling. Start watching.',
                   style: TextStyle(
                     fontFamily: 'Inter',

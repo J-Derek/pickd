@@ -104,7 +104,17 @@ class DiscoveryService {
     final collected = <int, MovieModel>{};
 
     final selectedMoods = kMoods.where((m) => moodIds.contains(m.id));
-    final moodGenreIds = selectedMoods.expand((m) => m.genreIds).toSet();
+    Set<int> moodGenreIds = selectedMoods.expand((m) => m.genreIds).toSet();
+
+    if (moodGenreIds.isEmpty && tasteSeedIds.isNotEmpty) {
+      final seedsToUse = tasteSeedIds.take(3).toList();
+      final seedDetails = await Future.wait(seedsToUse.map(TmdbService.getMovieDetails));
+      for (final seed in seedDetails) {
+        if (seed != null) {
+          moodGenreIds.addAll(seed.genreIds);
+        }
+      }
+    }
 
     bool isRecent(MovieModel movie) {
       if (!allowOldMovies && movie.releaseYear <= 1990) return false;
@@ -155,7 +165,10 @@ class DiscoveryService {
     if (collected.length < 15) {
       final trending = await TmdbService.getTrending();
       for (final movie in trending) {
-        collected[movie.id] = movie;
+        if (moodGenreIds.isEmpty ||
+            movie.genreIds.any((id) => moodGenreIds.contains(id))) {
+          collected[movie.id] = movie;
+        }
       }
     }
 
@@ -213,7 +226,17 @@ class DiscoveryService {
     final collected = <int, TvModel>{};
 
     final selectedMoods = kMoods.where((m) => moodIds.contains(m.id));
-    final moodGenreIds = selectedMoods.expand((m) => m.genreIds).toSet();
+    Set<int> moodGenreIds = selectedMoods.expand((m) => m.genreIds).toSet();
+
+    if (moodGenreIds.isEmpty && tasteSeedTvIds.isNotEmpty) {
+      final seedsToUse = tasteSeedTvIds.take(3).toList();
+      final seedDetails = await Future.wait(seedsToUse.map(TmdbService.getTvDetails));
+      for (final seed in seedDetails) {
+        if (seed != null) {
+          moodGenreIds.addAll(seed.genreIds);
+        }
+      }
+    }
 
     bool isRecent(TvModel show) {
       if (!allowOldMovies && show.airYear <= 1990) return false;
@@ -264,7 +287,10 @@ class DiscoveryService {
     if (collected.length < 15) {
       final trending = await TmdbService.getTrendingTv();
       for (final show in trending) {
-        collected[show.id] = show;
+        if (moodGenreIds.isEmpty ||
+            show.genreIds.any((id) => moodGenreIds.contains(id))) {
+          collected[show.id] = show;
+        }
       }
     }
 

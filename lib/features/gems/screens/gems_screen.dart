@@ -109,7 +109,7 @@ class _GemsScreenState extends ConsumerState<GemsScreen> {
                             ShaderMask(
                               shaderCallback: (bounds) =>
                                   AppTheme.gemsBadgeGradient.createShader(bounds),
-                              child: Text(
+                              child: const Text(
                                 'Hidden Gems',
                                 style: TextStyle(
                                   fontFamily: 'Syne',
@@ -162,8 +162,8 @@ class _GemsScreenState extends ConsumerState<GemsScreen> {
 
   Widget _buildBody() {
     if (_loading) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      return const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
         child: ShimmerCard(
           width: double.infinity,
           height: double.infinity,
@@ -257,7 +257,7 @@ class _GemCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(32),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF7B2FBE).withOpacity(0.2),
+            color: const Color(0xFF7B2FBE).withValues(alpha: 0.2),
             blurRadius: 24,
             offset: const Offset(0, 8),
           ),
@@ -292,7 +292,7 @@ class _GemCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(32),
                   border: Border.all(
-                    color: const Color(0xFF7B2FBE).withOpacity(0.4),
+                    color: const Color(0xFF7B2FBE).withValues(alpha: 0.4),
                     width: 1.5,
                   ),
                 ),
@@ -456,7 +456,7 @@ class _ActionButtons extends StatelessWidget {
                 color: AppTheme.bgElevated,
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: AppTheme.accentSecondary.withOpacity(0.4),
+                  color: AppTheme.accentSecondary.withValues(alpha: 0.4),
                   width: 1.5,
                 ),
               ),
@@ -494,7 +494,7 @@ class _ActionButtons extends StatelessWidget {
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF7B2FBE).withOpacity(0.4),
+                    color: const Color(0xFF7B2FBE).withValues(alpha: 0.4),
                     blurRadius: 20,
                     spreadRadius: 1,
                   ),

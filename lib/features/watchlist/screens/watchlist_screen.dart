@@ -59,13 +59,24 @@ class WatchlistScreen extends ConsumerWidget {
                               ),
                             ],
                           ),
+                        );
                         if (confirm == true) {
                           if (!context.mounted) return;
                           ref.read(watchlistProvider.notifier).clear();
                         }
                       },
                       style: TextButton.styleFrom(
-                        foregroundColor: AppTheme.accentPrimary,
+                        foregroundColor: AppTheme.textSecondary,
+                        backgroundColor: AppTheme.bgElevated,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          side: const BorderSide(color: AppTheme.bgMuted),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        textStyle: const TextStyle(
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                       child: const Text('Clear All'),
                     ),
@@ -76,27 +87,82 @@ class WatchlistScreen extends ConsumerWidget {
             if (watchlist.isEmpty)
               Expanded(
                 child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text('🍿', style: TextStyle(fontSize: 56)),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Nothing saved yet',
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Swipe right on movies you want to watch',
-                        style: Theme.of(context).textTheme.bodyMedium,
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 24),
-                      ElevatedButton(
-                        onPressed: () => context.go('/swipe'),
-                        child: const Text('Start swiping'),
-                      ),
-                    ],
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 40),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 100,
+                          height: 100,
+                          decoration: BoxDecoration(
+                            color: AppTheme.bgSurface,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: AppTheme.accentPrimary.withValues(alpha: 0.2),
+                              width: 2,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppTheme.accentPrimary.withValues(alpha: 0.1),
+                                blurRadius: 40,
+                                spreadRadius: 10,
+                              ),
+                            ],
+                          ),
+                          child: const Center(
+                            child: Icon(
+                              Icons.movie_filter_rounded,
+                              size: 48,
+                              color: AppTheme.accentPrimary,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 32),
+                        const Text(
+                          'Your Watchlist is Empty',
+                          style: TextStyle(
+                            fontFamily: 'Syne',
+                            fontSize: 24,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.textPrimary,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 12),
+                        const Text(
+                          'Swipe right on movies or shows to add them to your collection.',
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 15,
+                            color: AppTheme.textSecondary,
+                            height: 1.5,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 32),
+                        GestureDetector(
+                          onTap: () => context.go('/swipe'),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                            decoration: BoxDecoration(
+                              color: AppTheme.accentPrimary,
+                              borderRadius: BorderRadius.circular(30),
+                              boxShadow: AppTheme.cyanGlow,
+                            ),
+                            child: const Text(
+                              'Start Swiping',
+                              style: TextStyle(
+                                fontFamily: 'Inter',
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.textInverse,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               )
@@ -128,6 +194,25 @@ class WatchlistScreen extends ConsumerWidget {
           ],
         ),
       ),
+      floatingActionButton: watchlist.isNotEmpty
+          ? FloatingActionButton.extended(
+              onPressed: () {
+                if (watchlist.isEmpty) return;
+                final randomMovie = (watchlist.toList()..shuffle()).first;
+                context.push('/movie/${randomMovie.id}', extra: randomMovie);
+              },
+              backgroundColor: AppTheme.accentPrimary,
+              icon: const Icon(Icons.casino_rounded, color: AppTheme.textInverse),
+              label: const Text(
+                'Surprise Me',
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.textInverse,
+                ),
+              ),
+            )
+          : null,
     );
   }
 }
@@ -150,7 +235,8 @@ class _WatchlistCard extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          color: AppTheme.bgSurface,
+          color: AppTheme.bgElevated,
+          boxShadow: AppTheme.cardShadow,
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(20),
@@ -190,7 +276,7 @@ class _WatchlistCard extends StatelessWidget {
                     width: 30,
                     height: 30,
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.6),
+                      color: Colors.black.withValues(alpha: 0.6),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(

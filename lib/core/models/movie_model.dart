@@ -34,6 +34,9 @@ class MovieModel extends HiveObject {
   @HiveField(9)
   final String? trailerKey;
 
+  @HiveField(10)
+  final String? watchProviderLogoPath;
+
   MovieModel({
     required this.id,
     required this.title,
@@ -45,9 +48,15 @@ class MovieModel extends HiveObject {
     required this.popularity,
     required this.genreIds,
     this.trailerKey,
+    this.watchProviderLogoPath,
   });
 
   factory MovieModel.fromJson(Map<String, dynamic> json) {
+    String? logoPath;
+    try {
+      logoPath = json['watch/providers']['results']['US']['flatrate'][0]['logo_path'] as String?;
+    } catch (_) {}
+
     return MovieModel(
       id: json['id'] as int,
       title: (json['title'] ?? 'Unknown') as String,
@@ -60,6 +69,7 @@ class MovieModel extends HiveObject {
       genreIds: ((json['genre_ids'] ?? []) as List)
           .map((e) => e as int)
           .toList(),
+      watchProviderLogoPath: logoPath,
     );
   }
 
@@ -87,7 +97,7 @@ class MovieModel extends HiveObject {
 
   bool get isHiddenGem => popularity < 30 && releaseYear < 2020;
 
-  MovieModel copyWith({String? trailerKey}) {
+  MovieModel copyWith({String? trailerKey, String? watchProviderLogoPath}) {
     return MovieModel(
       id: id,
       title: title,
@@ -99,6 +109,7 @@ class MovieModel extends HiveObject {
       popularity: popularity,
       genreIds: genreIds,
       trailerKey: trailerKey ?? this.trailerKey,
+      watchProviderLogoPath: watchProviderLogoPath ?? this.watchProviderLogoPath,
     );
   }
 }

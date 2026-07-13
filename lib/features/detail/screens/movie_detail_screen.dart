@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -41,8 +42,27 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
     if (widget.movieExtra is MediaItem) {
       _item = widget.movieExtra as MediaItem;
     }
+    _fetchDetails();
     _fetchTrailer();
     _fetchWatchProviders();
+  }
+
+  Future<void> _fetchDetails() async {
+    // We determine isTv based on the initial _item if available.
+    // If not available, we assume movie by default (though usually it's passed).
+    final isTvItem = _item?.isTv ?? false;
+    
+    if (isTvItem) {
+      final details = await TmdbService.getTvDetails(widget.movieId);
+      if (mounted && details != null) {
+        setState(() => _item = MediaItem.tv(details));
+      }
+    } else {
+      final details = await TmdbService.getMovieDetails(widget.movieId);
+      if (mounted && details != null) {
+        setState(() => _item = MediaItem.movie(details));
+      }
+    }
   }
 
   Future<void> _fetchTrailer() async {
@@ -208,56 +228,89 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                         ),
                         const SizedBox(height: 10),
                         // Meta row
-                        Row(
-                          children: [
-                            if (item.year > 0)
-                              Text(
-                                '${item.year}',
-                                style: const TextStyle(
-                                  fontFamily: 'Inter',
-                                  fontSize: 14,
-                                  color: AppTheme.textSecondary,
-                                ),
-                              ),
-                            const SizedBox(width: 16),
-                            const Icon(
-                              Icons.star_rounded,
-                              color: AppTheme.accentPrimary,
-                              size: 18,
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(
+                              sigmaX: AppTheme.glassBlur,
+                              sigmaY: AppTheme.glassBlur,
                             ),
-                            const SizedBox(width: 4),
-                            Text(
-                              item.voteAverage.toStringAsFixed(1),
-                              style: const TextStyle(
-                                fontFamily: 'JetBrains Mono',
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
-                                color: AppTheme.textPrimary,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
                               ),
-                            ),
-                            if (item.isHiddenGem) ...[
-                              const SizedBox(width: 12),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  gradient: AppTheme.gemsBadgeGradient,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: const Text(
-                                  'Hidden Gem',
-                                  style: TextStyle(
-                                    fontFamily: 'Inter',
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.white,
+                              decoration: BoxDecoration(
+                                color: AppTheme.glassBackground,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: AppTheme.glassBorder),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (item.year > 0)
+                                    Text(
+                                      '${item.year}',
+                                      style: const TextStyle(
+                                        fontFamily: 'Inter',
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppTheme.textSecondary,
+                                      ),
+                                    ),
+                                  const SizedBox(width: 16),
+                                  const Icon(
+                                    Icons.star_rounded,
+                                    color: AppTheme.accentPrimary,
+                                    size: 18,
                                   ),
-                                ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    item.voteAverage.toStringAsFixed(1),
+                                    style: const TextStyle(
+                                      fontFamily: 'JetBrains Mono',
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppTheme.textPrimary,
+                                    ),
+                                  ),
+                                  if (item.isHiddenGem) ...[
+                                    const SizedBox(width: 12),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        gradient: AppTheme.gemsBadgeGradient,
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: const Text(
+                                        'Hidden Gem',
+                                        style: TextStyle(
+                                          fontFamily: 'Inter',
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w700,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                  if (item.watchProviderLogoUrl != null) ...[
+                                    const SizedBox(width: 12),
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(6),
+                                      child: CachedNetworkImage(
+                                        imageUrl: item.watchProviderLogoUrl!,
+                                        width: 24,
+                                        height: 24,
+                                      ),
+                                    ),
+                                  ],
+                                ],
                               ),
-                            ],
-                          ],
+                            ),
+                          ),
                         ),
                         const SizedBox(height: 24),
                         // Overview
@@ -323,99 +376,128 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                             ),
                           )
                         else if (_trailerKey != null)
-                          GestureDetector(
-                            onTap: _openTrailer,
-                            child: Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              decoration: BoxDecoration(
-                                color: AppTheme.bgSurface,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: AppTheme.bgMuted),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: BackdropFilter(
+                              filter: ImageFilter.blur(
+                                sigmaX: AppTheme.glassBlur,
+                                sigmaY: AppTheme.glassBlur,
                               ),
-                              child: const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.play_circle_filled,
-                                    color: AppTheme.accentSecondary,
-                                    size: 24,
-                                  ),
-                                  SizedBox(width: 10),
-                                  Text(
-                                    'Watch Trailer on YouTube',
-                                    style: TextStyle(
-                                      fontFamily: 'Inter',
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w600,
-                                      color: AppTheme.textPrimary,
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: _openTrailer,
+                                  child: Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.symmetric(vertical: 16),
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.glassBackground,
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(color: AppTheme.glassBorder),
+                                    ),
+                                    child: const Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.play_circle_filled,
+                                          color: AppTheme.textPrimary,
+                                          size: 24,
+                                        ),
+                                        SizedBox(width: 10),
+                                        Text(
+                                          'Watch Trailer on YouTube',
+                                          style: TextStyle(
+                                            fontFamily: 'Inter',
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w600,
+                                            color: AppTheme.textPrimary,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                ],
+                                ),
                               ),
                             ),
                           ),
                         const SizedBox(height: 16),
 
                         // ── Watchlist CTA ────────────────────────────
-                        ElevatedButton(
-                          onPressed: () {
-                            HapticFeedback.mediumImpact();
-                            if (isInWatchlist) {
-                              ref
-                                  .read(watchlistProvider.notifier)
-                                  .remove(item.id);
-                            } else {
-                              // Route to correct watchlist by type
-                              switch (item) {
-                                case MovieItem(:final movie):
-                                  ref
-                                      .read(watchlistProvider.notifier)
-                                      .add(movie);
-                                case TvItem(:final show):
-                                  ref
-                                      .read(watchlistProvider.notifier)
-                                      .addTv(show);
-                              }
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: isInWatchlist
-                                ? AppTheme.bgSurface
-                                : AppTheme.accentPrimary,
-                            foregroundColor: isInWatchlist
-                                ? AppTheme.textSecondary
-                                : AppTheme.textInverse,
-                            minimumSize: const Size(double.infinity, 52),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                              side: isInWatchlist
-                                  ? const BorderSide(color: AppTheme.bgMuted)
-                                  : BorderSide.none,
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(
+                              sigmaX: AppTheme.glassBlur,
+                              sigmaY: AppTheme.glassBlur,
                             ),
-                            elevation: 0,
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                isInWatchlist
-                                    ? Icons.bookmark_remove_outlined
-                                    : Icons.bookmark_add_outlined,
-                                size: 20,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                isInWatchlist
-                                    ? 'Remove from Watchlist'
-                                    : 'Add to Watchlist',
-                                style: const TextStyle(
-                                  fontFamily: 'Inter',
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () {
+                                  HapticFeedback.mediumImpact();
+                                  if (isInWatchlist) {
+                                    ref
+                                        .read(watchlistProvider.notifier)
+                                        .remove(item.id);
+                                  } else {
+                                    // Route to correct watchlist by type
+                                    switch (item) {
+                                      case MovieItem(:final movie):
+                                        ref
+                                            .read(watchlistProvider.notifier)
+                                            .add(movie);
+                                      case TvItem(:final show):
+                                        ref
+                                            .read(watchlistProvider.notifier)
+                                            .addTv(show);
+                                    }
+                                  }
+                                },
+                                child: Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  decoration: BoxDecoration(
+                                    color: isInWatchlist
+                                        ? AppTheme.glassBackground
+                                        : AppTheme.accentPrimary.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: isInWatchlist
+                                          ? AppTheme.glassBorder
+                                          : AppTheme.accentPrimary.withValues(alpha: 0.5),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        isInWatchlist
+                                            ? Icons.bookmark_remove_outlined
+                                            : Icons.bookmark_add_outlined,
+                                        size: 20,
+                                        color: isInWatchlist
+                                            ? AppTheme.textSecondary
+                                            : AppTheme.accentPrimary,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        isInWatchlist
+                                            ? 'Remove from Watchlist'
+                                            : 'Add to Watchlist',
+                                        style: TextStyle(
+                                          fontFamily: 'Inter',
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                          color: isInWatchlist
+                                              ? AppTheme.textSecondary
+                                              : AppTheme.accentPrimary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ],
+                            ),
                           ),
                         ),
                       ],

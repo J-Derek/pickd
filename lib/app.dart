@@ -9,7 +9,10 @@ import 'features/swipe/screens/swipe_screen.dart';
 import 'features/detail/screens/movie_detail_screen.dart';
 import 'features/watchlist/screens/watchlist_screen.dart';
 import 'features/gems/screens/gems_screen.dart';
+import 'features/profile/screens/profile_screen.dart';
 import 'features/shell/main_shell.dart';
+import 'features/auth/screens/auth_screen.dart';
+import 'features/watchlist/screens/watched_vault_screen.dart';
 
 final _router = GoRouter(
   initialLocation: '/',
@@ -41,7 +44,15 @@ final _router = GoRouter(
           path: '/gems',
           builder: (context, state) => const GemsScreen(),
         ),
+        GoRoute(
+          path: '/profile',
+          builder: (context, state) => const ProfileScreen(),
+        ),
       ],
+    ),
+    GoRoute(
+      path: '/auth',
+      builder: (context, state) => const AuthScreen(),
     ),
     GoRoute(
       path: '/movie/:id',
@@ -50,6 +61,10 @@ final _router = GoRouter(
         final movie = state.extra;
         return MovieDetailScreen(movieId: id, movieExtra: movie);
       },
+    ),
+    GoRoute(
+      path: '/watched-vault',
+      builder: (context, state) => const WatchedVaultScreen(),
     ),
   ],
 );

@@ -3,6 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/models/media_item.dart';
 import '../../../core/services/discovery_service.dart';
 import '../../../core/services/hive_service.dart';
+import '../../../core/services/supabase_db_service.dart';
+import '../../../core/services/supabase_auth_service.dart';
+import '../../watchlist/providers/watchlist_provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+enum SwipeAction { skip, save, heart, watched }
 
 /// Manages the swipe deck — loading, state, and swipe gate.
 class SwipeDeckState {
@@ -41,7 +47,8 @@ class SwipeDeckState {
 }
 
 class SwipeDeckNotifier extends StateNotifier<SwipeDeckState> {
-  SwipeDeckNotifier() : super(const SwipeDeckState());
+  final Ref ref;
+  SwipeDeckNotifier(this.ref) : super(const SwipeDeckState());
 
   Future<void> loadDeck({bool gemsMode = false, MediaFilter? filter}) async {
     final activeFilter = filter ?? state.filter;
@@ -87,8 +94,8 @@ class SwipeDeckNotifier extends StateNotifier<SwipeDeckState> {
     }
   }
 
-  /// Called when a card is swiped in either direction.
-  Future<void> onSwiped(MediaItem item, bool liked) async {
+  /// Called when a card is swiped or a button is pressed.
+  Future<void> onSwiped(MediaItem item, SwipeAction action, {int? rating}) async {
     await HiveService.addToSwipeHistory(item.id);
 
     final profile = HiveService.getProfile();
@@ -98,15 +105,19 @@ class SwipeDeckNotifier extends StateNotifier<SwipeDeckState> {
     final newSwipeCount = state.swipeCount + 1;
     state = state.copyWith(swipeCount: newSwipeCount);
 
-    // Save to the correct watchlist if liked
-    if (liked) {
-      switch (item) {
-        case MovieItem(:final movie):
-          await HiveService.addToWatchlist(movie);
-        case TvItem(:final show):
-          await HiveService.addTvToWatchlist(show);
-      }
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    final db = ref.read(supabaseDbServiceProvider);
+
+    if (action == SwipeAction.save && userId != null) {
+      await db.addToWatchlist(userId, item);
+      ref.invalidate(watchlistProvider);
+    } else if (action == SwipeAction.watched && userId != null) {
+      // First upsert so the record exists, then mark as watched
+      await db.addToWatchlist(userId, item);
+      await db.markAsWatched(userId, item.id, rating);
+      ref.invalidate(watchlistProvider);
     }
+    // Heart action just feeds the swipe history (which we already did above)
 
     // Reload if running low
     if (state.deck.length - newSwipeCount < 5) {
@@ -115,7 +126,7 @@ class SwipeDeckNotifier extends StateNotifier<SwipeDeckState> {
   }
 
   /// Called when a swipe is undone. Restores counts and removes from history/watchlist.
-  Future<void> onUndo(MediaItem item, bool wasLiked) async {
+  Future<void> onUndo(MediaItem item, SwipeAction previousAction) async {
     if (state.swipeCount > 0) {
       state = state.copyWith(swipeCount: state.swipeCount - 1);
     }
@@ -128,12 +139,16 @@ class SwipeDeckNotifier extends StateNotifier<SwipeDeckState> {
 
     await HiveService.removeFromSwipeHistory(item.id);
 
-    if (wasLiked) {
-      switch (item) {
-        case MovieItem():
-          await HiveService.removeFromWatchlist(item.id);
-        case TvItem():
-          await HiveService.removeTvFromWatchlist(item.id);
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    final db = ref.read(supabaseDbServiceProvider);
+    
+    if (userId != null) {
+      if (previousAction == SwipeAction.save) {
+        await db.removeFromWatchlist(userId, item.id);
+        ref.invalidate(watchlistProvider);
+      } else if (previousAction == SwipeAction.watched) {
+        await db.removeFromWatchlist(userId, item.id);
+        ref.invalidate(watchlistProvider);
       }
     }
   }
@@ -148,5 +163,5 @@ class SwipeDeckNotifier extends StateNotifier<SwipeDeckState> {
 
 final swipeDeckProvider =
     StateNotifierProvider<SwipeDeckNotifier, SwipeDeckState>(
-  (ref) => SwipeDeckNotifier(),
+  (ref) => SwipeDeckNotifier(ref),
 );
