@@ -99,7 +99,11 @@ class TvModel extends HiveObject {
 
   bool get isHiddenGem => popularity < 30 && airYear < 2020;
 
-  TvModel copyWith({String? trailerKey, String? watchProviderLogoPath}) {
+  TvModel copyWith({
+    String? trailerKey,
+    String? watchProviderLogoPath,
+    double? voteAverage,
+  }) {
     return TvModel(
       id: id,
       name: name,
@@ -107,7 +111,7 @@ class TvModel extends HiveObject {
       backdropPath: backdropPath,
       overview: overview,
       firstAirDate: firstAirDate,
-      voteAverage: voteAverage,
+      voteAverage: voteAverage ?? this.voteAverage,
       popularity: popularity,
       genreIds: genreIds,
       trailerKey: trailerKey ?? this.trailerKey,

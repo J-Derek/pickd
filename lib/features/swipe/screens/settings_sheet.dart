@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/config/app_theme.dart';
 import '../../../core/services/hive_service.dart';
+import '../providers/swipe_provider.dart';
 
-class SettingsSheet extends StatefulWidget {
+class SettingsSheet extends ConsumerStatefulWidget {
   const SettingsSheet({super.key});
 
   @override
-  State<SettingsSheet> createState() => _SettingsSheetState();
+  ConsumerState<SettingsSheet> createState() => _SettingsSheetState();
 }
 
-class _SettingsSheetState extends State<SettingsSheet> {
+class _SettingsSheetState extends ConsumerState<SettingsSheet> {
   late bool _allowOldMovies;
 
   @override
@@ -74,6 +76,9 @@ class _SettingsSheetState extends State<SettingsSheet> {
                     final profile = HiveService.getProfile();
                     profile.allowOldMovies = val;
                     HiveService.saveProfile(profile);
+                    
+                    // Reload the deck immediately with the new setting
+                    ref.read(swipeDeckProvider.notifier).loadDeck();
                   },
                 ),
               ],

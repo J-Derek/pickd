@@ -103,8 +103,16 @@ class DiscoveryService {
   }) async {
     final collected = <int, MovieModel>{};
 
-    final selectedMoods = kMoods.where((m) => moodIds.contains(m.id));
-    Set<int> moodGenreIds = selectedMoods.expand((m) => m.genreIds).toSet();
+    final moodGenreIds = <int>{};
+    for (final id in moodIds) {
+      final parsed = int.tryParse(id);
+      if (parsed != null) {
+        moodGenreIds.add(parsed);
+      } else {
+        final selectedMoods = kMoods.where((m) => m.id == id);
+        moodGenreIds.addAll(selectedMoods.expand((m) => m.genreIds));
+      }
+    }
 
     if (moodGenreIds.isEmpty && tasteSeedIds.isNotEmpty) {
       final seedsToUse = tasteSeedIds.take(3).toList();
@@ -225,8 +233,16 @@ class DiscoveryService {
   }) async {
     final collected = <int, TvModel>{};
 
-    final selectedMoods = kMoods.where((m) => moodIds.contains(m.id));
-    Set<int> moodGenreIds = selectedMoods.expand((m) => m.genreIds).toSet();
+    final moodGenreIds = <int>{};
+    for (final id in moodIds) {
+      final parsed = int.tryParse(id);
+      if (parsed != null) {
+        moodGenreIds.add(parsed);
+      } else {
+        final selectedMoods = kMoods.where((m) => m.id == id);
+        moodGenreIds.addAll(selectedMoods.expand((m) => m.genreIds));
+      }
+    }
 
     if (moodGenreIds.isEmpty && tasteSeedTvIds.isNotEmpty) {
       final seedsToUse = tasteSeedTvIds.take(3).toList();

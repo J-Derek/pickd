@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/config/app_theme.dart';
-import '../../../core/models/movie_model.dart';
+import '../../../core/models/media_item.dart';
 import '../../watchlist/providers/watchlist_provider.dart';
 
 class WatchlistScreen extends ConsumerWidget {
@@ -34,7 +34,7 @@ class WatchlistScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '${watchlist.length} movie${watchlist.length == 1 ? '' : 's'} saved',
+                        '${watchlist.length} item${watchlist.length == 1 ? '' : 's'} saved',
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                     ],
@@ -218,7 +218,7 @@ class WatchlistScreen extends ConsumerWidget {
 }
 
 class _WatchlistCard extends StatelessWidget {
-  final MovieModel movie;
+  final MediaItem movie;
   final VoidCallback onRemove;
   final VoidCallback onTap;
 
@@ -266,6 +266,29 @@ class _WatchlistCard extends StatelessWidget {
                   ),
                 ),
               ),
+              // TV Badge
+              if (movie.isTv)
+                Positioned(
+                  top: 8,
+                  left: 8,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppTheme.bgElevated.withValues(alpha: 0.95),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppTheme.bgMuted, width: 0.5),
+                    ),
+                    child: const Text(
+                      'TV',
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.textPrimary,
+                      ),
+                    ),
+                  ),
+                ),
               // Remove button
               Positioned(
                 top: 8,

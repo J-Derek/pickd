@@ -9,11 +9,16 @@ import '../../../core/services/supabase_auth_service.dart';
 import '../../swipe/providers/swipe_provider.dart';
 
 import '../../swipe/screens/settings_sheet.dart';
-class ProfileScreen extends ConsumerWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+  @override
+  Widget build(BuildContext context) {
     final user = ref.watch(currentUserProvider);
     final profile = HiveService.getProfile();
 
@@ -179,8 +184,15 @@ class ProfileScreen extends ConsumerWidget {
               onTap: () async {
                 // To be wired to Supabase later
                 await HiveService.clearSwipeHistory();
+                final profile = HiveService.getProfile();
+                profile.totalSwipeCount = 0;
+                await HiveService.saveProfile(profile);
+                
                 ref.read(swipeDeckProvider.notifier).resetSwipeGate();
                 ref.read(swipeDeckProvider.notifier).loadDeck();
+                
+                setState(() {}); // Update the UI
+                
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Algorithm reset', style: TextStyle(color: AppTheme.textInverse)), backgroundColor: AppTheme.accentPrimary),

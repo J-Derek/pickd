@@ -45,33 +45,33 @@ class MoodSelectionScreen extends ConsumerWidget {
             children: [
               // Header
               Text(
-                'What\'s the vibe\n$timeOfDay?',
+                'What\'s your vibe\n$timeOfDay?',
                 style: Theme.of(context).textTheme.displayLarge,
               ),
               const SizedBox(height: 8),
               Text(
-                'Pick one or more moods — we\'ll find your perfect match.',
+                'Select one or more genres to build your feed.',
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               const SizedBox(height: 32),
-              // Mood grid
+              // Genre grid
               Expanded(
                 child: GridView.builder(
-                  itemCount: kMoods.length,
+                  itemCount: kGenres.length,
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     crossAxisSpacing: 12,
                     mainAxisSpacing: 12,
-                    childAspectRatio: 1.3,
+                    childAspectRatio: 1.4,
                   ),
                   itemBuilder: (context, index) {
-                    final mood = kMoods[index];
+                    final genre = kGenres[index];
                     final isSelected =
-                        state.selectedMoodIds.contains(mood.id);
-                    return _MoodCard(
-                      mood: mood,
+                        state.selectedMoodIds.contains(genre.id.toString());
+                    return _GenreCard(
+                      genre: genre,
                       isSelected: isSelected,
-                      onTap: () => notifier.toggleMood(mood.id),
+                      onTap: () => notifier.toggleMood(genre.id.toString()),
                     );
                   },
                 ),
@@ -91,7 +91,7 @@ class MoodSelectionScreen extends ConsumerWidget {
                   child: Text(
                     state.canProceedFromMood
                         ? 'Next — Pick your favourites'
-                        : 'Select at least one mood',
+                        : 'Select at least one genre',
                     style: const TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 16,
@@ -109,13 +109,13 @@ class MoodSelectionScreen extends ConsumerWidget {
   }
 }
 
-class _MoodCard extends StatelessWidget {
-  final Mood mood;
+class _GenreCard extends StatelessWidget {
+  final GenreItem genre;
   final bool isSelected;
   final VoidCallback onTap;
 
-  const _MoodCard({
-    required this.mood,
+  const _GenreCard({
+    required this.genre,
     required this.isSelected,
     required this.onTap,
   });
@@ -126,14 +126,14 @@ class _MoodCard extends StatelessWidget {
       duration: const Duration(milliseconds: 180),
       curve: Curves.easeOut,
       transform: Matrix4.diagonal3Values(
-          isSelected ? 1.03 : 1.0, isSelected ? 1.03 : 1.0, 1.0),
+          isSelected ? 1.02 : 1.0, isSelected ? 1.02 : 1.0, 1.0),
       transformAlignment: Alignment.center,
       child: GestureDetector(
         onTap: onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
           decoration: BoxDecoration(
-            color: AppTheme.bgSurface,
+            color: isSelected ? AppTheme.bgElevated : AppTheme.bgSurface,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: isSelected
@@ -143,32 +143,25 @@ class _MoodCard extends StatelessWidget {
             ),
             boxShadow: isSelected ? AppTheme.cyanGlow : null,
           ),
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(mood.icon, size: 32, color: isSelected ? mood.accentColor : AppTheme.textPrimary),
-              const SizedBox(height: 8),
+              Icon(
+                genre.icon,
+                size: 28,
+                color: isSelected ? genre.accentColor : AppTheme.textSecondary,
+              ),
+              const SizedBox(height: 10),
               Text(
-                mood.label,
+                genre.label,
                 style: TextStyle(
                   fontFamily: 'Syne',
-                  fontSize: 15,
+                  fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  color: isSelected ? mood.accentColor : AppTheme.textPrimary,
+                  color: isSelected ? AppTheme.textPrimary : AppTheme.textSecondary,
                 ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                mood.hint,
-                style: const TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 11,
-                  color: AppTheme.textMuted,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
               ),
             ],
           ),

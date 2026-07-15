@@ -6,10 +6,14 @@ import '../models/user_profile_model.dart';
 class HiveService {
   static const _swipeHistoryBoxName = 'swipeHistory';
   static const _userProfileBoxName = 'userProfile';
+  static const _watchlistBoxName = 'watchlist';
+  static const _watchedBoxName = 'watched';
 
   static Future<void> openBoxes() async {
     await Hive.openBox<int>(_swipeHistoryBoxName);
     await Hive.openBox<UserProfileModel>(_userProfileBoxName);
+    await Hive.openBox(_watchlistBoxName);
+    await Hive.openBox(_watchedBoxName);
   }
 
   // ─── User Profile ─────────────────────────────────────────────

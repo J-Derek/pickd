@@ -97,7 +97,11 @@ class MovieModel extends HiveObject {
 
   bool get isHiddenGem => popularity < 30 && releaseYear < 2020;
 
-  MovieModel copyWith({String? trailerKey, String? watchProviderLogoPath}) {
+  MovieModel copyWith({
+    String? trailerKey,
+    String? watchProviderLogoPath,
+    double? voteAverage,
+  }) {
     return MovieModel(
       id: id,
       title: title,
@@ -105,7 +109,7 @@ class MovieModel extends HiveObject {
       backdropPath: backdropPath,
       overview: overview,
       releaseDate: releaseDate,
-      voteAverage: voteAverage,
+      voteAverage: voteAverage ?? this.voteAverage,
       popularity: popularity,
       genreIds: genreIds,
       trailerKey: trailerKey ?? this.trailerKey,

@@ -15,7 +15,7 @@ class SupabaseDbService {
         .select()
         .eq('user_id', userId)
         .eq('is_watched', false)
-        .order('created_at', ascending: false);
+        .order('added_at', ascending: false);
     return List<Map<String, dynamic>>.from(response);
   }
 
@@ -25,7 +25,7 @@ class SupabaseDbService {
         .select()
         .eq('user_id', userId)
         .eq('is_watched', true)
-        .order('created_at', ascending: false);
+        .order('added_at', ascending: false);
     return List<Map<String, dynamic>>.from(response);
   }
 

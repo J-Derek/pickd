@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/config/app_theme.dart';
-import '../../../core/models/movie_model.dart';
+import '../../../core/models/media_item.dart';
 import '../providers/watched_vault_provider.dart';
 
 class WatchedVaultScreen extends ConsumerStatefulWidget {
@@ -45,7 +45,7 @@ class _WatchedVaultScreenState extends ConsumerState<WatchedVaultScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '${watchedList.length} movie${watchedList.length == 1 ? '' : 's'} watched',
+                    '${watchedList.length} item${watchedList.length == 1 ? '' : 's'} watched',
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ],
@@ -104,7 +104,7 @@ class _WatchedVaultScreenState extends ConsumerState<WatchedVaultScreen> {
 }
 
 class _WatchedVaultCard extends StatelessWidget {
-  final MovieModel movie;
+  final MediaItem movie;
   final VoidCallback onTap;
 
   const _WatchedVaultCard({
@@ -149,6 +149,29 @@ class _WatchedVaultCard extends StatelessWidget {
                   ),
                 ),
               ),
+              // TV Badge
+              if (movie.isTv)
+                Positioned(
+                  top: 8,
+                  left: 8,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppTheme.bgElevated.withValues(alpha: 0.95),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppTheme.bgMuted, width: 0.5),
+                    ),
+                    child: const Text(
+                      'TV',
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.textPrimary,
+                      ),
+                    ),
+                  ),
+                ),
               // Rating if available
               if (movie.voteAverage > 0)
                 Positioned(

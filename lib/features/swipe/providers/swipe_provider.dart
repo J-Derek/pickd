@@ -3,10 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/models/media_item.dart';
 import '../../../core/services/discovery_service.dart';
 import '../../../core/services/hive_service.dart';
-import '../../../core/services/supabase_db_service.dart';
-import '../../../core/services/supabase_auth_service.dart';
 import '../../watchlist/providers/watchlist_provider.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../watchlist/providers/watched_vault_provider.dart';
 
 enum SwipeAction { skip, save, heart, watched }
 
@@ -105,17 +103,10 @@ class SwipeDeckNotifier extends StateNotifier<SwipeDeckState> {
     final newSwipeCount = state.swipeCount + 1;
     state = state.copyWith(swipeCount: newSwipeCount);
 
-    final userId = Supabase.instance.client.auth.currentUser?.id;
-    final db = ref.read(supabaseDbServiceProvider);
-
-    if (action == SwipeAction.save && userId != null) {
-      await db.addToWatchlist(userId, item);
-      ref.invalidate(watchlistProvider);
-    } else if (action == SwipeAction.watched && userId != null) {
-      // First upsert so the record exists, then mark as watched
-      await db.addToWatchlist(userId, item);
-      await db.markAsWatched(userId, item.id, rating);
-      ref.invalidate(watchlistProvider);
+    if (action == SwipeAction.save) {
+      await ref.read(watchlistProvider.notifier).addMedia(item);
+    } else if (action == SwipeAction.watched) {
+      await ref.read(watchedVaultProvider.notifier).addMedia(item, rating: rating?.toDouble());
     }
     // Heart action just feeds the swipe history (which we already did above)
 
@@ -139,17 +130,10 @@ class SwipeDeckNotifier extends StateNotifier<SwipeDeckState> {
 
     await HiveService.removeFromSwipeHistory(item.id);
 
-    final userId = Supabase.instance.client.auth.currentUser?.id;
-    final db = ref.read(supabaseDbServiceProvider);
-    
-    if (userId != null) {
-      if (previousAction == SwipeAction.save) {
-        await db.removeFromWatchlist(userId, item.id);
-        ref.invalidate(watchlistProvider);
-      } else if (previousAction == SwipeAction.watched) {
-        await db.removeFromWatchlist(userId, item.id);
-        ref.invalidate(watchlistProvider);
-      }
+    if (previousAction == SwipeAction.save) {
+      await ref.read(watchlistProvider.notifier).remove(item.id);
+    } else if (previousAction == SwipeAction.watched) {
+      await ref.read(watchedVaultProvider.notifier).remove(item.id);
     }
   }
 

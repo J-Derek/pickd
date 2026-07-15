@@ -10,7 +10,6 @@ import '../../../core/models/media_item.dart';
 import '../../../core/services/tmdb_service.dart';
 import '../../../core/services/supabase_db_service.dart';
 import '../../../core/services/supabase_auth_service.dart';
-import '../../../core/services/hive_service.dart';
 import '../../swipe/providers/swipe_provider.dart';
 import '../providers/onboarding_provider.dart';
 
@@ -114,13 +113,20 @@ class _TasteProfileScreenState extends ConsumerState<TasteProfileScreen> {
     List<MediaItem> newItems = [];
     
     if (moodIds.isNotEmpty) {
-      // Import kMoods to get genres
-      final selectedMoods = kMoods.where((m) => moodIds.contains(m.id));
-      final genreIds = selectedMoods.expand((m) => m.genreIds).toSet().toList();
+      final genreIds = <int>{};
+      for (final id in moodIds) {
+        final parsed = int.tryParse(id);
+        if (parsed != null) {
+          genreIds.add(parsed);
+        } else {
+          final selectedMoods = kMoods.where((m) => m.id == id);
+          genreIds.addAll(selectedMoods.expand((m) => m.genreIds));
+        }
+      }
       
       if (genreIds.isNotEmpty) {
-        final movies = await TmdbService.discoverMovies(genreIds: genreIds, page: _currentPage);
-        final tv = await TmdbService.discoverTv(genreIds: genreIds, page: _currentPage);
+        final movies = await TmdbService.discoverMovies(genreIds: genreIds.toList(), page: _currentPage);
+        final tv = await TmdbService.discoverTv(genreIds: genreIds.toList(), page: _currentPage);
         newItems.addAll(movies.map((m) => MediaItem.movie(m)));
         newItems.addAll(tv.map((t) => MediaItem.tv(t)));
         newItems.shuffle();

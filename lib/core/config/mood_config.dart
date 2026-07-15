@@ -23,6 +23,37 @@ class Mood {
   });
 }
 
+class GenreItem {
+  final int id;
+  final String label;
+  final IconData icon;
+  final Color accentColor;
+
+  const GenreItem({
+    required this.id,
+    required this.label,
+    required this.icon,
+    required this.accentColor,
+  });
+}
+
+const List<GenreItem> kGenres = [
+  GenreItem(id: 28, label: 'Action', icon: LucideIcons.swords, accentColor: Color(0xFFFF9544)),
+  GenreItem(id: 12, label: 'Adventure', icon: LucideIcons.compass, accentColor: Color(0xFFFFC947)),
+  GenreItem(id: 16, label: 'Animation', icon: LucideIcons.sparkles, accentColor: Color(0xFFE87EAD)),
+  GenreItem(id: 35, label: 'Comedy', icon: LucideIcons.smile, accentColor: Color(0xFFFFC947)),
+  GenreItem(id: 80, label: 'Crime', icon: LucideIcons.shieldAlert, accentColor: Color(0xFFFF6B6B)),
+  GenreItem(id: 99, label: 'Documentary', icon: LucideIcons.fileText, accentColor: Color(0xFF4CAF88)),
+  GenreItem(id: 18, label: 'Drama', icon: LucideIcons.film, accentColor: Color(0xFFE87EAD)),
+  GenreItem(id: 10751, label: 'Family', icon: LucideIcons.users, accentColor: Color(0xFF4CAF88)),
+  GenreItem(id: 14, label: 'Fantasy', icon: LucideIcons.wand2, accentColor: Color(0xFF7B8FFF)),
+  GenreItem(id: 27, label: 'Horror', icon: LucideIcons.ghost, accentColor: Color(0xFFFF6B6B)),
+  GenreItem(id: 9648, label: 'Mystery', icon: LucideIcons.helpCircle, accentColor: Color(0xFF7B8FFF)),
+  GenreItem(id: 10749, label: 'Romance', icon: LucideIcons.heart, accentColor: Color(0xFFE87EAD)),
+  GenreItem(id: 878, label: 'Sci-Fi', icon: LucideIcons.rocket, accentColor: Color(0xFF7B8FFF)),
+  GenreItem(id: 53, label: 'Thriller', icon: LucideIcons.eye, accentColor: Color(0xFFFF6B6B)),
+];
+
 /// All moods available in MVP, from CONTEXT.md mood table.
 const List<Mood> kMoods = [
   Mood(

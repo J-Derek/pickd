@@ -25,6 +25,16 @@ Future<void> main() async {
     url: Env.supabaseUrl,
     publishableKey: Env.supabaseAnonKey,
   );
+  
+  // Ensure we have at least an anonymous user session
+  if (Supabase.instance.client.auth.currentUser == null) {
+    try {
+      await Supabase.instance.client.auth.signInAnonymously();
+    } catch (e) {
+      // Anonymous auth may not be enabled — app still works without it
+      debugPrint('Anonymous sign-in failed: $e');
+    }
+  }
 
   // Status bar style — dark cinematic
   SystemChrome.setSystemUIOverlayStyle(

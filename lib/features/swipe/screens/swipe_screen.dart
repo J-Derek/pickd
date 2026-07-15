@@ -15,7 +15,7 @@ import '../../../core/services/hive_service.dart';
 import '../providers/swipe_provider.dart';
 import 'auth_gate_sheet.dart';
 import 'walkthrough_overlay.dart';
-
+import '../../onboarding/providers/onboarding_provider.dart';
 
 
 class SwipeScreen extends ConsumerStatefulWidget {
@@ -126,6 +126,8 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
           GestureDetector(
             onTap: () {
               HapticFeedback.lightImpact();
+              // Reset onboarding state so they can start fresh
+              ref.invalidate(onboardingProvider);
               context.push('/onboarding/mood');
             },
             child: Container(
