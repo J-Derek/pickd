@@ -26,13 +26,14 @@ class UserProfileModelAdapter extends TypeAdapter<UserProfileModel> {
       swipeGateDismissed: fields[5] as bool,
       allowOldMovies: fields[7] == null ? false : fields[7] as bool,
       hasSeenWalkthrough: fields[8] == null ? false : fields[8] as bool,
+      suppressAuthGate: fields[9] == null ? false : fields[9] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, UserProfileModel obj) {
     writer
-      ..writeByte(9)
+      ..writeByte(10)
       ..writeByte(0)
       ..write(obj.tasteSeedMovieIds)
       ..writeByte(1)
@@ -50,7 +51,9 @@ class UserProfileModelAdapter extends TypeAdapter<UserProfileModel> {
       ..writeByte(7)
       ..write(obj.allowOldMovies)
       ..writeByte(8)
-      ..write(obj.hasSeenWalkthrough);
+      ..write(obj.hasSeenWalkthrough)
+      ..writeByte(9)
+      ..write(obj.suppressAuthGate);
   }
 
   @override

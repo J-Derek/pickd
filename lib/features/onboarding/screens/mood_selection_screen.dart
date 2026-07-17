@@ -6,11 +6,18 @@ import '../../../core/config/app_theme.dart';
 import '../../../core/config/mood_config.dart';
 import '../providers/onboarding_provider.dart';
 
-class MoodSelectionScreen extends ConsumerWidget {
+class MoodSelectionScreen extends ConsumerStatefulWidget {
   const MoodSelectionScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MoodSelectionScreen> createState() => _MoodSelectionScreenState();
+}
+
+class _MoodSelectionScreenState extends ConsumerState<MoodSelectionScreen> {
+  bool _isGrid = true;
+
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(onboardingProvider);
     final notifier = ref.read(onboardingProvider.notifier);
 
@@ -36,6 +43,15 @@ class MoodSelectionScreen extends ConsumerWidget {
           icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppTheme.textPrimary),
           onPressed: () => context.pop(),
         ) : null,
+        actions: [
+          IconButton(
+            icon: Icon(
+              _isGrid ? Icons.view_list_rounded : Icons.grid_view_rounded,
+              color: AppTheme.textSecondary,
+            ),
+            onPressed: () => setState(() => _isGrid = !_isGrid),
+          ),
+        ],
       ),
       body: SafeArea(
         child: Padding(
@@ -56,25 +72,40 @@ class MoodSelectionScreen extends ConsumerWidget {
               const SizedBox(height: 32),
               // Genre grid
               Expanded(
-                child: GridView.builder(
-                  itemCount: kGenres.length,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
-                    childAspectRatio: 1.4,
-                  ),
-                  itemBuilder: (context, index) {
-                    final genre = kGenres[index];
-                    final isSelected =
-                        state.selectedMoodIds.contains(genre.id.toString());
-                    return _GenreCard(
-                      genre: genre,
-                      isSelected: isSelected,
-                      onTap: () => notifier.toggleMood(genre.id.toString()),
-                    );
-                  },
-                ),
+                child: _isGrid
+                    ? GridView.builder(
+                        itemCount: kGenres.length,
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                          childAspectRatio: 1.4,
+                        ),
+                        itemBuilder: (context, index) {
+                          final genre = kGenres[index];
+                          final isSelected =
+                              state.selectedMoodIds.contains(genre.id.toString());
+                          return _GenreCard(
+                            genre: genre,
+                            isSelected: isSelected,
+                            onTap: () => notifier.toggleMood(genre.id.toString()),
+                          );
+                        },
+                      )
+                    : ListView.separated(
+                        itemCount: kGenres.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 8),
+                        itemBuilder: (context, index) {
+                          final genre = kGenres[index];
+                          final isSelected =
+                              state.selectedMoodIds.contains(genre.id.toString());
+                          return _GenreListTile(
+                            genre: genre,
+                            isSelected: isSelected,
+                            onTap: () => notifier.toggleMood(genre.id.toString()),
+                          );
+                        },
+                      ),
               ),
               const SizedBox(height: 24),
               // CTA
@@ -141,7 +172,6 @@ class _GenreCard extends StatelessWidget {
                   : AppTheme.bgMuted,
               width: isSelected ? 1.5 : 1,
             ),
-            boxShadow: isSelected ? AppTheme.cyanGlow : null,
           ),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Column(
@@ -165,6 +195,64 @@ class _GenreCard extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _GenreListTile extends StatelessWidget {
+  final GenreItem genre;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _GenreListTile({
+    required this.genre,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        height: 56,
+        decoration: BoxDecoration(
+          color: isSelected ? AppTheme.bgElevated : AppTheme.bgSurface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? AppTheme.accentPrimary : AppTheme.bgMuted,
+            width: isSelected ? 1.5 : 1,
+          ),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Row(
+          children: [
+            Icon(
+              genre.icon,
+              size: 24,
+              color: isSelected ? genre.accentColor : AppTheme.textSecondary,
+            ),
+            const SizedBox(width: 16),
+            Text(
+              genre.label,
+              style: TextStyle(
+                fontFamily: 'Syne',
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: isSelected ? AppTheme.textPrimary : AppTheme.textSecondary,
+              ),
+            ),
+            const Spacer(),
+            if (isSelected)
+              const Icon(
+                Icons.check_circle_rounded,
+                color: AppTheme.accentPrimary,
+                size: 20,
+              ),
+          ],
         ),
       ),
     );

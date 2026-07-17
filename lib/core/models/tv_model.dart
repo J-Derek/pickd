@@ -39,6 +39,8 @@ class TvModel extends HiveObject {
   @HiveField(10)
   final String? watchProviderLogoPath;
 
+  final String? watchProviderLink; // Not stored in Hive
+
   TvModel({
     required this.id,
     required this.name,
@@ -51,12 +53,15 @@ class TvModel extends HiveObject {
     required this.genreIds,
     this.trailerKey,
     this.watchProviderLogoPath,
+    this.watchProviderLink,
   });
 
   factory TvModel.fromJson(Map<String, dynamic> json) {
     String? logoPath;
+    String? link;
     try {
       logoPath = json['watch/providers']['results']['US']['flatrate'][0]['logo_path'] as String?;
+      link = json['watch/providers']['results']['US']['link'] as String?;
     } catch (_) {}
 
     return TvModel(
@@ -72,6 +77,7 @@ class TvModel extends HiveObject {
           .map((e) => e as int)
           .toList(),
       watchProviderLogoPath: logoPath,
+      watchProviderLink: link,
     );
   }
 

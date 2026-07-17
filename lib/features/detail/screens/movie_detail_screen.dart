@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -133,9 +132,9 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
               margin: const EdgeInsets.only(right: 16, top: 8, bottom: 8),
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.6),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.white24),
+                color: Colors.transparent,
+                border: Border.all(color: Colors.white, width: 1.5),
+                borderRadius: BorderRadius.zero,
               ),
               child: const Text(
                 'TV SERIES',
@@ -144,7 +143,7 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
                   color: Colors.white,
-                  letterSpacing: 1,
+                  letterSpacing: 1.2,
                 ),
               ),
             ),
@@ -175,23 +174,14 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                                   )
                                 : Container(color: AppTheme.bgSurface),
                       ),
-                      // Bottom fade
+                      // Hard stark border below image
                       Positioned(
                         bottom: 0,
                         left: 0,
                         right: 0,
-                        height: 200,
                         child: Container(
-                          decoration: const BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                Colors.transparent,
-                                AppTheme.bgPrimary,
-                              ],
-                            ),
-                          ),
+                          height: 2,
+                          color: AppTheme.bgElevated,
                         ),
                       ),
                     ],
@@ -228,26 +218,19 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                         ),
                         const SizedBox(height: 10),
                         // Meta row
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
-                          child: BackdropFilter(
-                            filter: ImageFilter.blur(
-                              sigmaX: AppTheme.glassBlur,
-                              sigmaY: AppTheme.glassBlur,
-                            ),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 12,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppTheme.glassBackground,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: AppTheme.glassBorder),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppTheme.bgElevated,
+                            border: Border.all(color: AppTheme.textMuted.withValues(alpha: 0.2)),
+                            borderRadius: BorderRadius.zero,
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
                                   if (item.year > 0)
                                     Text(
                                       '${item.year}',
@@ -298,20 +281,28 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                                   ],
                                   if (item.watchProviderLogoUrl != null) ...[
                                     const SizedBox(width: 12),
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(6),
-                                      child: CachedNetworkImage(
-                                        imageUrl: item.watchProviderLogoUrl!,
-                                        width: 24,
-                                        height: 24,
+                                    GestureDetector(
+                                      onTap: () async {
+                                        if (item.watchProviderLink != null) {
+                                          final uri = Uri.parse(item.watchProviderLink!);
+                                          if (await canLaunchUrl(uri)) {
+                                            await launchUrl(uri);
+                                          }
+                                        }
+                                      },
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(6),
+                                        child: CachedNetworkImage(
+                                          imageUrl: item.watchProviderLogoUrl!,
+                                          width: 24,
+                                          height: 24,
+                                        ),
                                       ),
                                     ),
                                   ],
                                 ],
                               ),
                             ),
-                          ),
-                        ),
                         const SizedBox(height: 24),
                         // Overview
                         if (item.overview.isNotEmpty) ...[
@@ -363,7 +354,10 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                             ),
                           ),
                           const SizedBox(height: 12),
-                          _WatchProviderSection(providers: _watchProviders),
+                          _WatchProviderSection(
+                            providers: _watchProviders,
+                            providerLink: item.watchProviderLink,
+                          ),
                           const SizedBox(height: 24),
                         ],
 
@@ -376,28 +370,21 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                             ),
                           )
                         else if (_trailerKey != null)
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
-                            child: BackdropFilter(
-                              filter: ImageFilter.blur(
-                                sigmaX: AppTheme.glassBlur,
-                                sigmaY: AppTheme.glassBlur,
-                              ),
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  onTap: _openTrailer,
-                                  child: Container(
-                                    width: double.infinity,
-                                    padding: const EdgeInsets.symmetric(vertical: 16),
-                                    decoration: BoxDecoration(
-                                      color: AppTheme.glassBackground,
-                                      borderRadius: BorderRadius.circular(16),
-                                      border: Border.all(color: AppTheme.glassBorder),
-                                    ),
-                                    child: const Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
+                          Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: _openTrailer,
+                              child: Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.bgElevated,
+                                  borderRadius: BorderRadius.zero,
+                                  border: Border.all(color: AppTheme.textMuted.withValues(alpha: 0.3)),
+                                ),
+                                child: const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
                                         Icon(
                                           Icons.play_circle_filled,
                                           color: AppTheme.textPrimary,
@@ -413,9 +400,7 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                                             color: AppTheme.textPrimary,
                                           ),
                                         ),
-                                      ],
-                                    ),
-                                  ),
+                                  ],
                                 ),
                               ),
                             ),
@@ -423,53 +408,46 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                         const SizedBox(height: 16),
 
                         // ── Watchlist CTA ────────────────────────────
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
-                          child: BackdropFilter(
-                            filter: ImageFilter.blur(
-                              sigmaX: AppTheme.glassBlur,
-                              sigmaY: AppTheme.glassBlur,
-                            ),
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                onTap: () {
-                                  HapticFeedback.mediumImpact();
-                                  if (isInWatchlist) {
+                        Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              HapticFeedback.mediumImpact();
+                              if (isInWatchlist) {
+                                ref
+                                    .read(watchlistProvider.notifier)
+                                    .remove(item.id);
+                              } else {
+                                // Route to correct watchlist by type
+                                switch (item) {
+                                  case MovieItem(:final movie):
                                     ref
                                         .read(watchlistProvider.notifier)
-                                        .remove(item.id);
-                                  } else {
-                                    // Route to correct watchlist by type
-                                    switch (item) {
-                                      case MovieItem(:final movie):
-                                        ref
-                                            .read(watchlistProvider.notifier)
-                                            .add(movie);
-                                      case TvItem(:final show):
-                                        ref
-                                            .read(watchlistProvider.notifier)
-                                            .addTv(show);
-                                    }
-                                  }
-                                },
-                                child: Container(
-                                  width: double.infinity,
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
-                                  decoration: BoxDecoration(
-                                    color: isInWatchlist
-                                        ? AppTheme.glassBackground
-                                        : AppTheme.accentPrimary.withValues(alpha: 0.15),
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(
-                                      color: isInWatchlist
-                                          ? AppTheme.glassBorder
-                                          : AppTheme.accentPrimary.withValues(alpha: 0.5),
-                                    ),
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
+                                        .add(movie);
+                                  case TvItem(:final show):
+                                    ref
+                                        .read(watchlistProvider.notifier)
+                                        .addTv(show);
+                                }
+                              }
+                            },
+                            child: Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              decoration: BoxDecoration(
+                                color: isInWatchlist
+                                    ? AppTheme.bgElevated
+                                    : AppTheme.accentPrimary,
+                                borderRadius: BorderRadius.zero,
+                                border: Border.all(
+                                  color: isInWatchlist
+                                      ? AppTheme.textMuted.withValues(alpha: 0.3)
+                                      : Colors.transparent,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
                                       Icon(
                                         isInWatchlist
                                             ? Icons.bookmark_remove_outlined
@@ -477,7 +455,7 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                                         size: 20,
                                         color: isInWatchlist
                                             ? AppTheme.textSecondary
-                                            : AppTheme.accentPrimary,
+                                            : AppTheme.textInverse,
                                       ),
                                       const SizedBox(width: 8),
                                       Text(
@@ -489,8 +467,8 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                                           fontSize: 16,
                                           fontWeight: FontWeight.w600,
                                           color: isInWatchlist
-                                              ? AppTheme.textSecondary
-                                              : AppTheme.accentPrimary,
+                                              ? AppTheme.textPrimary
+                                              : AppTheme.textInverse,
                                         ),
                                       ),
                                     ],
@@ -498,8 +476,7 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                                 ),
                               ),
                             ),
-                          ),
-                        ),
+                        const SizedBox(height: 40),
                       ],
                     ),
                   ),
@@ -512,10 +489,18 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
 
 // ── Where to Watch section widget ────────────────────────────────────────────
 
-class _WatchProviderSection extends StatelessWidget {
+class _WatchProviderSection extends StatefulWidget {
   final Map<String, List<String>> providers;
+  final String? providerLink;
 
-  const _WatchProviderSection({required this.providers});
+  const _WatchProviderSection({required this.providers, this.providerLink});
+
+  @override
+  State<_WatchProviderSection> createState() => _WatchProviderSectionState();
+}
+
+class _WatchProviderSectionState extends State<_WatchProviderSection> {
+  String? _clickedProvider;
 
   static const _typeLabels = {
     'flatrate': 'Stream',
@@ -535,7 +520,7 @@ class _WatchProviderSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         for (final type in ['flatrate', 'rent', 'buy'])
-          if (providers.containsKey(type)) ...[
+          if (widget.providers.containsKey(type)) ...[
             Row(
               children: [
                 Container(
@@ -562,28 +547,66 @@ class _WatchProviderSection extends StatelessWidget {
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: providers[type]!
+              children: widget.providers[type]!
                   .map(
-                    (name) => Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppTheme.bgSurface,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: AppTheme.bgMuted),
-                      ),
-                      child: Text(
-                        name,
-                        style: const TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: AppTheme.textPrimary,
+                    (name) {
+                      final isClicked = _clickedProvider == name;
+                      return Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () async {
+                            if (widget.providerLink != null) {
+                              HapticFeedback.lightImpact();
+                              setState(() => _clickedProvider = name);
+                              
+                              ScaffoldMessenger.of(context).clearSnackBars();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Opening $name...', style: const TextStyle(color: AppTheme.textInverse, fontWeight: FontWeight.w600)),
+                                  backgroundColor: _typeColors[type],
+                                  duration: const Duration(seconds: 2),
+                                  behavior: SnackBarBehavior.floating,
+                                  margin: const EdgeInsets.only(bottom: 24, left: 24, right: 24),
+                                ),
+                              );
+                              
+                              final uri = Uri.parse(widget.providerLink!);
+                              if (await canLaunchUrl(uri)) {
+                                await launchUrl(uri);
+                              }
+                            }
+                          },
+                          borderRadius: BorderRadius.circular(8),
+                          splashColor: _typeColors[type]?.withValues(alpha: 0.2),
+                          highlightColor: _typeColors[type]?.withValues(alpha: 0.1),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isClicked ? _typeColors[type] : AppTheme.bgSurface,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: widget.providerLink != null
+                                    ? _typeColors[type]?.withValues(alpha: isClicked ? 1.0 : 0.3) ?? AppTheme.bgMuted
+                                    : AppTheme.bgMuted,
+                              ),
+                            ),
+                            child: Text(
+                              name,
+                              style: TextStyle(
+                                fontFamily: 'Inter',
+                                fontSize: 13,
+                                fontWeight: isClicked ? FontWeight.w700 : FontWeight.w500,
+                                color: isClicked ? AppTheme.textInverse : AppTheme.textPrimary,
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
+                      );
+                    },
                   )
                   .toList(),
             ),

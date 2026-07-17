@@ -15,16 +15,18 @@ class GenreChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(8),
+        color: AppTheme.bgElevated,
+        border: Border.all(color: AppTheme.textMuted.withValues(alpha: 0.3)),
+        borderRadius: BorderRadius.zero,
       ),
       child: Text(
         label.toUpperCase(),
         style: const TextStyle(
+          fontFamily: 'Inter',
           fontSize: 10,
-          fontWeight: FontWeight.w600,
-          color: AppTheme.textSecondary,
-          letterSpacing: 0.8,
+          fontWeight: FontWeight.w700,
+          color: AppTheme.textPrimary,
+          letterSpacing: 1.2,
         ),
       ),
     );

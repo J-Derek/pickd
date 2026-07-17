@@ -2,11 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/config/app_theme.dart';
+import '../../../core/services/hive_service.dart';
 
 /// Non-blocking auth gate shown after 5 swipes.
 /// User can dismiss and continue as guest.
-class AuthGateSheet extends StatelessWidget {
+class AuthGateSheet extends StatefulWidget {
   const AuthGateSheet({super.key});
+
+  @override
+  State<AuthGateSheet> createState() => _AuthGateSheetState();
+}
+
+class _AuthGateSheetState extends State<AuthGateSheet> {
+  bool _dontShowAgain = false;
 
   @override
   Widget build(BuildContext context) {
@@ -80,9 +88,33 @@ class AuthGateSheet extends StatelessWidget {
             child: const Text('Create free account'),
           ),
           const SizedBox(height: 12),
+          // Don't show again checkbox
+          Theme(
+            data: ThemeData(unselectedWidgetColor: AppTheme.textMuted),
+            child: CheckboxListTile(
+              value: _dontShowAgain,
+              onChanged: (val) {
+                setState(() => _dontShowAgain = val ?? false);
+                final profile = HiveService.getProfile();
+                profile.suppressAuthGate = _dontShowAgain;
+                HiveService.saveProfile(profile);
+              },
+              title: const Text(
+                "Don't show this again",
+                style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: AppTheme.textMuted),
+              ),
+              activeColor: AppTheme.accentPrimary,
+              controlAffinity: ListTileControlAffinity.leading,
+              contentPadding: EdgeInsets.zero,
+              dense: true,
+            ),
+          ),
           // Dismiss — keep swiping
           GestureDetector(
-            onTap: () => Navigator.of(context).pop(),
+            onTap: () {
+              // State is already saved in onChanged
+              Navigator.of(context).pop();
+            },
             child: const Padding(
               padding: EdgeInsets.symmetric(vertical: 8),
               child: Text(

@@ -51,13 +51,6 @@ class AppTheme {
     ),
   ];
 
-  static List<BoxShadow> cyanGlow = [
-    BoxShadow(
-      color: accentPrimary.withValues(alpha: 0.4),
-      blurRadius: 15,
-      spreadRadius: 1,
-    ),
-  ];
 
   // Glassmorphism background color
   static Color get glassBackground => const Color(0xFF161D1F).withValues(alpha: 0.4);

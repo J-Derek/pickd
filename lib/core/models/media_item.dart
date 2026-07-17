@@ -107,6 +107,11 @@ sealed class MediaItem {
     return '${Env.tmdbImageBaseW500}$path';
   }
 
+  String? get watchProviderLink => switch (this) {
+        MovieItem(:final movie) => movie.watchProviderLink,
+        TvItem(:final show) => show.watchProviderLink,
+      };
+
   /// The display year — release year for movies, air year for TV shows.
   int get year => switch (this) {
         MovieItem(:final movie) => movie.releaseYear,

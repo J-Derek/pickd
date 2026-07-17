@@ -1,5 +1,11 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_card_swiper/flutter_card_swiper.dart';
+import 'package:go_router/go_router.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../core/config/app_theme.dart';
 import '../../../core/models/media_item.dart';
@@ -7,12 +13,8 @@ import '../../../core/services/hive_service.dart';
 import '../../../core/services/discovery_service.dart';
 import '../../../core/widgets/shimmer_card.dart';
 import '../../watchlist/providers/watchlist_provider.dart';
-import 'package:flutter_card_swiper/flutter_card_swiper.dart';
-import 'package:flutter/services.dart';
-import 'package:go_router/go_router.dart';
 import '../../../core/widgets/genre_chip.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+
 class GemsScreen extends ConsumerStatefulWidget {
   const GemsScreen({super.key});
 
@@ -104,19 +106,16 @@ class _GemsScreenState extends ConsumerState<GemsScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
+                        const Row(
                           children: [
-                            ShaderMask(
-                              shaderCallback: (bounds) =>
-                                  AppTheme.gemsBadgeGradient.createShader(bounds),
-                              child: const Text(
-                                'Hidden Gems',
-                                style: TextStyle(
-                                  fontFamily: 'Syne',
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.w800,
-                                  color: Colors.white,
-                                ),
+                            Text(
+                              'HIDDEN GEMS',
+                              style: TextStyle(
+                                fontFamily: 'Syne',
+                                fontSize: 28,
+                                fontWeight: FontWeight.w800,
+                                color: AppTheme.textPrimary,
+                                letterSpacing: -1,
                               ),
                             ),
                           ],
@@ -136,8 +135,8 @@ class _GemsScreenState extends ConsumerState<GemsScreen> {
                       height: 40,
                       decoration: BoxDecoration(
                         color: AppTheme.bgSurface,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppTheme.bgMuted),
+                        borderRadius: BorderRadius.zero,
+                        border: Border.all(color: AppTheme.bgMuted, width: 2),
                       ),
                       child: const Icon(
                         LucideIcons.refreshCw,
@@ -167,7 +166,7 @@ class _GemsScreenState extends ConsumerState<GemsScreen> {
         child: ShimmerCard(
           width: double.infinity,
           height: double.infinity,
-          borderRadius: 32,
+          borderRadius: 0,
         ),
       );
     }
@@ -192,7 +191,7 @@ class _GemsScreenState extends ConsumerState<GemsScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('🔍', style: TextStyle(fontSize: 48)),
+            const Icon(LucideIcons.search, size: 48, color: AppTheme.textMuted),
             const SizedBox(height: 12),
             Text(
               'No gems found for your taste.\nTry adjusting your mood.',
@@ -253,18 +252,11 @@ class _GemCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final opacity = (percentX.abs() / 100).clamp(0.0, 1.0);
     return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(32),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF7B2FBE).withValues(alpha: 0.2),
-            blurRadius: 24,
-            offset: const Offset(0, 8),
-          ),
-        ],
+      decoration: const BoxDecoration(
+        borderRadius: BorderRadius.zero,
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(32),
+        borderRadius: BorderRadius.zero,
         child: Stack(
           fit: StackFit.expand,
           children: [
@@ -286,14 +278,14 @@ class _GemCard extends StatelessWidget {
                 ),
               ),
             ),
-            // Gem shimmer border
+            // Brutalist border overlay
             Positioned.fill(
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(32),
+                  borderRadius: BorderRadius.zero,
                   border: Border.all(
-                    color: const Color(0xFF7B2FBE).withValues(alpha: 0.4),
-                    width: 1.5,
+                    color: AppTheme.textPrimary.withValues(alpha: 0.1),
+                    width: 1,
                   ),
                 ),
               ),
@@ -307,8 +299,9 @@ class _GemCard extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                     decoration: BoxDecoration(
-                      border: Border.all(color: AppTheme.accentPrimary, width: 2.5),
-                      borderRadius: BorderRadius.circular(8),
+                      color: AppTheme.bgPrimary,
+                      border: Border.all(color: AppTheme.accentPrimary, width: 3),
+                      borderRadius: BorderRadius.zero,
                     ),
                     child: const Text(
                       'WATCH',
@@ -332,8 +325,9 @@ class _GemCard extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                     decoration: BoxDecoration(
-                      border: Border.all(color: AppTheme.accentSecondary, width: 2.5),
-                      borderRadius: BorderRadius.circular(8),
+                      color: AppTheme.bgPrimary,
+                      border: Border.all(color: AppTheme.accentSecondary, width: 3),
+                      borderRadius: BorderRadius.zero,
                     ),
                     child: const Text(
                       'SKIP',
@@ -360,13 +354,13 @@ class _GemCard extends StatelessWidget {
                   children: [
                     // Gem badge
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        gradient: AppTheme.gemsBadgeGradient,
-                        borderRadius: BorderRadius.circular(8),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: const BoxDecoration(
+                        color: AppTheme.accentPrimary,
+                        borderRadius: BorderRadius.zero,
                       ),
                       child: const Text(
-                        'Hidden Gem',
+                        'HIDDEN GEM',
                         style: TextStyle(
                           fontFamily: 'Inter',
                           fontSize: 11,
@@ -440,72 +434,135 @@ class _ActionButtons extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          GestureDetector(
-            onTap: () {
-              HapticFeedback.lightImpact();
-              controller.swipe(CardSwiperDirection.left);
-            },
-            child: Container(
-              width: 58,
-              height: 58,
-              decoration: BoxDecoration(
-                color: AppTheme.bgElevated,
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: AppTheme.accentSecondary.withValues(alpha: 0.4),
-                  width: 1.5,
-                ),
-              ),
-              child: const Icon(LucideIcons.x,
-                  color: AppTheme.accentSecondary, size: 28),
-            ),
-          ),
-          GestureDetector(
+          // Undo (Small)
+          _LabeledGlassButton(
             onTap: () {
               HapticFeedback.lightImpact();
               controller.undo();
             },
-            child: Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: AppTheme.bgSurface,
-                shape: BoxShape.circle,
-                border: Border.all(color: AppTheme.bgMuted),
-              ),
-              child: const Icon(LucideIcons.rotateCcw,
-                  color: AppTheme.textMuted, size: 20),
-            ),
+            size: 52,
+            icon: Icons.undo_rounded,
+            iconColor: AppTheme.textMuted,
+            label: 'UNDO',
           ),
-          GestureDetector(
+          
+          // Skip / X (Large)
+          _LabeledGlassButton(
+            onTap: () {
+              HapticFeedback.lightImpact();
+              controller.swipe(CardSwiperDirection.left);
+            },
+            size: 72,
+            icon: Icons.close_rounded,
+            iconColor: AppTheme.accentSecondary,
+            label: 'SKIP',
+          ),
+
+          // Save / Bookmark (Large)
+          _LabeledGlassButton(
             onTap: () {
               HapticFeedback.mediumImpact();
               controller.swipe(CardSwiperDirection.right);
             },
-            child: Container(
-              width: 68,
-              height: 68,
-              decoration: BoxDecoration(
-                gradient: AppTheme.gemsBadgeGradient,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF7B2FBE).withValues(alpha: 0.4),
-                    blurRadius: 20,
-                    spreadRadius: 1,
+            size: 72,
+            icon: Icons.bookmark_add_rounded,
+            iconColor: AppTheme.accentPrimary,
+            label: 'SAVE',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LabeledGlassButton extends StatefulWidget {
+  final VoidCallback onTap;
+  final double size;
+  final IconData icon;
+  final Color iconColor;
+  final String label;
+  final List<BoxShadow>? boxShadow;
+
+  const _LabeledGlassButton({
+    required this.onTap,
+    required this.size,
+    required this.icon,
+    required this.iconColor,
+    required this.label,
+    this.boxShadow,
+  });
+
+  @override
+  State<_LabeledGlassButton> createState() => _LabeledGlassButtonState();
+}
+
+class _LabeledGlassButtonState extends State<_LabeledGlassButton> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _isPressed = true),
+      onTapUp: (_) {
+        setState(() => _isPressed = false);
+        widget.onTap();
+      },
+      onTapCancel: () => setState(() => _isPressed = false),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            width: widget.size,
+            height: widget.size,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              boxShadow: widget.boxShadow,
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(widget.size / 2),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: AppTheme.glassBlur, sigmaY: AppTheme.glassBlur),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 150),
+                  decoration: BoxDecoration(
+                    color: _isPressed 
+                        ? widget.iconColor.withValues(alpha: 0.3) 
+                        : AppTheme.glassBackground,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: _isPressed ? widget.iconColor : AppTheme.glassBorder, 
+                      width: 1.5,
+                    ),
                   ),
-                ],
+                  child: Icon(
+                    widget.icon, 
+                    color: _isPressed ? widget.iconColor : AppTheme.textMuted, 
+                    size: widget.size * 0.45,
+                  ),
                 ),
-              child: const Icon(LucideIcons.bookmarkPlus,
-                  color: Colors.white, size: 32),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            widget.label,
+            style: TextStyle(
+              fontFamily: 'Syne',
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              color: _isPressed ? widget.iconColor : AppTheme.textMuted,
+              letterSpacing: 1.0,
             ),
           ),
         ],
       ),
     );
   }
+
 }

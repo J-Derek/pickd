@@ -46,11 +46,14 @@ class SwipeDeckState {
 
 class SwipeDeckNotifier extends StateNotifier<SwipeDeckState> {
   final Ref ref;
-  SwipeDeckNotifier(this.ref) : super(const SwipeDeckState());
+  SwipeDeckNotifier(this.ref) : super(const SwipeDeckState(filter: MediaFilter.both));
+
+  int _currentPage = 1;
 
   Future<void> loadDeck({bool gemsMode = false, MediaFilter? filter}) async {
     final activeFilter = filter ?? state.filter;
-    state = state.copyWith(isLoading: true, error: null, filter: activeFilter);
+    _currentPage = 1;
+    state = state.copyWith(isLoading: true, error: null, filter: activeFilter, deck: const []);
     try {
       final profile = HiveService.getProfile();
       final deck = await DiscoveryService.buildDeck(
@@ -73,6 +76,7 @@ class SwipeDeckNotifier extends StateNotifier<SwipeDeckState> {
 
   Future<void> loadMore({bool gemsMode = false}) async {
     try {
+      _currentPage++;
       final profile = HiveService.getProfile();
       final newCards = await DiscoveryService.buildDeck(
         tasteSeedMovieIds: profile.tasteSeedMovieIds,
@@ -80,6 +84,7 @@ class SwipeDeckNotifier extends StateNotifier<SwipeDeckState> {
         moodIds: profile.selectedMoodIds,
         gemsMode: gemsMode,
         filter: state.filter,
+        page: _currentPage,
       );
       final existingIds = state.deck.map((e) => e.id).toSet();
       final filtered = newCards.where((m) => !existingIds.contains(m.id)).toList();
@@ -94,7 +99,7 @@ class SwipeDeckNotifier extends StateNotifier<SwipeDeckState> {
 
   /// Called when a card is swiped or a button is pressed.
   Future<void> onSwiped(MediaItem item, SwipeAction action, {int? rating}) async {
-    await HiveService.addToSwipeHistory(item.id);
+    await HiveService.addToSwipeHistory(item, action.name);
 
     final profile = HiveService.getProfile();
     profile.totalSwipeCount += 1;
@@ -128,7 +133,7 @@ class SwipeDeckNotifier extends StateNotifier<SwipeDeckState> {
       await HiveService.saveProfile(profile);
     }
 
-    await HiveService.removeFromSwipeHistory(item.id);
+    await HiveService.removeFromSwipeHistory(item);
 
     if (previousAction == SwipeAction.save) {
       await ref.read(watchlistProvider.notifier).remove(item.id);

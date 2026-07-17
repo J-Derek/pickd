@@ -29,19 +29,21 @@ class DiscoveryService {
     required List<String> moodIds,
     bool gemsMode = false,
     MediaFilter filter = MediaFilter.moviesOnly,
+    int page = 1,
   }) async {
-    final seenIds = HiveService.getSwipeHistory();
+    final seenKeys = HiveService.getSwipedKeys();
     final profile = HiveService.getProfile();
 
     // Run movie and TV pipelines concurrently when needed
     final results = await Future.wait([
       if (filter == MediaFilter.moviesOnly || filter == MediaFilter.both)
         _buildMoviePipeline(
-          tasteSeedIds: tasteSeedMovieIds,
+          tasteSeedMovieIds: tasteSeedMovieIds,
           moodIds: moodIds,
           gemsMode: gemsMode,
-          seenIds: seenIds,
+          seenKeys: seenKeys,
           allowOldMovies: profile.allowOldMovies,
+          page: page,
         )
       else
         Future.value(<MediaItem>[]),
@@ -50,8 +52,9 @@ class DiscoveryService {
           tasteSeedTvIds: tasteSeedTvIds,
           moodIds: moodIds,
           gemsMode: gemsMode,
-          seenIds: seenIds,
+          seenKeys: seenKeys,
           allowOldMovies: profile.allowOldMovies,
+          page: page,
         )
       else
         Future.value(<MediaItem>[]),
@@ -95,11 +98,12 @@ class DiscoveryService {
   // ─── Movie Pipeline ───────────────────────────────────────────
 
   static Future<List<MediaItem>> _buildMoviePipeline({
-    required List<int> tasteSeedIds,
+    required List<int> tasteSeedMovieIds,
     required List<String> moodIds,
     required bool gemsMode,
-    required Set<int> seenIds,
+    required Set<String> seenKeys,
     required bool allowOldMovies,
+    required int page,
   }) async {
     final collected = <int, MovieModel>{};
 
@@ -114,8 +118,8 @@ class DiscoveryService {
       }
     }
 
-    if (moodGenreIds.isEmpty && tasteSeedIds.isNotEmpty) {
-      final seedsToUse = tasteSeedIds.take(3).toList();
+    if (moodGenreIds.isEmpty && tasteSeedMovieIds.isNotEmpty) {
+      final seedsToUse = tasteSeedMovieIds.take(3).toList();
       final seedDetails = await Future.wait(seedsToUse.map(TmdbService.getMovieDetails));
       for (final seed in seedDetails) {
         if (seed != null) {
@@ -132,8 +136,8 @@ class DiscoveryService {
     }
 
     // 1. Recommendations + similar from taste seeds
-    if (tasteSeedIds.isNotEmpty) {
-      final seedsToUse = tasteSeedIds.take(3).toList();
+    if (tasteSeedMovieIds.isNotEmpty) {
+      final seedsToUse = tasteSeedMovieIds.take(3).toList();
 
       final [recs, similar] = await Future.wait([
         Future.wait(seedsToUse.map(TmdbService.getRecommendations)),
@@ -162,6 +166,7 @@ class DiscoveryService {
           maxPopularity: gemsMode ? Env.hiddenGemMaxPopularity : null,
           maxYear: gemsMode ? Env.hiddenGemMaxYear : null,
           minYear: (gemsMode || allowOldMovies) ? null : 1991,
+          page: page,
         );
         for (final movie in moodMovies) {
           if (isRecent(movie)) collected[movie.id] = movie;
@@ -171,7 +176,7 @@ class DiscoveryService {
 
     // 3. Fallback — trending
     if (collected.length < 15) {
-      final trending = await TmdbService.getTrending();
+      final trending = await TmdbService.getTrending(page: page);
       for (final movie in trending) {
         if (moodGenreIds.isEmpty ||
             movie.genreIds.any((id) => moodGenreIds.contains(id))) {
@@ -182,7 +187,7 @@ class DiscoveryService {
 
     // 4. Filter: remove seen, require poster
     var filtered = collected.values
-        .where((m) => !seenIds.contains(m.id) && m.posterPath != null)
+        .where((m) => !seenKeys.contains('movie_${m.id}') && m.posterPath != null)
         .toList();
 
     // 5. Gems filter
@@ -201,7 +206,7 @@ class DiscoveryService {
           page: 2,
         );
         for (final m in gemsDiscover) {
-          if (!seenIds.contains(m.id) && m.posterPath != null) {
+          if (!seenKeys.contains('movie_${m.id}') && isRecent(m) && m.posterPath != null) {
             filtered.add(m);
           }
         }
@@ -228,8 +233,9 @@ class DiscoveryService {
     required List<int> tasteSeedTvIds,
     required List<String> moodIds,
     required bool gemsMode,
-    required Set<int> seenIds,
+    required Set<String> seenKeys,
     required bool allowOldMovies,
+    required int page,
   }) async {
     final collected = <int, TvModel>{};
 
@@ -243,6 +249,17 @@ class DiscoveryService {
         moodGenreIds.addAll(selectedMoods.expand((m) => m.genreIds));
       }
     }
+
+    // Map movie genre IDs to TV genre IDs to ensure matches
+    int mapMovieToTvGenre(int id) {
+      if (id == 28 || id == 12) return 10759; // Action/Adventure -> Action & Adventure
+      if (id == 878 || id == 14) return 10765; // Sci-Fi/Fantasy -> Sci-Fi & Fantasy
+      if (id == 10752) return 10768; // War -> War & Politics
+      return id;
+    }
+    
+    final tvMoodGenreIds = moodGenreIds.map(mapMovieToTvGenre).toSet();
+    moodGenreIds.addAll(tvMoodGenreIds);
 
     if (moodGenreIds.isEmpty && tasteSeedTvIds.isNotEmpty) {
       final seedsToUse = tasteSeedTvIds.take(3).toList();
@@ -283,8 +300,8 @@ class DiscoveryService {
 
     // 2. Mood-based TV discover
     if (moodIds.isNotEmpty) {
-      final genreIds =
-          kMoods.where((m) => moodIds.contains(m.id)).expand((m) => m.genreIds).toList();
+      var genreIds =
+          kMoods.where((m) => moodIds.contains(m.id)).expand((m) => m.genreIds).map(mapMovieToTvGenre).toSet().toList();
 
       if (genreIds.isNotEmpty) {
         final shows = await TmdbService.discoverTv(
@@ -292,6 +309,7 @@ class DiscoveryService {
           maxPopularity: gemsMode ? Env.hiddenGemMaxPopularity : null,
           maxYear: gemsMode ? Env.hiddenGemMaxYear : null,
           minYear: (gemsMode || allowOldMovies) ? null : 1991,
+          page: page,
         );
         for (final show in shows) {
           collected[show.id] = show;
@@ -301,7 +319,7 @@ class DiscoveryService {
 
     // 3. Fallback — trending TV
     if (collected.length < 15) {
-      final trending = await TmdbService.getTrendingTv();
+      final trending = await TmdbService.getTrendingTv(page: page);
       for (final show in trending) {
         if (moodGenreIds.isEmpty ||
             show.genreIds.any((id) => moodGenreIds.contains(id))) {
@@ -310,9 +328,17 @@ class DiscoveryService {
       }
     }
 
+    // If still empty (e.g. extremely strict mood filter), just force add trending so deck isn't empty
+    if (collected.isEmpty) {
+      final trending = await TmdbService.getTrendingTv(page: page);
+      for (final show in trending) {
+        collected[show.id] = show;
+      }
+    }
+
     // 4. Filter: remove seen, require poster
     var filtered = collected.values
-        .where((s) => !seenIds.contains(s.id) && s.posterPath != null)
+        .where((s) => !seenKeys.contains('tv_${s.id}') && s.posterPath != null)
         .toList();
 
     // 5. Gems filter for TV

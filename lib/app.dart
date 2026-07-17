@@ -10,10 +10,9 @@ import 'features/detail/screens/movie_detail_screen.dart';
 import 'features/watchlist/screens/watchlist_screen.dart';
 import 'features/gems/screens/gems_screen.dart';
 import 'features/profile/screens/profile_screen.dart';
+import 'features/profile/screens/swipe_history_screen.dart';
 import 'features/shell/main_shell.dart';
 import 'features/auth/screens/auth_screen.dart';
-import 'features/watchlist/screens/watched_vault_screen.dart';
-
 final _router = GoRouter(
   initialLocation: '/',
   routes: [
@@ -27,7 +26,10 @@ final _router = GoRouter(
     ),
     GoRoute(
       path: '/onboarding/taste',
-      builder: (context, state) => const TasteProfileScreen(),
+      builder: (context, state) {
+        final isEditing = state.extra == true;
+        return TasteProfileScreen(isEditing: isEditing);
+      },
     ),
     ShellRoute(
       builder: (context, state, child) => MainShell(child: child),
@@ -51,6 +53,10 @@ final _router = GoRouter(
       ],
     ),
     GoRoute(
+      path: '/swipe-history',
+      builder: (context, state) => const SwipeHistoryScreen(),
+    ),
+    GoRoute(
       path: '/auth',
       builder: (context, state) => const AuthScreen(),
     ),
@@ -61,10 +67,6 @@ final _router = GoRouter(
         final movie = state.extra;
         return MovieDetailScreen(movieId: id, movieExtra: movie);
       },
-    ),
-    GoRoute(
-      path: '/watched-vault',
-      builder: (context, state) => const WatchedVaultScreen(),
     ),
   ],
 );

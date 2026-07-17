@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_card_swiper/flutter_card_swiper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_icons/lucide_icons.dart';
+
 import 'dart:ui';
 
 import '../../../core/config/app_theme.dart';
@@ -48,6 +50,13 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
 
   void _showAuthGate() {
     if (_gateShown) return;
+    
+    final profile = HiveService.getProfile();
+    if (profile.suppressAuthGate) {
+      ref.read(swipeDeckProvider.notifier).resetSwipeGate();
+      return;
+    }
+
     _gateShown = true;
     showModalBottomSheet(
       context: context,
@@ -126,6 +135,14 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
           GestureDetector(
             onTap: () {
               HapticFeedback.lightImpact();
+              // Reset Hive profile so old tastes are completely wiped
+              final profile = HiveService.getProfile();
+              profile.selectedMoodIds = [];
+              profile.tasteSeedMovieIds = [];
+              profile.tasteSeedTvIds = [];
+              profile.onboardingComplete = false;
+              HiveService.saveProfile(profile);
+
               // Reset onboarding state so they can start fresh
               ref.invalidate(onboardingProvider);
               context.push('/onboarding/mood');
@@ -164,64 +181,68 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
   }
 
   Widget _buildFilterToggle() {
-    const segments = [
-      (MediaFilter.moviesOnly, 'Movies'),
-      (MediaFilter.both, 'Both'),
-      (MediaFilter.tvOnly, 'TV Shows'),
-    ];
+    String currentLabel = 'MOVIES';
+    switch (_activeFilter) {
+      case MediaFilter.moviesOnly:
+        currentLabel = 'MOVIES';
+      case MediaFilter.both:
+        currentLabel = 'BOTH';
+      case MediaFilter.tvOnly:
+        currentLabel = 'TV SHOWS';
+    }
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Container(
-        height: 38,
-        decoration: BoxDecoration(
-          color: AppTheme.bgElevated,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: AppTheme.glassBorder),
-        ),
-        child: Row(
-          children: segments.map((seg) {
-            final (filter, label) = seg;
-            final isActive = _activeFilter == filter;
-            final isFirst = filter == MediaFilter.moviesOnly;
-            final isLast = filter == MediaFilter.tvOnly;
-
-            return Expanded(
-              child: GestureDetector(
-                onTap: () => _onFilterTap(filter),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 220),
-                  curve: Curves.easeInOut,
-                  margin: EdgeInsets.fromLTRB(
-                    isFirst ? 3 : 0,
-                    3,
-                    isLast ? 3 : 0,
-                    3,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isActive
-                        ? AppTheme.accentPrimary
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(17),
-                  ),
-                  alignment: Alignment.center,
-                  child: AnimatedDefaultTextStyle(
-                    duration: const Duration(milliseconds: 220),
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 12,
-                      fontWeight:
-                          isActive ? FontWeight.w700 : FontWeight.w500,
-                      color: isActive
-                          ? AppTheme.textInverse
-                          : AppTheme.textSecondary,
-                    ),
-                    child: Text(label),
-                  ),
+      child: PopupMenuButton<MediaFilter>(
+        offset: const Offset(0, 48),
+        color: AppTheme.bgElevated,
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+        onSelected: _onFilterTap,
+        itemBuilder: (context) => [
+          _buildPopupMenuItem(MediaFilter.moviesOnly, 'MOVIES'),
+          _buildPopupMenuItem(MediaFilter.tvOnly, 'TV SHOWS'),
+          _buildPopupMenuItem(MediaFilter.both, 'BOTH'),
+        ],
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            border: Border.all(color: AppTheme.textMuted, width: 1),
+            borderRadius: BorderRadius.zero,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'MEDIA: $currentLabel',
+                style: const TextStyle(
+                  fontFamily: 'Syne',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.textPrimary,
+                  letterSpacing: 1.0,
                 ),
               ),
-            );
-          }).toList(),
+              const SizedBox(width: 8),
+              const Icon(LucideIcons.chevronDown, size: 16, color: AppTheme.textPrimary),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  PopupMenuItem<MediaFilter> _buildPopupMenuItem(MediaFilter filter, String label) {
+    final isSelected = _activeFilter == filter;
+    return PopupMenuItem(
+      value: filter,
+      child: Text(
+        label,
+        style: TextStyle(
+          fontFamily: 'Syne',
+          fontSize: 14,
+          fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+          color: isSelected ? AppTheme.accentPrimary : AppTheme.textPrimary,
+          letterSpacing: 1.0,
         ),
       ),
     );
@@ -260,86 +281,75 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
     }
 
     if (deckState.isDeckEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 40),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 100,
-                height: 100,
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 80),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                color: AppTheme.bgSurface,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: AppTheme.accentPrimary.withValues(alpha: 0.2),
+                  width: 2,
+                ),
+              ),
+              child: const Center(
+                child: Icon(
+                  Icons.auto_awesome_rounded,
+                  size: 28,
+                  color: AppTheme.accentPrimary,
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              'That\'s a Wrap!',
+              style: TextStyle(
+                fontFamily: 'Syne',
+                fontSize: 28,
+                fontWeight: FontWeight.w700,
+                color: AppTheme.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'You\'ve seen everything for this vibe. Try a different mood or load more.',
+              style: TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 15,
+                color: AppTheme.textSecondary,
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 32),
+            GestureDetector(
+              onTap: () {
+                HapticFeedback.lightImpact();
+                ref.read(swipeDeckProvider.notifier).loadDeck();
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                 decoration: BoxDecoration(
-                  color: AppTheme.bgSurface,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: AppTheme.accentPrimary.withValues(alpha: 0.2),
-                    width: 2,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppTheme.accentPrimary.withValues(alpha: 0.1),
-                      blurRadius: 40,
-                      spreadRadius: 10,
-                    ),
-                  ],
+                  color: AppTheme.accentPrimary,
+                  borderRadius: BorderRadius.circular(30),
                 ),
-                child: const Center(
-                  child: Icon(
-                    Icons.auto_awesome_rounded,
-                    size: 48,
-                    color: AppTheme.accentPrimary,
+                child: const Text(
+                  'Load More',
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textInverse,
                   ),
                 ),
               ),
-              const SizedBox(height: 32),
-              const Text(
-                'That\'s a Wrap!',
-                style: TextStyle(
-                  fontFamily: 'Syne',
-                  fontSize: 28,
-                  fontWeight: FontWeight.w700,
-                  color: AppTheme.textPrimary,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 12),
-              const Text(
-                'You\'ve seen everything for this vibe. Try a different mood or load more.',
-                style: TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 15,
-                  color: AppTheme.textSecondary,
-                  height: 1.5,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 32),
-              GestureDetector(
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  ref.read(swipeDeckProvider.notifier).loadDeck();
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                  decoration: BoxDecoration(
-                    color: AppTheme.accentPrimary,
-                    borderRadius: BorderRadius.circular(30),
-                    boxShadow: AppTheme.cyanGlow,
-                  ),
-                  child: const Text(
-                    'Load More',
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.textInverse,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       );
     }
@@ -387,22 +397,17 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
               } else if (dir == CardSwiperDirection.top) {
                 action = SwipeAction.watched;
                 HapticFeedback.mediumImpact();
-                WidgetsBinding.instance.addPostFrameCallback((_) async {
-                  int? rating = await _showRatingDialog(context);
-                  ref.read(swipeDeckProvider.notifier).onSwiped(item, action, rating: rating);
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).clearSnackBars();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Marked as Watched${rating != null ? ' with $rating stars' : ''}', style: const TextStyle(color: AppTheme.textInverse, fontWeight: FontWeight.w600)),
-                        backgroundColor: AppTheme.accentGreen,
-                        duration: const Duration(seconds: 1),
-                        behavior: SnackBarBehavior.floating,
-                        margin: const EdgeInsets.only(bottom: 120, left: 24, right: 24),
-                      ),
-                    );
-                  }
-                });
+                ref.read(swipeDeckProvider.notifier).onSwiped(item, action);
+                ScaffoldMessenger.of(context).clearSnackBars();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Marked as Watched', style: TextStyle(color: AppTheme.textInverse, fontWeight: FontWeight.w600)),
+                    backgroundColor: AppTheme.accentGreen,
+                    duration: Duration(seconds: 1),
+                    behavior: SnackBarBehavior.floating,
+                    margin: EdgeInsets.only(bottom: 120, left: 24, right: 24),
+                  ),
+                );
                 return true;
               } else if (dir == CardSwiperDirection.bottom) {
                 action = SwipeAction.heart;
@@ -440,50 +445,6 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
         _ActionButtons(controller: _swiperController),
         const SizedBox(height: 8),
       ],
-    );
-  }
-
-  Future<int?> _showRatingDialog(BuildContext context) async {
-    int currentRating = 0;
-    return showDialog<int>(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              backgroundColor: AppTheme.bgSurface,
-              title: const Text('Rate this movie', style: TextStyle(color: AppTheme.textPrimary, fontFamily: 'Syne', fontWeight: FontWeight.bold)),
-              content: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(5, (index) {
-                  return IconButton(
-                    icon: Icon(
-                      index < currentRating ? Icons.star : Icons.star_border,
-                      color: Colors.amber,
-                      size: 32,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        currentRating = index + 1;
-                      });
-                    },
-                  );
-                }),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context, null),
-                  child: const Text('Skip', style: TextStyle(color: AppTheme.textSecondary)),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.pop(context, currentRating > 0 ? currentRating : null),
-                  child: const Text('Submit', style: TextStyle(color: AppTheme.accentPrimary, fontWeight: FontWeight.bold)),
-                ),
-              ],
-            );
-          },
-        );
-      },
     );
   }
 }
@@ -564,17 +525,18 @@ class _SwipeCard extends StatelessWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: AppTheme.accentPrimary,
-                      borderRadius: BorderRadius.circular(20),
+                      color: Colors.black.withValues(alpha: 0.8),
+                      border: Border.all(color: Colors.white, width: 1.5),
+                      borderRadius: BorderRadius.zero,
                     ),
                     child: const Text(
-                      'TV',
+                      'TV SERIES',
                       style: TextStyle(
                         fontFamily: 'Inter',
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
-                        color: AppTheme.textInverse,
-                        letterSpacing: 0.5,
+                        color: Colors.white,
+                        letterSpacing: 1.0,
                       ),
                     ),
                   ),
@@ -848,49 +810,16 @@ class _ActionButtons extends StatelessWidget {
 
   const _ActionButtons({required this.controller});
 
-  Widget _buildGlassButton({
-    required VoidCallback onTap,
-    required double size,
-    required IconData icon,
-    required Color iconColor,
-    List<BoxShadow>? boxShadow,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          boxShadow: boxShadow,
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(size / 2),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: AppTheme.glassBlur, sigmaY: AppTheme.glassBlur),
-            child: Container(
-              decoration: BoxDecoration(
-                color: AppTheme.glassBackground,
-                shape: BoxShape.circle,
-                border: Border.all(color: AppTheme.glassBorder, width: 1.5),
-              ),
-              child: Icon(icon, color: iconColor, size: size * 0.45),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           // Undo (Small)
-          _buildGlassButton(
+          _LabeledGlassButton(
             onTap: () {
               HapticFeedback.lightImpact();
               controller.undo();
@@ -898,10 +827,11 @@ class _ActionButtons extends StatelessWidget {
             size: 52,
             icon: Icons.undo_rounded,
             iconColor: AppTheme.textMuted,
+            label: 'UNDO',
           ),
           
           // Skip / X (Large)
-          _buildGlassButton(
+          _LabeledGlassButton(
             onTap: () {
               HapticFeedback.lightImpact();
               controller.swipe(CardSwiperDirection.left);
@@ -909,10 +839,11 @@ class _ActionButtons extends StatelessWidget {
             size: 72,
             icon: Icons.close_rounded,
             iconColor: AppTheme.accentSecondary,
+            label: 'SKIP',
           ),
 
           // Heart / Like (Small, Bottom Swipe)
-          _buildGlassButton(
+          _LabeledGlassButton(
             onTap: () {
               HapticFeedback.mediumImpact();
               controller.swipe(CardSwiperDirection.bottom);
@@ -920,10 +851,11 @@ class _ActionButtons extends StatelessWidget {
             size: 52,
             icon: Icons.favorite_rounded,
             iconColor: Colors.pinkAccent,
+            label: 'LIKE',
           ),
 
           // Save / Bookmark (Large)
-          _buildGlassButton(
+          _LabeledGlassButton(
             onTap: () {
               HapticFeedback.mediumImpact();
               controller.swipe(CardSwiperDirection.right);
@@ -931,11 +863,11 @@ class _ActionButtons extends StatelessWidget {
             size: 72,
             icon: Icons.bookmark_add_rounded,
             iconColor: AppTheme.accentPrimary,
-            boxShadow: AppTheme.cyanGlow,
+            label: 'SAVE',
           ),
 
           // Eye / Watched (Small, Top Swipe)
-          _buildGlassButton(
+          _LabeledGlassButton(
             onTap: () {
               HapticFeedback.mediumImpact();
               controller.swipe(CardSwiperDirection.top);
@@ -943,9 +875,97 @@ class _ActionButtons extends StatelessWidget {
             size: 52,
             icon: Icons.visibility_rounded,
             iconColor: AppTheme.accentGreen,
+            label: 'WATCHED',
           ),
         ],
       ),
     );
   }
+}
+
+class _LabeledGlassButton extends StatefulWidget {
+  final VoidCallback onTap;
+  final double size;
+  final IconData icon;
+  final Color iconColor;
+  final String label;
+  final List<BoxShadow>? boxShadow;
+
+  const _LabeledGlassButton({
+    required this.onTap,
+    required this.size,
+    required this.icon,
+    required this.iconColor,
+    required this.label,
+    this.boxShadow,
+  });
+
+  @override
+  State<_LabeledGlassButton> createState() => _LabeledGlassButtonState();
+}
+
+class _LabeledGlassButtonState extends State<_LabeledGlassButton> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _isPressed = true),
+      onTapUp: (_) {
+        setState(() => _isPressed = false);
+        widget.onTap();
+      },
+      onTapCancel: () => setState(() => _isPressed = false),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            width: widget.size,
+            height: widget.size,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              boxShadow: widget.boxShadow,
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(widget.size / 2),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: AppTheme.glassBlur, sigmaY: AppTheme.glassBlur),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 150),
+                  decoration: BoxDecoration(
+                    color: _isPressed 
+                        ? widget.iconColor.withValues(alpha: 0.3) 
+                        : AppTheme.glassBackground,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: _isPressed ? widget.iconColor : AppTheme.glassBorder, 
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Icon(
+                    widget.icon, 
+                    color: _isPressed ? widget.iconColor : AppTheme.textMuted, 
+                    size: widget.size * 0.45,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            widget.label,
+            style: TextStyle(
+              fontFamily: 'Syne',
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              color: _isPressed ? widget.iconColor : AppTheme.textMuted,
+              letterSpacing: 1.0,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
 }

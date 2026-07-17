@@ -31,6 +31,9 @@ class UserProfileModel extends HiveObject {
   @HiveField(8, defaultValue: false)
   bool hasSeenWalkthrough;
 
+  @HiveField(9, defaultValue: false)
+  bool suppressAuthGate;
+
   UserProfileModel({
     this.tasteSeedMovieIds = const [],
     this.tasteSeedTvIds = const [],
@@ -41,8 +44,9 @@ class UserProfileModel extends HiveObject {
     this.swipeGateDismissed = false,
     this.allowOldMovies = false,
     this.hasSeenWalkthrough = false,
+    this.suppressAuthGate = false,
   });
 
   bool get hasReachedSwipeGate =>
-      totalSwipeCount >= 5 && !swipeGateDismissed;
+      totalSwipeCount >= 5 && !swipeGateDismissed && !suppressAuthGate;
 }

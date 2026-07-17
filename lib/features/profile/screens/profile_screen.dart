@@ -29,18 +29,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         elevation: 0,
         title: const Text('Your Profile', style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
         iconTheme: const IconThemeData(color: AppTheme.textPrimary),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              showModalBottomSheet(
-                context: context,
-                backgroundColor: Colors.transparent,
-                builder: (context) => const SettingsSheet(),
-              );
-            },
-          ),
-        ],
+        actions: const [],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -107,75 +96,51 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             Row(
               children: [
                 Expanded(
-                  child: _StatCard(
-                    icon: LucideIcons.mousePointerClick,
-                    title: 'Total Swipes',
-                    value: profile.totalSwipeCount.toString(),
+                  child: GestureDetector(
+                    onTap: () {
+                      context.push('/swipe-history');
+                    },
+                    child: _StatCard(
+                      icon: LucideIcons.mousePointer2,
+                      title: 'Total Swipes',
+                      value: profile.totalSwipeCount.toString(),
+                      isClickable: true,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
-                  child: _StatCard(
-                    icon: LucideIcons.film,
-                    title: 'Taste Seeds',
-                    value: (profile.tasteSeedMovieIds.length + profile.tasteSeedTvIds.length).toString(),
+                  child: GestureDetector(
+                    onTap: () {
+                      context.push('/onboarding/taste', extra: true);
+                    },
+                    child: _StatCard(
+                      icon: LucideIcons.film,
+                      title: 'Taste Seeds',
+                      value: (profile.tasteSeedMovieIds.length + profile.tasteSeedTvIds.length).toString(),
+                      isClickable: true,
+                    ),
                   ),
                 ),
               ],
             ),
 
             const SizedBox(height: 32),
-            GestureDetector(
-              onTap: () {
-                context.push('/watched-vault');
-              },
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [AppTheme.accentGreen, AppTheme.accentPrimary],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppTheme.accentGreen.withValues(alpha: 0.3),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(LucideIcons.checkCircle, color: Colors.white, size: 28),
-                    ),
-                    const SizedBox(width: 16),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Watched History', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                          SizedBox(height: 4),
-                          Text('See movies you\'ve marked as watched', style: TextStyle(color: Colors.white70, fontSize: 12)),
-                        ],
-                      ),
-                    ),
-                    const Icon(LucideIcons.chevronRight, color: Colors.white, size: 24),
-                  ],
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 32),
             const Text('Settings', style: TextStyle(color: AppTheme.textSecondary, fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
             const SizedBox(height: 12),
+
+            _SettingsTile(
+              icon: LucideIcons.settings,
+              title: 'Preferences',
+              subtitle: 'Change content filters and classic movies',
+              onTap: () {
+                showModalBottomSheet(
+                  context: context,
+                  backgroundColor: Colors.transparent,
+                  builder: (context) => const SettingsSheet(),
+                );
+              },
+            ),
 
             _SettingsTile(
               icon: LucideIcons.rotateCcw,
@@ -203,14 +168,49 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             
             if (user != null)
               _SettingsTile(
-                icon: LucideIcons.logOut,
+              icon: LucideIcons.user,
+              title: 'Account Details',
+              subtitle: 'Manage your name and email',
+              onTap: () {
+                // TODO: Implement Account Details screen
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Account details coming soon', style: TextStyle(color: AppTheme.textInverse)),
+                    backgroundColor: AppTheme.accentPrimary,
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
+            ),
+
+            _SettingsTile(
+              icon: LucideIcons.bell,
+              title: 'Push Notifications',
+              subtitle: 'Get alerts for new releases',
+              trailing: Switch(
+                value: false,
+                onChanged: (val) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Notifications coming soon', style: TextStyle(color: AppTheme.textInverse)),
+                      backgroundColor: AppTheme.accentPrimary,
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
+                activeColor: AppTheme.accentPrimary,
+              ),
+              onTap: () {},
+            ),
+
+            _SettingsTile(
+              icon: LucideIcons.logOut,
                 title: 'Sign Out',
                 subtitle: 'Disconnect your account from this device',
-                isDestructive: true,
                 onTap: () {
                   ref.read(authServiceProvider).signOut();
                 },
-              ),
+            ),
           ],
         ),
       ),
@@ -222,8 +222,9 @@ class _StatCard extends StatelessWidget {
   final IconData icon;
   final String title;
   final String value;
+  final bool isClickable;
 
-  const _StatCard({required this.icon, required this.title, required this.value});
+  const _StatCard({required this.icon, required this.title, required this.value, this.isClickable = false});
 
   @override
   Widget build(BuildContext context) {
@@ -237,7 +238,14 @@ class _StatCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: AppTheme.accentPrimary, size: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Icon(icon, color: AppTheme.accentPrimary, size: 24),
+              if (isClickable)
+                const Icon(Icons.edit, color: AppTheme.textSecondary, size: 16),
+            ],
+          ),
           const SizedBox(height: 16),
           Text(value, style: const TextStyle(color: AppTheme.textPrimary, fontSize: 24, fontWeight: FontWeight.bold)),
           const SizedBox(height: 4),
@@ -254,6 +262,7 @@ class _SettingsTile extends StatelessWidget {
   final String subtitle;
   final VoidCallback onTap;
   final bool isDestructive;
+  final Widget? trailing;
 
   const _SettingsTile({
     required this.icon,
@@ -261,6 +270,7 @@ class _SettingsTile extends StatelessWidget {
     required this.subtitle,
     required this.onTap,
     this.isDestructive = false,
+    this.trailing,
   });
 
   @override
@@ -286,7 +296,7 @@ class _SettingsTile extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(LucideIcons.chevronRight, color: AppTheme.bgMuted, size: 20),
+            trailing ?? const Icon(LucideIcons.chevronRight, color: AppTheme.bgMuted, size: 20),
           ],
         ),
       ),
