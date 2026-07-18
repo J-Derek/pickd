@@ -103,7 +103,7 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
   Widget build(BuildContext context) {
     final item = _item;
     final isInWatchlist =
-        item != null ? ref.watch(isInWatchlistProvider(item.id)) : false;
+        item != null ? ref.watch(isInWatchlistProvider(item.mediaKey)) : false;
 
     return Scaffold(
       backgroundColor: AppTheme.bgPrimary,
@@ -416,7 +416,21 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                               if (isInWatchlist) {
                                 ref
                                     .read(watchlistProvider.notifier)
-                                    .remove(item.id);
+                                    .remove(item.mediaKey);
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).clearSnackBars();
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: const Text('Removed from Watchlist', style: TextStyle(color: AppTheme.textInverse)),
+                                      backgroundColor: AppTheme.bgSurface,
+                                      action: SnackBarAction(
+                                        label: 'Undo',
+                                        textColor: AppTheme.accentPrimary,
+                                        onPressed: () => ref.read(watchlistProvider.notifier).addMedia(item),
+                                      ),
+                                    ),
+                                  );
+                                }
                               } else {
                                 // Route to correct watchlist by type
                                 switch (item) {
@@ -428,6 +442,15 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                                     ref
                                         .read(watchlistProvider.notifier)
                                         .addTv(show);
+                                }
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).clearSnackBars();
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Added to Watchlist', style: TextStyle(color: AppTheme.textInverse)),
+                                      backgroundColor: AppTheme.accentPrimary,
+                                    ),
+                                  );
                                 }
                               }
                             },

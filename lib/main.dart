@@ -20,10 +20,14 @@ Future<void> main() async {
     DeviceOrientation.portraitDown,
   ]);
 
+  if (Env.supabaseUrl.isEmpty || Env.supabaseAnonKey.isEmpty) {
+    throw Exception('Missing Supabase credentials in --dart-define. Env.supabaseUrl and Env.supabaseAnonKey must be provided.');
+  }
+
   // Initialize Supabase
   await Supabase.initialize(
     url: Env.supabaseUrl,
-    publishableKey: Env.supabaseAnonKey,
+    anonKey: Env.supabaseAnonKey,
   );
   
   // Ensure we have at least an anonymous user session

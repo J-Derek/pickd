@@ -33,6 +33,12 @@ sealed class MediaItem {
         TvItem(:final show) => show.id,
       };
 
+  /// Unique key combining media type and id (e.g., 'movie_123', 'tv_456')
+  String get mediaKey => switch (this) {
+        MovieItem(:final movie) => 'movie_${movie.id}',
+        TvItem(:final show) => 'tv_${show.id}',
+      };
+
   String get title => switch (this) {
         MovieItem(:final movie) => movie.title,
         TvItem(:final show) => show.name,

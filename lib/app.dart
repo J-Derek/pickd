@@ -77,7 +77,7 @@ class PickdApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'pickd',
+      title: 'Pickd',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.theme,
       routerConfig: _router,

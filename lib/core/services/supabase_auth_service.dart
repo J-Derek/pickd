@@ -32,6 +32,18 @@ class SupabaseAuthService {
   }
 
   Future<AuthResponse> signUp(String email, String password) async {
+    final user = _supabase.auth.currentUser;
+    if (user != null && user.isAnonymous) {
+      final res = await _supabase.auth.updateUser(UserAttributes(
+        email: email,
+        password: password,
+      ));
+      return AuthResponse(
+        session: _supabase.auth.currentSession,
+        user: res.user,
+      );
+    }
+    
     return await _supabase.auth.signUp(
       email: email,
       password: password,

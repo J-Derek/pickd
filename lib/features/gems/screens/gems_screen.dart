@@ -11,6 +11,8 @@ import '../../../core/config/app_theme.dart';
 import '../../../core/models/media_item.dart';
 import '../../../core/services/hive_service.dart';
 import '../../../core/services/discovery_service.dart';
+import '../../../core/services/supabase_auth_service.dart';
+import '../../../core/services/supabase_db_service.dart';
 import '../../../core/widgets/shimmer_card.dart';
 import '../../watchlist/providers/watchlist_provider.dart';
 import '../../../core/widgets/genre_chip.dart';
@@ -47,11 +49,20 @@ class _GemsScreenState extends ConsumerState<GemsScreen> {
     });
     try {
       final profile = HiveService.getProfile();
+      final user = ref.read(currentUserProvider);
+      
+      Set<String> seenKeys = HiveService.getSwipedKeys();
+      if (user != null) {
+        final supabaseKeys = await ref.read(supabaseDbServiceProvider).getSwipedMediaKeys(user.id);
+        seenKeys = {...seenKeys, ...supabaseKeys};
+      }
+      
       final gems = await DiscoveryService.buildDeck(
         tasteSeedMovieIds: profile.tasteSeedMovieIds,
         tasteSeedTvIds: profile.tasteSeedTvIds,
         moodIds: profile.selectedMoodIds,
         gemsMode: true,
+        seenKeys: seenKeys,
       );
       if (mounted) {
         setState(() {
@@ -72,11 +83,20 @@ class _GemsScreenState extends ConsumerState<GemsScreen> {
   Future<void> _loadMoreGems() async {
     try {
       final profile = HiveService.getProfile();
+      final user = ref.read(currentUserProvider);
+      
+      Set<String> seenKeys = HiveService.getSwipedKeys();
+      if (user != null) {
+        final supabaseKeys = await ref.read(supabaseDbServiceProvider).getSwipedMediaKeys(user.id);
+        seenKeys = {...seenKeys, ...supabaseKeys};
+      }
+      
       final newGems = await DiscoveryService.buildDeck(
         tasteSeedMovieIds: profile.tasteSeedMovieIds,
         tasteSeedTvIds: profile.tasteSeedTvIds,
         moodIds: profile.selectedMoodIds,
         gemsMode: true,
+        seenKeys: seenKeys,
       );
       if (mounted) {
         setState(() {
@@ -298,10 +318,10 @@ class _GemCard extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                     decoration: BoxDecoration(
-                      color: AppTheme.bgPrimary,
-                      border: Border.all(color: AppTheme.accentPrimary, width: 3),
-                      borderRadius: BorderRadius.zero,
-                    ),
+        color: AppTheme.bgSurface,
+        borderRadius: BorderRadius.circular(0),
+        border: Border.all(color: AppTheme.bgMuted, width: 1),
+      ),
                     child: const Text(
                       'WATCH',
                       style: TextStyle(

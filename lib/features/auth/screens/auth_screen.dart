@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/config/app_theme.dart';
 import '../../../core/services/supabase_auth_service.dart';
+import '../services/migration_service.dart';
 
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
@@ -15,13 +16,15 @@ class AuthScreen extends ConsumerStatefulWidget {
 class _AuthScreenState extends ConsumerState<AuthScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _isSignUp = true;
+  final _confirmPasswordController = TextEditingController();
+  bool _isSignUp = false;
   bool _isLoading = false;
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
@@ -39,16 +42,45 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       return;
     }
 
+    if (_isSignUp && password != _confirmPasswordController.text.trim()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Passwords do not match', style: TextStyle(color: AppTheme.textInverse)),
+          backgroundColor: AppTheme.accentSecondary,
+        ),
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     try {
       final authService = ref.read(authServiceProvider);
       if (_isSignUp) {
-        await authService.signUp(email, password);
+        final response = await authService.signUp(email, password);
+        final needsConfirmation = response.session == null || response.user?.newEmail != null;
+        if (needsConfirmation) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Verification email sent! Please check your inbox.', style: TextStyle(color: Colors.white)),
+                backgroundColor: AppTheme.accentGreen,
+                duration: Duration(seconds: 5),
+              ),
+            );
+            setState(() => _isSignUp = false);
+            return;
+          }
+        }
       } else {
         await authService.signInWithEmailPassword(email, password);
+        
+        // Perform migration of local data to Supabase ONLY on Sign In
+        if (mounted) {
+          await ref.read(migrationServiceProvider).migrateGuestDataToSupabase();
+        }
       }
-      
+
       if (mounted) {
         if (context.canPop()) {
           context.pop();
@@ -60,7 +92,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e.toString(), style: const TextStyle(color: AppTheme.textInverse)),
+            content: Text(e.toString(), style: const TextStyle(color: Colors.white)),
             backgroundColor: AppTheme.accentSecondary,
           ),
         );
@@ -134,9 +166,47 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   ),
                 ),
                 obscureText: true,
-                textInputAction: TextInputAction.done,
-                onSubmitted: (_) => _submit(),
+                textInputAction: _isSignUp ? TextInputAction.next : TextInputAction.done,
+                onSubmitted: _isSignUp ? null : (_) => _submit(),
               ),
+              if (_isSignUp) ...[
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _confirmPasswordController,
+                  style: const TextStyle(color: AppTheme.textPrimary),
+                  decoration: const InputDecoration(
+                    labelText: 'Confirm Password',
+                    labelStyle: TextStyle(color: AppTheme.textSecondary),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: AppTheme.bgMuted),
+                      borderRadius: BorderRadius.zero,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: AppTheme.accentPrimary),
+                      borderRadius: BorderRadius.zero,
+                    ),
+                  ),
+                  obscureText: true,
+                  textInputAction: TextInputAction.done,
+                  onSubmitted: (_) => _submit(),
+                ),
+              ],
+              if (!_isSignUp) ...[
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Password reset coming soon.', style: TextStyle(color: AppTheme.textInverse)),
+                          backgroundColor: AppTheme.accentPrimary,
+                        ),
+                      );
+                    },
+                    child: const Text('Forgot Password?', style: TextStyle(color: AppTheme.textMuted)),
+                  ),
+                ),
+              ],
               const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: _isLoading ? null : _submit,

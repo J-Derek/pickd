@@ -147,6 +147,15 @@ class _ToWatchTabState extends ConsumerState<_ToWatchTab> {
   @override
   Widget build(BuildContext context) {
     final watchlist = ref.watch(watchlistProvider);
+    final isLoading = ref.watch(isWatchlistLoadingProvider);
+
+    if (isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(
+          color: AppTheme.accentPrimary,
+        ),
+      );
+    }
 
     if (watchlist.isEmpty) {
       return Padding(
@@ -251,7 +260,7 @@ class _ToWatchTabState extends ConsumerState<_ToWatchTab> {
                                     Navigator.of(ctx).pop(true),
                                 child: const Text('Clear',
                                     style: TextStyle(
-                                        color: AppTheme.accentPrimary))),
+                                        color: AppTheme.accentSecondary))),
                           ],
                         ),
                       );
@@ -293,7 +302,7 @@ class _ToWatchTabState extends ConsumerState<_ToWatchTab> {
                                 .addMedia(movie);
                             await ref
                                 .read(watchlistProvider.notifier)
-                                .remove(movie.id);
+                                .remove(movie.mediaKey);
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
@@ -311,9 +320,24 @@ class _ToWatchTabState extends ConsumerState<_ToWatchTab> {
                               );
                             }
                           },
-                          onRemove: () => ref
-                              .read(watchlistProvider.notifier)
-                              .remove(movie.id),
+                          onRemove: () async {
+                            final notifier = ref.read(watchlistProvider.notifier);
+                            await notifier.remove(movie.mediaKey);
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).clearSnackBars();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Removed ${movie.title}', style: const TextStyle(color: AppTheme.textInverse)),
+                                  backgroundColor: AppTheme.bgSurface,
+                                  action: SnackBarAction(
+                                    label: 'Undo',
+                                    textColor: AppTheme.accentPrimary,
+                                    onPressed: () => notifier.addMedia(movie),
+                                  ),
+                                ),
+                              );
+                            }
+                          },
                           onTap: () => context.push(
                               '/movie/${movie.id}',
                               extra: movie),
@@ -338,7 +362,7 @@ class _ToWatchTabState extends ConsumerState<_ToWatchTab> {
                                 .addMedia(movie);
                             await ref
                                 .read(watchlistProvider.notifier)
-                                .remove(movie.id);
+                                .remove(movie.mediaKey);
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
@@ -356,9 +380,24 @@ class _ToWatchTabState extends ConsumerState<_ToWatchTab> {
                               );
                             }
                           },
-                          onRemove: () => ref
-                              .read(watchlistProvider.notifier)
-                              .remove(movie.id),
+                          onRemove: () async {
+                            final notifier = ref.read(watchlistProvider.notifier);
+                            await notifier.remove(movie.mediaKey);
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).clearSnackBars();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Removed ${movie.title}', style: const TextStyle(color: AppTheme.textInverse)),
+                                  backgroundColor: AppTheme.bgSurface,
+                                  action: SnackBarAction(
+                                    label: 'Undo',
+                                    textColor: AppTheme.accentPrimary,
+                                    onPressed: () => notifier.addMedia(movie),
+                                  ),
+                                ),
+                              );
+                            }
+                          },
                           onTap: () => context.push(
                               '/movie/${movie.id}',
                               extra: movie),
@@ -389,6 +428,15 @@ class _WatchedTabState extends ConsumerState<_WatchedTab> {
   @override
   Widget build(BuildContext context) {
     final watchedList = ref.watch(watchedVaultProvider);
+    final isLoading = ref.watch(isWatchedLoadingProvider);
+
+    if (isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(
+          color: AppTheme.accentPrimary,
+        ),
+      );
+    }
 
     if (watchedList.isEmpty) {
       return const Padding(
@@ -517,7 +565,7 @@ class _WatchedTabState extends ConsumerState<_WatchedTab> {
                                 .addMedia(movie);
                             await ref
                                 .read(watchedVaultProvider.notifier)
-                                .remove(movie.id);
+                                .remove(movie.mediaKey);
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
@@ -529,9 +577,24 @@ class _WatchedTabState extends ConsumerState<_WatchedTab> {
                               );
                             }
                           },
-                          onRemove: () => ref
-                              .read(watchedVaultProvider.notifier)
-                              .remove(movie.id),
+                          onRemove: () async {
+                            final notifier = ref.read(watchedVaultProvider.notifier);
+                            await notifier.remove(movie.mediaKey);
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).clearSnackBars();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Removed ${movie.title}', style: const TextStyle(color: AppTheme.textInverse)),
+                                  backgroundColor: AppTheme.bgSurface,
+                                  action: SnackBarAction(
+                                    label: 'Undo',
+                                    textColor: AppTheme.accentPrimary,
+                                    onPressed: () => notifier.addMedia(movie),
+                                  ),
+                                ),
+                              );
+                            }
+                          },
                           onTap: () => context.push(
                               '/movie/${movie.id}',
                               extra: movie),
@@ -556,7 +619,7 @@ class _WatchedTabState extends ConsumerState<_WatchedTab> {
                                 .addMedia(movie);
                             await ref
                                 .read(watchedVaultProvider.notifier)
-                                .remove(movie.id);
+                                .remove(movie.mediaKey);
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
@@ -568,9 +631,24 @@ class _WatchedTabState extends ConsumerState<_WatchedTab> {
                               );
                             }
                           },
-                          onRemove: () => ref
-                              .read(watchedVaultProvider.notifier)
-                              .remove(movie.id),
+                          onRemove: () async {
+                            final notifier = ref.read(watchedVaultProvider.notifier);
+                            await notifier.remove(movie.mediaKey);
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).clearSnackBars();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Removed ${movie.title}', style: const TextStyle(color: AppTheme.textInverse)),
+                                  backgroundColor: AppTheme.bgSurface,
+                                  action: SnackBarAction(
+                                    label: 'Undo',
+                                    textColor: AppTheme.accentPrimary,
+                                    onPressed: () => notifier.addMedia(movie),
+                                  ),
+                                ),
+                              );
+                            }
+                          },
                           onTap: () => context.push(
                               '/movie/${movie.id}',
                               extra: movie),

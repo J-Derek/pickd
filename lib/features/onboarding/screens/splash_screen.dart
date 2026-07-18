@@ -5,14 +5,17 @@ import '../../../core/config/app_theme.dart';
 import '../../../core/services/hive_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class SplashScreen extends StatefulWidget {
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../auth/services/migration_service.dart';
+
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen>
+class _SplashScreenState extends ConsumerState<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeAnim;
@@ -39,13 +42,16 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _navigate() async {
-    // Ensure user is signed in anonymously if not already signed in
-    if (Supabase.instance.client.auth.currentSession == null) {
+    final session = Supabase.instance.client.auth.currentSession;
+    if (session == null) {
       try {
         await Supabase.instance.client.auth.signInAnonymously();
       } catch (e) {
         // Ignore, fallback to local storage
       }
+    } else if (session.user.isAnonymous == false) {
+      // Background flush if user is logged in
+      ref.read(migrationServiceProvider).flushPendingSync();
     }
 
     await Future.delayed(const Duration(milliseconds: 2200));
@@ -104,7 +110,7 @@ class _SplashScreenState extends State<SplashScreen>
                 const SizedBox(height: 20),
                 // App name
                 const Text(
-                  'pickd',
+                  'Pickd',
                   style: TextStyle(
                     fontFamily: 'Syne',
                     fontSize: 36,

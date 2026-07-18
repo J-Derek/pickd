@@ -97,7 +97,7 @@ class TmdbService {
       final params = <String, dynamic>{
         'language': 'en-US',
         'with_genres': genreIds.join('|'),
-        'sort_by': 'vote_average.desc',
+        'sort_by': 'popularity.desc',
         'vote_count.gte': 100,
         'include_adult': false,
         'page': page,
@@ -275,7 +275,7 @@ class TmdbService {
       final params = <String, dynamic>{
         'language': 'en-US',
         'with_genres': genreIds.join('|'),
-        'sort_by': 'vote_average.desc',
+        'sort_by': 'popularity.desc',
         'vote_count.gte': 50,
         'include_adult': false,
         'page': page,

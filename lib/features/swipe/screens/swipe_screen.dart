@@ -122,11 +122,12 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
       child: Row(
         children: [
           const Text(
-            'pickd',
+            'Pickd.',
             style: TextStyle(
               fontFamily: 'Syne',
-              fontSize: 24,
-              fontWeight: FontWeight.w800,
+              fontSize: 26,
+              letterSpacing: -1.0,
+              fontWeight: FontWeight.w900,
               color: AppTheme.accentPrimary,
             ),
           ),
@@ -300,7 +301,7 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
               ),
               child: const Center(
                 child: Icon(
-                  Icons.auto_awesome_rounded,
+                  LucideIcons.film,
                   size: 28,
                   color: AppTheme.accentPrimary,
                 ),

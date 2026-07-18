@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../core/config/app_theme.dart';
 
@@ -77,8 +78,8 @@ class MainShell extends StatelessWidget {
                     onTap: () => context.go('/watchlist'),
                   ),
                   _NavItem(
-                    icon: Icons.auto_awesome_outlined,
-                    activeIcon: Icons.auto_awesome,
+                    icon: LucideIcons.gem,
+                    activeIcon: LucideIcons.gem,
                     label: 'Gems',
                     isActive: index == 2,
                     onTap: () => context.go('/gems'),

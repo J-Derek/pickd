@@ -30,8 +30,8 @@ class DiscoveryService {
     bool gemsMode = false,
     MediaFilter filter = MediaFilter.moviesOnly,
     int page = 1,
+    required Set<String> seenKeys,
   }) async {
-    final seenKeys = HiveService.getSwipedKeys();
     final profile = HiveService.getProfile();
 
     // Run movie and TV pipelines concurrently when needed

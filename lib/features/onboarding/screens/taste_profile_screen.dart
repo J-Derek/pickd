@@ -204,6 +204,26 @@ class _TasteProfileScreenState extends ConsumerState<TasteProfileScreen> {
                           ),
                           TextButton(
                             onPressed: () async {
+                              if (state.tasteMedia.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('No titles selected. Falling back to mood preferences.', style: TextStyle(color: AppTheme.textInverse)),
+                                    backgroundColor: AppTheme.accentSecondary,
+                                    behavior: SnackBarBehavior.floating,
+                                    duration: Duration(seconds: 2),
+                                  ),
+                                );
+                              } else if (state.tasteMedia.length < 3) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Only picked ${state.tasteMedia.length}? We\'ll use these plus your mood.', style: const TextStyle(color: AppTheme.textInverse)),
+                                    backgroundColor: AppTheme.accentPrimary,
+                                    behavior: SnackBarBehavior.floating,
+                                    duration: const Duration(seconds: 2),
+                                  ),
+                                );
+                              }
+
                               await notifier.completeOnboarding();
                               if (widget.isEditing) {
                                 ref.read(swipeDeckProvider.notifier).resetSwipeGate();
@@ -609,7 +629,7 @@ class _TasteProfileScreenState extends ConsumerState<TasteProfileScreen> {
                       child: Text(
                         state.canProceedFromTaste
                             ? 'Start Swiping'
-                            : 'Pick ${3 - state.tasteMedia.length} more movies',
+                            : 'Pick ${3 - state.tasteMedia.length} more titles',
                       ),
                     ),
                   ),

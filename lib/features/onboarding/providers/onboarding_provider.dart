@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/models/media_item.dart';
 import '../../../core/services/hive_service.dart';
+import '../../../core/services/supabase_auth_service.dart';
+import '../../../core/services/supabase_db_service.dart';
 
 /// State for the onboarding flow
 class OnboardingState {
@@ -32,7 +34,9 @@ class OnboardingState {
 }
 
 class OnboardingNotifier extends StateNotifier<OnboardingState> {
-  OnboardingNotifier() : super(const OnboardingState());
+  final Ref ref;
+
+  OnboardingNotifier(this.ref) : super(const OnboardingState());
 
   void toggleMood(String moodId) {
     final current = List<String>.from(state.selectedMoodIds);
@@ -62,23 +66,30 @@ class OnboardingNotifier extends StateNotifier<OnboardingState> {
   Future<void> completeOnboarding() async {
     final profile = HiveService.getProfile();
     
-    profile.tasteSeedMovieIds = state.tasteMedia
+    final movieIds = state.tasteMedia
         .where((m) => m.isMovie)
         .map((m) => m.id)
         .toList();
         
-    profile.tasteSeedTvIds = state.tasteMedia
+    final tvIds = state.tasteMedia
         .where((m) => m.isTv)
         .map((m) => m.id)
         .toList();
         
+    profile.tasteSeedMovieIds = movieIds;
+    profile.tasteSeedTvIds = tvIds;
     profile.selectedMoodIds = state.selectedMoodIds;
     profile.onboardingComplete = true;
     await HiveService.saveProfile(profile);
+
+    final user = ref.read(currentUserProvider);
+    if (user != null) {
+      await ref.read(supabaseDbServiceProvider).syncTasteSeeds(user.id, movieIds, tvIds);
+    }
   }
 }
 
 final onboardingProvider =
     StateNotifierProvider<OnboardingNotifier, OnboardingState>(
-  (ref) => OnboardingNotifier(),
+  (ref) => OnboardingNotifier(ref),
 );

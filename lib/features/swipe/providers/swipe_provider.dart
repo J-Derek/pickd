@@ -1,8 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/models/media_item.dart';
 import '../../../core/services/discovery_service.dart';
 import '../../../core/services/hive_service.dart';
+import '../../../core/services/supabase_auth_service.dart';
+import '../../../core/services/supabase_db_service.dart';
 import '../../watchlist/providers/watchlist_provider.dart';
 import '../../watchlist/providers/watched_vault_provider.dart';
 
@@ -56,12 +59,21 @@ class SwipeDeckNotifier extends StateNotifier<SwipeDeckState> {
     state = state.copyWith(isLoading: true, error: null, filter: activeFilter, deck: const []);
     try {
       final profile = HiveService.getProfile();
+      final user = ref.read(currentUserProvider);
+      
+      Set<String> seenKeys = HiveService.getSwipedKeys();
+      if (user != null) {
+        final supabaseKeys = await ref.read(supabaseDbServiceProvider).getSwipedMediaKeys(user.id);
+        seenKeys = {...seenKeys, ...supabaseKeys};
+      }
+      
       final deck = await DiscoveryService.buildDeck(
         tasteSeedMovieIds: profile.tasteSeedMovieIds,
         tasteSeedTvIds: profile.tasteSeedTvIds,
         moodIds: profile.selectedMoodIds,
         gemsMode: gemsMode,
         filter: activeFilter,
+        seenKeys: seenKeys,
       );
       if (!mounted) return;
       state = state.copyWith(deck: deck, isLoading: false);
@@ -78,6 +90,14 @@ class SwipeDeckNotifier extends StateNotifier<SwipeDeckState> {
     try {
       _currentPage++;
       final profile = HiveService.getProfile();
+      final user = ref.read(currentUserProvider);
+      
+      Set<String> seenKeys = HiveService.getSwipedKeys();
+      if (user != null) {
+        final supabaseKeys = await ref.read(supabaseDbServiceProvider).getSwipedMediaKeys(user.id);
+        seenKeys = {...seenKeys, ...supabaseKeys};
+      }
+
       final newCards = await DiscoveryService.buildDeck(
         tasteSeedMovieIds: profile.tasteSeedMovieIds,
         tasteSeedTvIds: profile.tasteSeedTvIds,
@@ -85,6 +105,7 @@ class SwipeDeckNotifier extends StateNotifier<SwipeDeckState> {
         gemsMode: gemsMode,
         filter: state.filter,
         page: _currentPage,
+        seenKeys: seenKeys,
       );
       final existingIds = state.deck.map((e) => e.id).toSet();
       final filtered = newCards.where((m) => !existingIds.contains(m.id)).toList();
@@ -99,7 +120,19 @@ class SwipeDeckNotifier extends StateNotifier<SwipeDeckState> {
 
   /// Called when a card is swiped or a button is pressed.
   Future<void> onSwiped(MediaItem item, SwipeAction action, {int? rating}) async {
+    // Optimistically write to Hive
     await HiveService.addToSwipeHistory(item, action.name);
+
+    final user = ref.read(currentUserProvider);
+    if (user != null) {
+      try {
+        await ref.read(supabaseDbServiceProvider).recordSwipe(user.id, item, action.name);
+      } catch (e) {
+        debugPrint('Supabase swipe error: $e');
+        // Fallback: flag for sync
+        await HiveService.addToSwipeHistory(item, action.name, rating: rating?.toDouble(), pendingSync: true);
+      }
+    }
 
     final profile = HiveService.getProfile();
     profile.totalSwipeCount += 1;
@@ -123,22 +156,37 @@ class SwipeDeckNotifier extends StateNotifier<SwipeDeckState> {
 
   /// Called when a swipe is undone. Restores counts and removes from history/watchlist.
   Future<void> onUndo(MediaItem item, SwipeAction previousAction) async {
-    if (state.swipeCount > 0) {
-      state = state.copyWith(swipeCount: state.swipeCount - 1);
-    }
+    try {
+      if (state.swipeCount > 0) {
+        state = state.copyWith(swipeCount: state.swipeCount - 1);
+      }
 
-    final profile = HiveService.getProfile();
-    if (profile.totalSwipeCount > 0) {
-      profile.totalSwipeCount -= 1;
-      await HiveService.saveProfile(profile);
-    }
+      final profile = HiveService.getProfile();
+      if (profile.totalSwipeCount > 0) {
+        profile.totalSwipeCount -= 1;
+        await HiveService.saveProfile(profile);
+      }
 
-    await HiveService.removeFromSwipeHistory(item);
+      await HiveService.removeFromSwipeHistory(item);
 
-    if (previousAction == SwipeAction.save) {
-      await ref.read(watchlistProvider.notifier).remove(item.id);
-    } else if (previousAction == SwipeAction.watched) {
-      await ref.read(watchedVaultProvider.notifier).remove(item.id);
+      final user = ref.read(currentUserProvider);
+      if (user != null) {
+        final mediaType = item.isTv ? 'tv' : 'movie';
+        // Wrapping Supabase network calls in a separate try-catch so offline mode doesn't break undo
+        try {
+          await ref.read(supabaseDbServiceProvider).removeFromSwipeHistory(user.id, item.id, mediaType);
+        } catch (e) {
+          debugPrint('Supabase undo error: $e');
+        }
+      }
+
+      if (previousAction == SwipeAction.save) {
+        await ref.read(watchlistProvider.notifier).remove(item.mediaKey);
+      } else if (previousAction == SwipeAction.watched) {
+        await ref.read(watchedVaultProvider.notifier).remove(item.mediaKey);
+      }
+    } catch (e) {
+      debugPrint('Undo error: $e');
     }
   }
 
