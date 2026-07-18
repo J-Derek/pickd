@@ -1,22 +1,24 @@
 # Handoff Doc
-Generated: 2026-06-27
+Generated: 2026-07-17
 
-## What Was Built / Accomplished (MVP Complete)
-- **T1-T4 Technical Debt Cleared:** Fixed `isDeckEmpty` calculation, hooked up `onUndo` in `SwipeDeckNotifier` to sync with Hive history, added `_CacheInterceptor` for TMDB memory caching, and passed all unit tests.
-- **UI Polish:** Swapped old Material icons for sleek `lucide_icons` in the Hidden Gems section.
-- **Watchlist Enhancements:** Added a "Clear All" button to empty the local Hive watchlist.
-- **UX Improvements:** Wrapped the `MainShell` in a `PopScope` to intercept hardware back button presses on Android, displaying a beautiful exit confirmation dialog to prevent accidental app exits.
-- **Security Check:** Ran `/cso` audit; confirmed TMDB API key is securely injected at compile time (`--dart-define`) and not leaked in source control.
+## What Was Built / Accomplished (Frontend V1.1 Complete)
+- **Unified Media Models:** Merged Movie and TV items into a single sealed `MediaItem` class to power dual-mode swiping.
+- **Swipe History & Undo:** Upgraded `HiveService` to `swipeHistoryV2` to store detailed JSON metadata for history. Built a new `SwipeHistoryScreen` accessible from the Profile screen to view past actions (Skipped, Saved, Watched) and undo them instantly.
+- **Editable Taste Profile:** Made the Profile "Taste Seeds" clickable, routing the user to the Taste Profile screen in edit mode. Saving updates the algorithm and refreshes the deck on the fly.
+- **Where to Watch Links:** TMDB streaming provider links now correctly open a general TMDB web hub when a dedicated app deeplink isn't available.
+- **Android Back Navigation Fix:** Added `android:enableOnBackInvokedCallback="true"` to `AndroidManifest.xml` to squash the app-closing back-gesture bug.
+- **Profile Enhancements:** Added placeholder toggles for Account Details and Push Notifications, and neatly tucked the "Classics Filter" behind a Settings menu.
 
 ## Decisions Made
-- **Scope:** The MVP is officially feature-complete for local standalone usage (Movies only).
-- **Testing:** Deployed and verified via wireless ADB directly on a physical Android device (Tecno BG7). YouTube trailer parsing and deep linking via card-tap works flawlessly.
+- **Frontend V1.1 is Locked:** The local frontend experience is complete and pushed to GitHub's `dev` branch.
+- **Supabase Backend Reset:** The user decided to disconnect and completely rebuild the Supabase backend from scratch rather than trying to untangle the old setup.
+- **Anonymous Auth:** We noted that Anonymous Sign-Ins are currently disabled on the Supabase project, which was blocking the initial connection.
 
-## What's Next (V1.1 / V2 Roadmap)
-- [ ] **Feature:** TV Series Integration (Expand models to handle TV endpoints).
-- [ ] **Feature:** JustWatch API Integration (Show streaming availability on movie detail cards).
-- [ ] **Feature:** Multiplayer Swiping / Partner Match (Requires backend/auth).
-- [ ] **Feature:** Social / Shared Lists.
+## What's Next (Backend Redesign)
+- [ ] **Supabase Teardown:** Wipe the current Supabase schema/auth configuration.
+- [ ] **Database Schema Design:** Map out the new database schema for Profiles, Watchlists, and Swipe History.
+- [ ] **Auth Strategy:** Re-configure Supabase Auth (likely starting with Anonymous sessions that can be upgraded).
+- [ ] **Backend Migration:** Swap the local `HiveService` methods over to the newly designed Supabase backend endpoints.
 
 ## Blockers
-- None. MVP is shipped.
+- None. Next session starts fresh with the Backend/Auth redesign!

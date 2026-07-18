@@ -159,20 +159,22 @@ class _GenreCard extends StatelessWidget {
       transform: Matrix4.diagonal3Values(
           isSelected ? 1.02 : 1.0, isSelected ? 1.02 : 1.0, 1.0),
       transformAlignment: Alignment.center,
-      child: GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          decoration: BoxDecoration(
-            color: isSelected ? AppTheme.bgElevated : AppTheme.bgSurface,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: isSelected
-                  ? AppTheme.accentPrimary
-                  : AppTheme.bgMuted,
-              width: isSelected ? 1.5 : 1,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            decoration: BoxDecoration(
+              color: isSelected ? AppTheme.bgElevated : AppTheme.bgSurface,
+              borderRadius: BorderRadius.zero,
+              border: Border.all(
+                color: isSelected
+                    ? AppTheme.accentPrimary
+                    : AppTheme.bgMuted,
+                width: isSelected ? 1.5 : 1,
+              ),
             ),
-          ),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -197,6 +199,7 @@ class _GenreCard extends StatelessWidget {
           ),
         ),
       ),
+      ),
     );
   }
 }
@@ -214,19 +217,21 @@ class _GenreListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        height: 56,
-        decoration: BoxDecoration(
-          color: isSelected ? AppTheme.bgElevated : AppTheme.bgSurface,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? AppTheme.accentPrimary : AppTheme.bgMuted,
-            width: isSelected ? 1.5 : 1,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          height: 56,
+          decoration: BoxDecoration(
+            color: isSelected ? AppTheme.bgElevated : AppTheme.bgSurface,
+            borderRadius: BorderRadius.zero,
+            border: Border.all(
+              color: isSelected ? AppTheme.accentPrimary : AppTheme.bgMuted,
+              width: isSelected ? 1.5 : 1,
+            ),
           ),
-        ),
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Row(
           children: [
@@ -254,6 +259,7 @@ class _GenreListTile extends StatelessWidget {
               ),
           ],
         ),
+      ),
       ),
     );
   }

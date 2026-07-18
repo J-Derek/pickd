@@ -327,24 +327,23 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
               ),
             ),
             const SizedBox(height: 32),
-            GestureDetector(
-              onTap: () {
-                HapticFeedback.lightImpact();
-                ref.read(swipeDeckProvider.notifier).loadDeck();
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                decoration: BoxDecoration(
-                  color: AppTheme.accentPrimary,
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                child: const Text(
-                  'Load More',
-                  style: TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.textInverse,
+            Material(
+              color: AppTheme.accentPrimary,
+              child: InkWell(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  ref.read(swipeDeckProvider.notifier).loadDeck();
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                  child: const Text(
+                    'Load More',
+                    style: TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textInverse,
+                    ),
                   ),
                 ),
               ),

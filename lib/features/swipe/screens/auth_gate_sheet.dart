@@ -22,7 +22,7 @@ class _AuthGateSheetState extends State<AuthGateSheet> {
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 32),
       decoration: BoxDecoration(
         color: AppTheme.bgSurface,
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.zero,
         border: Border.all(color: AppTheme.bgMuted),
       ),
       padding: const EdgeInsets.all(28),
@@ -35,7 +35,7 @@ class _AuthGateSheetState extends State<AuthGateSheet> {
             height: 4,
             decoration: BoxDecoration(
               color: AppTheme.bgMuted,
-              borderRadius: BorderRadius.circular(2),
+              borderRadius: BorderRadius.zero,
             ),
           ),
           const SizedBox(height: 24),
@@ -110,21 +110,24 @@ class _AuthGateSheetState extends State<AuthGateSheet> {
             ),
           ),
           // Dismiss — keep swiping
-          GestureDetector(
-            onTap: () {
-              // State is already saved in onChanged
-              Navigator.of(context).pop();
-            },
-            child: const Padding(
-              padding: EdgeInsets.symmetric(vertical: 8),
-              child: Text(
-                'Keep swiping as guest',
-                style: TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 14,
-                  color: AppTheme.textMuted,
-                  decoration: TextDecoration.underline,
-                  decorationColor: AppTheme.textMuted,
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () {
+                // State is already saved in onChanged
+                Navigator.of(context).pop();
+              },
+              child: const Padding(
+                padding: EdgeInsets.symmetric(vertical: 8),
+                child: Text(
+                  'Keep swiping as guest',
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 14,
+                    color: AppTheme.textMuted,
+                    decoration: TextDecoration.underline,
+                    decorationColor: AppTheme.textMuted,
+                  ),
                 ),
               ),
             ),

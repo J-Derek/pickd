@@ -105,13 +105,13 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                 decoration: InputDecoration(
                   labelText: 'Email',
                   labelStyle: const TextStyle(color: AppTheme.textSecondary),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: AppTheme.bgMuted),
-                    borderRadius: BorderRadius.circular(12),
+                  enabledBorder: const OutlineInputBorder(
+                    borderSide: BorderSide(color: AppTheme.bgMuted),
+                    borderRadius: BorderRadius.zero,
                   ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: AppTheme.accentPrimary),
-                    borderRadius: BorderRadius.circular(12),
+                  focusedBorder: const OutlineInputBorder(
+                    borderSide: BorderSide(color: AppTheme.accentPrimary),
+                    borderRadius: BorderRadius.zero,
                   ),
                 ),
                 keyboardType: TextInputType.emailAddress,
@@ -124,13 +124,13 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                 decoration: InputDecoration(
                   labelText: 'Password',
                   labelStyle: const TextStyle(color: AppTheme.textSecondary),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: AppTheme.bgMuted),
-                    borderRadius: BorderRadius.circular(12),
+                  enabledBorder: const OutlineInputBorder(
+                    borderSide: BorderSide(color: AppTheme.bgMuted),
+                    borderRadius: BorderRadius.zero,
                   ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: AppTheme.accentPrimary),
-                    borderRadius: BorderRadius.circular(12),
+                  focusedBorder: const OutlineInputBorder(
+                    borderSide: BorderSide(color: AppTheme.accentPrimary),
+                    borderRadius: BorderRadius.zero,
                   ),
                 ),
                 obscureText: true,
@@ -143,8 +143,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.accentPrimary,
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.zero,
                   ),
                 ),
                 child: _isLoading

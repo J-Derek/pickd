@@ -27,7 +27,7 @@ class _SettingsSheetState extends ConsumerState<SettingsSheet> {
       padding: const EdgeInsets.all(24),
       decoration: const BoxDecoration(
         color: AppTheme.bgSurface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.zero,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -47,7 +47,7 @@ class _SettingsSheetState extends ConsumerState<SettingsSheet> {
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
             decoration: BoxDecoration(
               color: AppTheme.bgElevated,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.zero,
               border: Border.all(color: AppTheme.glassBorder),
             ),
             child: Row(

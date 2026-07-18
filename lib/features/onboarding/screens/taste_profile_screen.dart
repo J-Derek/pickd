@@ -170,21 +170,27 @@ class _TasteProfileScreenState extends ConsumerState<TasteProfileScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      GestureDetector(
-                        onTap: () {
-                          if (context.canPop()) {
-                            context.pop();
-                          } else {
-                            context.go('/onboarding/mood');
-                          }
-                        },
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.arrow_back_ios_new, size: 16, color: AppTheme.textSecondary),
-                            const SizedBox(width: 4),
-                            Text('Back', style: Theme.of(context).textTheme.bodyMedium),
-                          ],
+                      Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () {
+                            if (context.canPop()) {
+                              context.pop();
+                            } else {
+                              context.go('/onboarding/mood');
+                            }
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4.0),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.arrow_back_ios_new, size: 16, color: AppTheme.textSecondary),
+                                const SizedBox(width: 4),
+                                Text('Back', style: Theme.of(context).textTheme.bodyMedium),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
                       Row(
@@ -246,17 +252,17 @@ class _TasteProfileScreenState extends ConsumerState<TasteProfileScreen> {
                       filled: true,
                       fillColor: AppTheme.bgSurface,
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppTheme.bgElevated),
+                      border: const OutlineInputBorder(
+                        borderRadius: BorderRadius.zero,
+                        borderSide: BorderSide(color: AppTheme.bgElevated),
                       ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppTheme.bgElevated),
+                      enabledBorder: const OutlineInputBorder(
+                        borderRadius: BorderRadius.zero,
+                        borderSide: BorderSide(color: AppTheme.bgElevated),
                       ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppTheme.accentPrimary, width: 1.5),
+                      focusedBorder: const OutlineInputBorder(
+                        borderRadius: BorderRadius.zero,
+                        borderSide: BorderSide(color: AppTheme.accentPrimary, width: 1.5),
                       ),
                     ),
                   ),
@@ -329,47 +335,49 @@ class _TasteProfileScreenState extends ConsumerState<TasteProfileScreen> {
                         final isSelected = state.tasteMedia.any((m) => m.id == movie.id);
                         final isWatched = _watchedIds.contains(movie.id);
 
-                        return GestureDetector(
-                          onTap: isWatched ? null : () {
-                            if (isSelected) {
-                              notifier.removeTasteMedia(movie.id);
-                            } else {
-                              notifier.addTasteMedia(movie);
-                              if (state.tasteMedia.length == 2) { // 2 because it updates next frame to 3
-                                ScaffoldMessenger.of(context)
-                                  ..clearSnackBars()
-                                  ..showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'Nice pick! Add more to fine-tune your recommendations.',
-                                        style: TextStyle(fontFamily: 'Inter', color: AppTheme.textPrimary),
+                        return Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: isWatched ? null : () {
+                              if (isSelected) {
+                                notifier.removeTasteMedia(movie.id);
+                              } else {
+                                notifier.addTasteMedia(movie);
+                                if (state.tasteMedia.length == 2) { // 2 because it updates next frame to 3
+                                  ScaffoldMessenger.of(context)
+                                    ..clearSnackBars()
+                                    ..showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Nice pick! Add more to fine-tune your recommendations.',
+                                          style: TextStyle(fontFamily: 'Inter', color: AppTheme.textPrimary),
+                                        ),
+                                        duration: Duration(seconds: 4),
+                                        backgroundColor: AppTheme.bgElevated,
+                                        behavior: SnackBarBehavior.floating,
                                       ),
-                                      duration: Duration(seconds: 4),
-                                      backgroundColor: AppTheme.bgElevated,
-                                      behavior: SnackBarBehavior.floating,
-                                    ),
-                                  );
+                                    );
+                                }
                               }
-                            }
-                          },
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            curve: Curves.easeOut,
-                            transform: Matrix4.diagonal3Values(
-                              isSelected ? 0.95 : 1.0,
-                              isSelected ? 0.95 : 1.0,
-                              1.0,
-                            ),
-                            transformAlignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: isSelected ? AppTheme.accentPrimary : Colors.transparent,
-                                width: 3,
+                            },
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              curve: Curves.easeOut,
+                              transform: Matrix4.diagonal3Values(
+                                isSelected ? 0.95 : 1.0,
+                                isSelected ? 0.95 : 1.0,
+                                1.0,
                               ),
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(9),
+                              transformAlignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.zero,
+                                border: Border.all(
+                                  color: isSelected ? AppTheme.accentPrimary : Colors.transparent,
+                                  width: 3,
+                                ),
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.zero,
                               child: Stack(
                                 fit: StackFit.expand,
                                 children: [
@@ -427,6 +435,7 @@ class _TasteProfileScreenState extends ConsumerState<TasteProfileScreen> {
                               ),
                             ),
                           ),
+                        ),
                         );
                       },
                     )
@@ -450,48 +459,47 @@ class _TasteProfileScreenState extends ConsumerState<TasteProfileScreen> {
                         final isSelected = state.tasteMedia.any((m) => m.id == movie.id);
                         final isWatched = _watchedIds.contains(movie.id);
 
-                        return GestureDetector(
-                          onTap: isWatched ? null : () {
-                            if (isSelected) {
-                              notifier.removeTasteMedia(movie.id);
-                            } else {
-                              notifier.addTasteMedia(movie);
-                              if (state.tasteMedia.length == 2) {
-                                ScaffoldMessenger.of(context)
-                                  ..clearSnackBars()
-                                  ..showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'Nice pick! Add more to fine-tune your recommendations.',
-                                        style: TextStyle(fontFamily: 'Inter', color: AppTheme.textPrimary),
+                        return Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: isWatched ? null : () {
+                              if (isSelected) {
+                                notifier.removeTasteMedia(movie.id);
+                              } else {
+                                notifier.addTasteMedia(movie);
+                                if (state.tasteMedia.length == 2) {
+                                  ScaffoldMessenger.of(context)
+                                    ..clearSnackBars()
+                                    ..showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Nice pick! Add more to fine-tune your recommendations.',
+                                          style: TextStyle(fontFamily: 'Inter', color: AppTheme.textPrimary),
+                                        ),
+                                        duration: Duration(seconds: 4),
+                                        backgroundColor: AppTheme.bgElevated,
+                                        behavior: SnackBarBehavior.floating,
                                       ),
-                                      duration: Duration(seconds: 4),
-                                      backgroundColor: AppTheme.bgElevated,
-                                      behavior: SnackBarBehavior.floating,
-                                    ),
-                                  );
+                                    );
+                                }
                               }
-                            }
-                          },
-                          child: Opacity(
-                            opacity: isWatched ? 0.5 : 1.0,
-                            child: Container(
-                              height: 90,
-                              decoration: BoxDecoration(
-                                color: isSelected ? AppTheme.accentPrimary.withValues(alpha: 0.1) : AppTheme.bgSurface,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: isSelected ? AppTheme.accentPrimary : AppTheme.bgMuted,
-                                  width: isSelected ? 1.5 : 1,
+                            },
+                            child: Opacity(
+                              opacity: isWatched ? 0.5 : 1.0,
+                              child: Container(
+                                height: 90,
+                                decoration: BoxDecoration(
+                                  color: isSelected ? AppTheme.accentPrimary.withValues(alpha: 0.1) : AppTheme.bgSurface,
+                                  borderRadius: BorderRadius.zero,
+                                  border: Border.all(
+                                    color: isSelected ? AppTheme.accentPrimary : AppTheme.bgMuted,
+                                    width: isSelected ? 1.5 : 1,
+                                  ),
                                 ),
-                              ),
-                              child: Row(
-                                children: [
-                                  ClipRRect(
-                                    borderRadius: const BorderRadius.only(
-                                      topLeft: Radius.circular(11),
-                                      bottomLeft: Radius.circular(11),
-                                    ),
+                                child: Row(
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.zero,
                                     child: movie.posterPath != null
                                         ? CachedNetworkImage(
                                             imageUrl: movie.posterUrl,
@@ -557,6 +565,7 @@ class _TasteProfileScreenState extends ConsumerState<TasteProfileScreen> {
                               ),
                             ),
                           ),
+                        ),
                         );
                       },
                     ),

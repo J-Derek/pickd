@@ -8,6 +8,41 @@ import '../../../core/models/media_item.dart';
 import '../providers/watchlist_provider.dart';
 import '../providers/watched_vault_provider.dart';
 
+// ─── Filter Enums & Helpers ───────────────────────────────────────────────────
+
+enum _SortOrder { newest, oldest, az }
+
+enum _TypeFilter { all, movies, tv }
+
+List<MediaItem> _applyFilters(
+  List<MediaItem> list, {
+  required String searchQuery,
+  required _TypeFilter typeFilter,
+  required _SortOrder sortOrder,
+}) {
+  var result = list.where((item) {
+    final matchesSearch =
+        item.title.toLowerCase().contains(searchQuery.toLowerCase());
+    final matchesType = switch (typeFilter) {
+      _TypeFilter.all => true,
+      _TypeFilter.movies => item.isMovie,
+      _TypeFilter.tv => item.isTv,
+    };
+    return matchesSearch && matchesType;
+  }).toList();
+  switch (sortOrder) {
+    case _SortOrder.oldest:
+      return result.reversed.toList();
+    case _SortOrder.az:
+      result.sort((a, b) => a.title.compareTo(b.title));
+      return result;
+    case _SortOrder.newest:
+      return result;
+  }
+}
+
+// ─── Main Screen ──────────────────────────────────────────────────────────────
+
 class WatchlistScreen extends ConsumerStatefulWidget {
   const WatchlistScreen({super.key});
 
@@ -52,10 +87,7 @@ class _WatchlistScreenState extends ConsumerState<WatchlistScreen>
               child: Container(
                 decoration: const BoxDecoration(
                   border: Border(
-                    bottom: BorderSide(
-                      color: AppTheme.bgElevated,
-                      width: 2,
-                    ),
+                    bottom: BorderSide(color: AppTheme.bgElevated, width: 2),
                   ),
                 ),
                 child: TabBar(
@@ -65,15 +97,13 @@ class _WatchlistScreenState extends ConsumerState<WatchlistScreen>
                   labelColor: AppTheme.accentPrimary,
                   unselectedLabelColor: AppTheme.textMuted,
                   labelStyle: const TextStyle(
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w700,
-                    fontSize: 15,
-                  ),
+                      fontFamily: 'Inter',
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15),
                   unselectedLabelStyle: const TextStyle(
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w500,
-                    fontSize: 15,
-                  ),
+                      fontFamily: 'Inter',
+                      fontWeight: FontWeight.w500,
+                      fontSize: 15),
                   tabs: const [
                     Tab(text: 'To Watch'),
                     Tab(text: 'Watched'),
@@ -85,7 +115,8 @@ class _WatchlistScreenState extends ConsumerState<WatchlistScreen>
               child: TabBarView(
                 controller: _tabController,
                 children: [
-                  _ToWatchTab(onSwitchToWatched: () => _tabController.animateTo(1)),
+                  _ToWatchTab(
+                      onSwitchToWatched: () => _tabController.animateTo(1)),
                   const _WatchedTab(),
                 ],
               ),
@@ -97,9 +128,10 @@ class _WatchlistScreenState extends ConsumerState<WatchlistScreen>
   }
 }
 
+// ─── To Watch Tab ─────────────────────────────────────────────────────────────
+
 class _ToWatchTab extends ConsumerStatefulWidget {
   final VoidCallback onSwitchToWatched;
-  
   const _ToWatchTab({required this.onSwitchToWatched});
 
   @override
@@ -108,6 +140,9 @@ class _ToWatchTab extends ConsumerStatefulWidget {
 
 class _ToWatchTabState extends ConsumerState<_ToWatchTab> {
   bool _isGrid = true;
+  String _searchQuery = '';
+  _TypeFilter _typeFilter = _TypeFilter.all;
+  _SortOrder _sortOrder = _SortOrder.newest;
 
   @override
   Widget build(BuildContext context) {
@@ -119,44 +154,36 @@ class _ToWatchTabState extends ConsumerState<_ToWatchTab> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              '0 items.',
-              style: TextStyle(
-                fontFamily: 'Syne',
-                fontSize: 48,
-                fontWeight: FontWeight.w800,
-                color: AppTheme.textPrimary,
-                height: 1.0,
-                letterSpacing: -1.5,
-              ),
-            ),
+            const Text('0 items.',
+                style: TextStyle(
+                    fontFamily: 'Syne',
+                    fontSize: 48,
+                    fontWeight: FontWeight.w800,
+                    color: AppTheme.textPrimary,
+                    height: 1.0,
+                    letterSpacing: -1.5)),
             const SizedBox(height: 12),
             const Text(
-              'Swipe right on movies or shows to add them to your collection.',
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 15,
-                color: AppTheme.textSecondary,
-                height: 1.5,
-              ),
-            ),
-            const SizedBox(height: 32),
-            GestureDetector(
-              onTap: () => context.go('/swipe'),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                decoration: const BoxDecoration(
-                  color: AppTheme.accentPrimary,
-                  borderRadius: BorderRadius.zero,
-                ),
-                child: const Text(
-                  'Discover titles',
-                  style: TextStyle(
+                'Swipe right on movies or shows to add them to your collection.',
+                style: TextStyle(
                     fontFamily: 'Inter',
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.textInverse,
-                  ),
+                    fontSize: 15,
+                    color: AppTheme.textSecondary,
+                    height: 1.5)),
+            const SizedBox(height: 32),
+            Material(
+              color: AppTheme.accentPrimary,
+              child: InkWell(
+                onTap: () => context.go('/swipe'),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                  child: const Text('Discover titles',
+                      style: TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.textInverse)),
                 ),
               ),
             ),
@@ -165,43 +192,66 @@ class _ToWatchTabState extends ConsumerState<_ToWatchTab> {
       );
     }
 
+    final filtered = _applyFilters(watchlist,
+        searchQuery: _searchQuery,
+        typeFilter: _typeFilter,
+        sortOrder: _sortOrder);
+
     return Column(
       children: [
+        _WatchlistFilterBar(
+          searchHint: 'Search your collection...',
+          searchQuery: _searchQuery,
+          typeFilter: _typeFilter,
+          sortOrder: _sortOrder,
+          onSearchChanged: (v) => setState(() => _searchQuery = v),
+          onTypeChanged: (v) => setState(() => _typeFilter = v),
+          onSortChanged: (v) => setState(() => _sortOrder = v),
+        ),
         Padding(
-          padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+          padding: const EdgeInsets.fromLTRB(24, 4, 24, 4),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '${watchlist.length} saved',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
+                  '${filtered.length} ${filtered.length == 1 ? "item" : "items"}',
+                  style: Theme.of(context).textTheme.bodyMedium),
               Row(
                 children: [
                   IconButton(
                     icon: Icon(
-                      _isGrid ? Icons.view_list_rounded : Icons.grid_view_rounded,
-                      color: AppTheme.textSecondary,
-                    ),
+                        _isGrid
+                            ? Icons.view_list_rounded
+                            : Icons.grid_view_rounded,
+                        color: AppTheme.textSecondary),
                     onPressed: () => setState(() => _isGrid = !_isGrid),
                   ),
                   TextButton(
                     onPressed: () async {
                       final confirm = await showDialog<bool>(
                         context: context,
-                        builder: (context) => AlertDialog(
+                        builder: (ctx) => AlertDialog(
                           backgroundColor: AppTheme.bgSurface,
-                          title: const Text('Clear Watchlist', style: TextStyle(color: AppTheme.textPrimary)),
-                          content: const Text('Are you sure you want to clear your watchlist?', style: TextStyle(color: AppTheme.textSecondary)),
+                          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+                          title: const Text('Clear Watchlist',
+                              style:
+                                  TextStyle(color: AppTheme.textPrimary)),
+                          content: const Text('Are you sure?',
+                              style:
+                                  TextStyle(color: AppTheme.textSecondary)),
                           actions: [
                             TextButton(
-                              onPressed: () => Navigator.of(context).pop(false),
-                              child: const Text('Cancel', style: TextStyle(color: AppTheme.textSecondary)),
-                            ),
+                                onPressed: () =>
+                                    Navigator.of(ctx).pop(false),
+                                child: const Text('Cancel',
+                                    style: TextStyle(
+                                        color: AppTheme.textSecondary))),
                             TextButton(
-                              onPressed: () => Navigator.of(context).pop(true),
-                              child: const Text('Clear', style: TextStyle(color: AppTheme.accentPrimary)),
-                            ),
+                                onPressed: () =>
+                                    Navigator.of(ctx).pop(true),
+                                child: const Text('Clear',
+                                    style: TextStyle(
+                                        color: AppTheme.accentPrimary))),
                           ],
                         ),
                       );
@@ -209,7 +259,8 @@ class _ToWatchTabState extends ConsumerState<_ToWatchTab> {
                         ref.read(watchlistProvider.notifier).clear();
                       }
                     },
-                    child: const Text('Clear All', style: TextStyle(color: AppTheme.textMuted)),
+                    child: const Text('Clear All',
+                        style: TextStyle(color: AppTheme.textMuted)),
                   ),
                 ],
               ),
@@ -217,93 +268,110 @@ class _ToWatchTabState extends ConsumerState<_ToWatchTab> {
           ),
         ),
         Expanded(
-          child: _isGrid
-              ? GridView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                    childAspectRatio: 0.68,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 16,
-                  ),
-                  itemCount: watchlist.length,
-                  itemBuilder: (context, index) {
-                    final movie = watchlist[index];
-                    return _GridItemCard(
-                      item: movie,
-                      actionIcon: Icons.visibility_outlined,
-                      actionColor: AppTheme.accentGreen,
-                      onActionTap: () async {
-                        await ref.read(watchedVaultProvider.notifier).addMedia(movie);
-                        await ref.read(watchlistProvider.notifier).remove(movie.id);
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context)
-                            ..clearSnackBars()
-                            ..showSnackBar(
-                              SnackBar(
-                                content: const Text('Moved to Watched', style: TextStyle(color: AppTheme.textInverse)),
-                                backgroundColor: AppTheme.accentGreen,
-                                duration: const Duration(seconds: 3),
-                                action: SnackBarAction(
-                                  label: 'View',
-                                  textColor: AppTheme.textInverse,
-                                  onPressed: () {
-                                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                                    widget.onSwitchToWatched();
-                                  },
+          child: filtered.isEmpty
+              ? _NoResults(query: _searchQuery)
+              : _isGrid
+                  ? GridView.builder(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 8),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 3,
+                              childAspectRatio: 0.68,
+                              crossAxisSpacing: 12,
+                              mainAxisSpacing: 16),
+                      itemCount: filtered.length,
+                      itemBuilder: (context, index) {
+                        final movie = filtered[index];
+                        return _GridItemCard(
+                          item: movie,
+                          actionIcon: Icons.visibility_outlined,
+                          actionColor: AppTheme.accentGreen,
+                          onActionTap: () async {
+                            await ref
+                                .read(watchedVaultProvider.notifier)
+                                .addMedia(movie);
+                            await ref
+                                .read(watchlistProvider.notifier)
+                                .remove(movie.id);
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: const Text('Moved to Watched',
+                                      style: TextStyle(
+                                          color: AppTheme.textInverse)),
+                                  backgroundColor: AppTheme.accentGreen,
+                                  action: SnackBarAction(
+                                    label: 'View',
+                                    textColor: AppTheme.textInverse,
+                                    onPressed: () =>
+                                        widget.onSwitchToWatched(),
+                                  ),
                                 ),
-                              ),
-                            );
-                        }
+                              );
+                            }
+                          },
+                          onRemove: () => ref
+                              .read(watchlistProvider.notifier)
+                              .remove(movie.id),
+                          onTap: () => context.push(
+                              '/movie/${movie.id}',
+                              extra: movie),
+                        );
                       },
-                      onRemove: () => ref.read(watchlistProvider.notifier).remove(movie.id),
-                      onTap: () => context.push('/movie/${movie.id}', extra: movie),
-                    );
-                  },
-                )
-              : ListView.separated(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                  itemCount: watchlist.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 16),
-                  itemBuilder: (context, index) {
-                    final movie = watchlist[index];
-                    return _ListItemCard(
-                      item: movie,
-                      actionIcon: Icons.visibility_outlined,
-                      actionColor: AppTheme.accentGreen,
-                      onActionTap: () async {
-                        await ref.read(watchedVaultProvider.notifier).addMedia(movie);
-                        await ref.read(watchlistProvider.notifier).remove(movie.id);
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context)
-                            ..clearSnackBars()
-                            ..showSnackBar(
-                              SnackBar(
-                                content: const Text('Moved to Watched', style: TextStyle(color: AppTheme.textInverse)),
-                                backgroundColor: AppTheme.accentGreen,
-                                duration: const Duration(seconds: 3),
-                                action: SnackBarAction(
-                                  label: 'View',
-                                  textColor: AppTheme.textInverse,
-                                  onPressed: () {
-                                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                                    widget.onSwitchToWatched();
-                                  },
+                    )
+                  : ListView.separated(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 8),
+                      itemCount: filtered.length,
+                      separatorBuilder: (_, __) =>
+                          const SizedBox(height: 16),
+                      itemBuilder: (context, index) {
+                        final movie = filtered[index];
+                        return _ListItemCard(
+                          item: movie,
+                          actionIcon: Icons.visibility_outlined,
+                          actionColor: AppTheme.accentGreen,
+                          onActionTap: () async {
+                            await ref
+                                .read(watchedVaultProvider.notifier)
+                                .addMedia(movie);
+                            await ref
+                                .read(watchlistProvider.notifier)
+                                .remove(movie.id);
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: const Text('Moved to Watched',
+                                      style: TextStyle(
+                                          color: AppTheme.textInverse)),
+                                  backgroundColor: AppTheme.accentGreen,
+                                  action: SnackBarAction(
+                                    label: 'View',
+                                    textColor: AppTheme.textInverse,
+                                    onPressed: () =>
+                                        widget.onSwitchToWatched(),
+                                  ),
                                 ),
-                              ),
-                            );
-                        }
+                              );
+                            }
+                          },
+                          onRemove: () => ref
+                              .read(watchlistProvider.notifier)
+                              .remove(movie.id),
+                          onTap: () => context.push(
+                              '/movie/${movie.id}',
+                              extra: movie),
+                        );
                       },
-                      onRemove: () => ref.read(watchlistProvider.notifier).remove(movie.id),
-                      onTap: () => context.push('/movie/${movie.id}', extra: movie),
-                    );
-                  },
-                ),
+                    ),
         ),
       ],
     );
   }
 }
+
+// ─── Watched Tab ──────────────────────────────────────────────────────────────
 
 class _WatchedTab extends ConsumerStatefulWidget {
   const _WatchedTab();
@@ -314,6 +382,9 @@ class _WatchedTab extends ConsumerStatefulWidget {
 
 class _WatchedTabState extends ConsumerState<_WatchedTab> {
   bool _isGrid = true;
+  String _searchQuery = '';
+  _TypeFilter _typeFilter = _TypeFilter.all;
+  _SortOrder _sortOrder = _SortOrder.newest;
 
   @override
   Widget build(BuildContext context) {
@@ -325,69 +396,86 @@ class _WatchedTabState extends ConsumerState<_WatchedTab> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              '0 watched.',
-              style: TextStyle(
-                fontFamily: 'Syne',
-                fontSize: 48,
-                fontWeight: FontWeight.w800,
-                color: AppTheme.textPrimary,
-                height: 1.0,
-                letterSpacing: -1.5,
-              ),
-            ),
+            Text('0 watched.',
+                style: TextStyle(
+                    fontFamily: 'Syne',
+                    fontSize: 48,
+                    fontWeight: FontWeight.w800,
+                    color: AppTheme.textPrimary,
+                    height: 1.0,
+                    letterSpacing: -1.5)),
             SizedBox(height: 12),
             Text(
-              'Movies and shows you mark as watched will appear here.',
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 15,
-                color: AppTheme.textSecondary,
-                height: 1.5,
-              ),
-            ),
+                'Movies and shows you mark as watched will appear here.',
+                style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 15,
+                    color: AppTheme.textSecondary,
+                    height: 1.5)),
           ],
         ),
       );
     }
 
+    final filtered = _applyFilters(watchedList,
+        searchQuery: _searchQuery,
+        typeFilter: _typeFilter,
+        sortOrder: _sortOrder);
+
     return Column(
       children: [
+        _WatchlistFilterBar(
+          searchHint: 'Search watched history...',
+          searchQuery: _searchQuery,
+          typeFilter: _typeFilter,
+          sortOrder: _sortOrder,
+          onSearchChanged: (v) => setState(() => _searchQuery = v),
+          onTypeChanged: (v) => setState(() => _typeFilter = v),
+          onSortChanged: (v) => setState(() => _sortOrder = v),
+        ),
         Padding(
-          padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+          padding: const EdgeInsets.fromLTRB(24, 4, 24, 4),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                '${watchedList.length} watched',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
+              Text('${filtered.length} watched',
+                  style: Theme.of(context).textTheme.bodyMedium),
               Row(
                 children: [
                   IconButton(
                     icon: Icon(
-                      _isGrid ? Icons.view_list_rounded : Icons.grid_view_rounded,
-                      color: AppTheme.textSecondary,
-                    ),
+                        _isGrid
+                            ? Icons.view_list_rounded
+                            : Icons.grid_view_rounded,
+                        color: AppTheme.textSecondary),
                     onPressed: () => setState(() => _isGrid = !_isGrid),
                   ),
                   TextButton(
                     onPressed: () async {
                       final confirm = await showDialog<bool>(
                         context: context,
-                        builder: (context) => AlertDialog(
+                        builder: (ctx) => AlertDialog(
                           backgroundColor: AppTheme.bgSurface,
-                          title: const Text('Clear History', style: TextStyle(color: AppTheme.textPrimary)),
-                          content: const Text('Are you sure you want to clear your watched history?', style: TextStyle(color: AppTheme.textSecondary)),
+                          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+                          title: const Text('Clear History',
+                              style:
+                                  TextStyle(color: AppTheme.textPrimary)),
+                          content: const Text('Are you sure?',
+                              style:
+                                  TextStyle(color: AppTheme.textSecondary)),
                           actions: [
                             TextButton(
-                              onPressed: () => Navigator.of(context).pop(false),
-                              child: const Text('Cancel', style: TextStyle(color: AppTheme.textSecondary)),
-                            ),
+                                onPressed: () =>
+                                    Navigator.of(ctx).pop(false),
+                                child: const Text('Cancel',
+                                    style: TextStyle(
+                                        color: AppTheme.textSecondary))),
                             TextButton(
-                              onPressed: () => Navigator.of(context).pop(true),
-                              child: const Text('Clear', style: TextStyle(color: AppTheme.accentSecondary)),
-                            ),
+                                onPressed: () =>
+                                    Navigator.of(ctx).pop(true),
+                                child: const Text('Clear',
+                                    style: TextStyle(
+                                        color: AppTheme.accentSecondary))),
                           ],
                         ),
                       );
@@ -395,7 +483,8 @@ class _WatchedTabState extends ConsumerState<_WatchedTab> {
                         ref.read(watchedVaultProvider.notifier).clear();
                       }
                     },
-                    child: const Text('Clear All', style: TextStyle(color: AppTheme.textMuted)),
+                    child: const Text('Clear All',
+                        style: TextStyle(color: AppTheme.textMuted)),
                   ),
                 ],
               ),
@@ -403,77 +492,347 @@ class _WatchedTabState extends ConsumerState<_WatchedTab> {
           ),
         ),
         Expanded(
-          child: _isGrid
-              ? GridView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                    childAspectRatio: 0.68,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 16,
-                  ),
-                  itemCount: watchedList.length,
-                  itemBuilder: (context, index) {
-                    final movie = watchedList[index];
-                    return _GridItemCard(
-                      item: movie,
-                      actionIcon: Icons.bookmark_add_outlined,
-                      actionColor: AppTheme.accentPrimary,
-                      onActionTap: () async {
-                        await ref.read(watchlistProvider.notifier).addMedia(movie);
-                        await ref.read(watchedVaultProvider.notifier).remove(movie.id);
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context)
-                            ..clearSnackBars()
-                            ..showSnackBar(
-                              const SnackBar(
-                                content: Text('Moved back to Watchlist', style: TextStyle(color: AppTheme.textInverse)),
-                                backgroundColor: AppTheme.accentPrimary,
-                                duration: Duration(seconds: 3),
-                              ),
-                            );
-                        }
+          child: filtered.isEmpty
+              ? _NoResults(query: _searchQuery)
+              : _isGrid
+                  ? GridView.builder(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 8),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 3,
+                              childAspectRatio: 0.68,
+                              crossAxisSpacing: 12,
+                              mainAxisSpacing: 16),
+                      itemCount: filtered.length,
+                      itemBuilder: (context, index) {
+                        final movie = filtered[index];
+                        return _GridItemCard(
+                          item: movie,
+                          actionIcon: Icons.bookmark_add_outlined,
+                          actionColor: AppTheme.accentPrimary,
+                          onActionTap: () async {
+                            await ref
+                                .read(watchlistProvider.notifier)
+                                .addMedia(movie);
+                            await ref
+                                .read(watchedVaultProvider.notifier)
+                                .remove(movie.id);
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Moved back to Watchlist',
+                                      style: TextStyle(
+                                          color: AppTheme.textInverse)),
+                                  backgroundColor: AppTheme.accentPrimary,
+                                ),
+                              );
+                            }
+                          },
+                          onRemove: () => ref
+                              .read(watchedVaultProvider.notifier)
+                              .remove(movie.id),
+                          onTap: () => context.push(
+                              '/movie/${movie.id}',
+                              extra: movie),
+                        );
                       },
-                      onRemove: () => ref.read(watchedVaultProvider.notifier).remove(movie.id),
-                      onTap: () => context.push('/movie/${movie.id}', extra: movie),
-                    );
-                  },
-                )
-              : ListView.separated(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                  itemCount: watchedList.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 16),
-                  itemBuilder: (context, index) {
-                    final movie = watchedList[index];
-                    return _ListItemCard(
-                      item: movie,
-                      actionIcon: Icons.bookmark_add_outlined,
-                      actionColor: AppTheme.accentPrimary,
-                      onActionTap: () async {
-                        await ref.read(watchlistProvider.notifier).addMedia(movie);
-                        await ref.read(watchedVaultProvider.notifier).remove(movie.id);
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context)
-                            ..clearSnackBars()
-                            ..showSnackBar(
-                              const SnackBar(
-                                content: Text('Moved back to Watchlist', style: TextStyle(color: AppTheme.textInverse)),
-                                backgroundColor: AppTheme.accentPrimary,
-                                duration: Duration(seconds: 3),
-                              ),
-                            );
-                        }
+                    )
+                  : ListView.separated(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 8),
+                      itemCount: filtered.length,
+                      separatorBuilder: (_, __) =>
+                          const SizedBox(height: 16),
+                      itemBuilder: (context, index) {
+                        final movie = filtered[index];
+                        return _ListItemCard(
+                          item: movie,
+                          actionIcon: Icons.bookmark_add_outlined,
+                          actionColor: AppTheme.accentPrimary,
+                          onActionTap: () async {
+                            await ref
+                                .read(watchlistProvider.notifier)
+                                .addMedia(movie);
+                            await ref
+                                .read(watchedVaultProvider.notifier)
+                                .remove(movie.id);
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Moved back to Watchlist',
+                                      style: TextStyle(
+                                          color: AppTheme.textInverse)),
+                                  backgroundColor: AppTheme.accentPrimary,
+                                ),
+                              );
+                            }
+                          },
+                          onRemove: () => ref
+                              .read(watchedVaultProvider.notifier)
+                              .remove(movie.id),
+                          onTap: () => context.push(
+                              '/movie/${movie.id}',
+                              extra: movie),
+                        );
                       },
-                      onRemove: () => ref.read(watchedVaultProvider.notifier).remove(movie.id),
-                      onTap: () => context.push('/movie/${movie.id}', extra: movie),
-                    );
-                  },
-                ),
+                    ),
         ),
       ],
     );
   }
 }
+
+// ─── Filter Bar Widget ────────────────────────────────────────────────────────
+
+class _WatchlistFilterBar extends StatelessWidget {
+  final String searchHint;
+  final String searchQuery;
+  final _TypeFilter typeFilter;
+  final _SortOrder sortOrder;
+  final ValueChanged<String> onSearchChanged;
+  final ValueChanged<_TypeFilter> onTypeChanged;
+  final ValueChanged<_SortOrder> onSortChanged;
+
+  const _WatchlistFilterBar({
+    required this.searchHint,
+    required this.searchQuery,
+    required this.typeFilter,
+    required this.sortOrder,
+    required this.onSearchChanged,
+    required this.onTypeChanged,
+    required this.onSortChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
+      child: Column(
+        children: [
+          TextField(
+            onChanged: onSearchChanged,
+            style: const TextStyle(
+                fontFamily: 'Inter',
+                color: AppTheme.textPrimary,
+                fontSize: 14),
+            decoration: InputDecoration(
+              hintText: searchHint,
+              hintStyle: const TextStyle(
+                  fontFamily: 'Inter',
+                  color: AppTheme.textMuted,
+                  fontSize: 14),
+              prefixIcon: const Icon(Icons.search_rounded,
+                  color: AppTheme.textMuted, size: 20),
+              filled: true,
+              fillColor: AppTheme.bgElevated,
+              contentPadding: const EdgeInsets.symmetric(vertical: 12),
+              border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              _TypePill(
+                  label: 'All',
+                  value: _TypeFilter.all,
+                  current: typeFilter,
+                  onTap: onTypeChanged),
+              const SizedBox(width: 8),
+              _TypePill(
+                  label: '🎬 Movies',
+                  value: _TypeFilter.movies,
+                  current: typeFilter,
+                  onTap: onTypeChanged),
+              const SizedBox(width: 8),
+              _TypePill(
+                  label: '📺 TV',
+                  value: _TypeFilter.tv,
+                  current: typeFilter,
+                  onTap: onTypeChanged),
+              const Spacer(),
+              _SortBtn(current: sortOrder, onChanged: onSortChanged),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TypePill extends StatelessWidget {
+  final String label;
+  final _TypeFilter value;
+  final _TypeFilter current;
+  final ValueChanged<_TypeFilter> onTap;
+
+  const _TypePill(
+      {required this.label,
+      required this.value,
+      required this.current,
+      required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final isActive = value == current;
+    return GestureDetector(
+      onTap: () => onTap(value),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding:
+            const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        decoration: BoxDecoration(
+          color: isActive ? AppTheme.accentPrimary : AppTheme.bgElevated,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontFamily: 'Inter',
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: isActive
+                ? AppTheme.textInverse
+                : AppTheme.textSecondary,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SortBtn extends StatelessWidget {
+  final _SortOrder current;
+  final ValueChanged<_SortOrder> onChanged;
+
+  const _SortBtn({required this.current, required this.onChanged});
+
+  String get _label => switch (current) {
+        _SortOrder.newest => 'Newest',
+        _SortOrder.oldest => 'Oldest',
+        _SortOrder.az => 'A → Z',
+      };
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () async {
+        final result = await showModalBottomSheet<_SortOrder>(
+          context: context,
+          backgroundColor: AppTheme.bgSurface,
+          shape: const RoundedRectangleBorder(
+              borderRadius:
+                  BorderRadius.vertical(top: Radius.circular(20))),
+          builder: (_) => Padding(
+            padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Sort by',
+                    style: TextStyle(
+                        fontFamily: 'Syne',
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.textPrimary)),
+                const SizedBox(height: 16),
+                for (final order in _SortOrder.values)
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(
+                      switch (order) {
+                        _SortOrder.newest => 'Newest first',
+                        _SortOrder.oldest => 'Oldest first',
+                        _SortOrder.az => 'A → Z',
+                      },
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        color: order == current
+                            ? AppTheme.accentPrimary
+                            : AppTheme.textPrimary,
+                        fontWeight: order == current
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                      ),
+                    ),
+                    trailing: order == current
+                        ? const Icon(Icons.check,
+                            color: AppTheme.accentPrimary)
+                        : null,
+                    onTap: () => Navigator.of(context).pop(order),
+                  ),
+              ],
+            ),
+          ),
+        );
+        if (result != null) onChanged(result);
+      },
+      child: Container(
+        padding:
+            const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+        decoration: BoxDecoration(
+            color: AppTheme.bgElevated,
+            borderRadius: BorderRadius.circular(20)),
+        child: Row(
+          children: [
+            const Icon(Icons.sort_rounded,
+                size: 14, color: AppTheme.textSecondary),
+            const SizedBox(width: 4),
+            Text(_label,
+                style: const TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.textSecondary)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _NoResults extends StatelessWidget {
+  final String query;
+  const _NoResults({required this.query});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(40),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('🔍', style: TextStyle(fontSize: 40)),
+            const SizedBox(height: 16),
+            Text(
+              query.isNotEmpty
+                  ? 'No results for "$query"'
+                  : 'No items match this filter',
+              style: const TextStyle(
+                  fontFamily: 'Syne',
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textPrimary),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            const Text('Try a different search or filter.',
+                style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 14,
+                    color: AppTheme.textMuted),
+                textAlign: TextAlign.center),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Grid Item Card ───────────────────────────────────────────────────────────
 
 class _GridItemCard extends StatelessWidget {
   final MediaItem item;
@@ -508,7 +867,8 @@ class _GridItemCard extends StatelessWidget {
                   )
                 : Container(
                     color: AppTheme.bgSurface,
-                    child: const Icon(Icons.movie, color: AppTheme.textMuted),
+                    child:
+                        const Icon(Icons.movie, color: AppTheme.textMuted),
                   ),
             Positioned(
               top: 6,
@@ -536,7 +896,8 @@ class _GridItemCard extends StatelessWidget {
                     color: AppTheme.bgPrimary.withValues(alpha: 0.8),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.close, size: 16, color: AppTheme.textMuted),
+                  child: const Icon(Icons.close,
+                      size: 16, color: AppTheme.textMuted),
                 ),
               ),
             ),
@@ -546,6 +907,8 @@ class _GridItemCard extends StatelessWidget {
     );
   }
 }
+
+// ─── List Item Card ───────────────────────────────────────────────────────────
 
 class _ListItemCard extends StatelessWidget {
   final MediaItem item;
@@ -574,13 +937,14 @@ class _ListItemCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppTheme.bgElevated,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppTheme.bgMuted.withValues(alpha: 0.5)),
+          border:
+              Border.all(color: AppTheme.bgMuted.withValues(alpha: 0.5)),
         ),
         child: Row(
           children: [
-            // Poster
             ClipRRect(
-              borderRadius: const BorderRadius.horizontal(left: Radius.circular(15)),
+              borderRadius:
+                  const BorderRadius.horizontal(left: Radius.circular(15)),
               child: SizedBox(
                 width: 80,
                 height: double.infinity,
@@ -591,12 +955,11 @@ class _ListItemCard extends StatelessWidget {
                       )
                     : Container(
                         color: AppTheme.bgSurface,
-                        child: const Icon(Icons.movie, color: AppTheme.textMuted),
+                        child: const Icon(Icons.movie,
+                            color: AppTheme.textMuted),
                       ),
               ),
             ),
-            
-            // Content
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(12),
@@ -610,11 +973,10 @@ class _ListItemCard extends StatelessWidget {
                           child: Text(
                             item.title,
                             style: const TextStyle(
-                              fontFamily: 'Syne',
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.textPrimary,
-                            ),
+                                fontFamily: 'Syne',
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.textPrimary),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -622,20 +984,19 @@ class _ListItemCard extends StatelessWidget {
                         if (item.isTv) ...[
                           const SizedBox(width: 8),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: AppTheme.accentPrimary.withValues(alpha: 0.2),
+                              color: AppTheme.accentPrimary
+                                  .withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(4),
                             ),
-                            child: const Text(
-                              'TV',
-                              style: TextStyle(
-                                fontFamily: 'Inter',
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                                color: AppTheme.accentPrimary,
-                              ),
-                            ),
+                            child: const Text('TV',
+                                style: TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppTheme.accentPrimary)),
                           ),
                         ],
                       ],
@@ -644,25 +1005,20 @@ class _ListItemCard extends StatelessWidget {
                     Row(
                       children: [
                         if (item.year > 0)
-                          Text(
-                            '${item.year}',
-                            style: const TextStyle(
-                              fontFamily: 'Inter',
-                              fontSize: 13,
-                              color: AppTheme.textSecondary,
-                            ),
-                          ),
+                          Text('${item.year}',
+                              style: const TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 13,
+                                  color: AppTheme.textSecondary)),
                         const SizedBox(width: 12),
-                        const Icon(Icons.star, color: Colors.amber, size: 14),
+                        const Icon(Icons.star,
+                            color: Colors.amber, size: 14),
                         const SizedBox(width: 4),
-                        Text(
-                          item.voteAverage.toStringAsFixed(1),
-                          style: const TextStyle(
-                            fontFamily: 'JetBrains Mono',
-                            fontSize: 13,
-                            color: AppTheme.textPrimary,
-                          ),
-                        ),
+                        Text(item.voteAverage.toStringAsFixed(1),
+                            style: const TextStyle(
+                                fontFamily: 'JetBrains Mono',
+                                fontSize: 13,
+                                color: AppTheme.textPrimary)),
                       ],
                     ),
                     const Spacer(),
@@ -676,9 +1032,11 @@ class _ListItemCard extends StatelessWidget {
                             decoration: BoxDecoration(
                               color: AppTheme.bgSurface,
                               shape: BoxShape.circle,
-                              border: Border.all(color: actionColor.withValues(alpha: 0.3)),
+                              border: Border.all(
+                                  color: actionColor.withValues(alpha: 0.3)),
                             ),
-                            child: Icon(actionIcon, size: 18, color: actionColor),
+                            child: Icon(actionIcon,
+                                size: 18, color: actionColor),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -689,9 +1047,11 @@ class _ListItemCard extends StatelessWidget {
                             decoration: BoxDecoration(
                               color: AppTheme.bgSurface,
                               shape: BoxShape.circle,
-                              border: Border.all(color: AppTheme.bgMuted),
+                              border:
+                                  Border.all(color: AppTheme.bgMuted),
                             ),
-                            child: const Icon(Icons.close, size: 18, color: AppTheme.textMuted),
+                            child: const Icon(Icons.close,
+                                size: 18, color: AppTheme.textMuted),
                           ),
                         ),
                       ],

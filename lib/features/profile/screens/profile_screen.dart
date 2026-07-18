@@ -41,7 +41,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 color: AppTheme.bgSurface,
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.zero,
                 border: Border.all(color: AppTheme.bgElevated),
               ),
               child: Row(
@@ -74,17 +74,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             const SizedBox(height: 16),
             
             if (user == null)
-              GestureDetector(
-                onTap: () => context.push('/auth'),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: AppTheme.bgElevated,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppTheme.bgMuted),
+              Material(
+                color: AppTheme.bgElevated,
+                shape: Border.all(color: AppTheme.bgMuted),
+                child: InkWell(
+                  onTap: () => context.push('/auth'),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    alignment: Alignment.center,
+                    child: const Text('Connect Account', style: TextStyle(color: AppTheme.accentPrimary, fontWeight: FontWeight.bold)),
                   ),
-                  child: const Text('Connect Account', style: TextStyle(color: AppTheme.accentPrimary, fontWeight: FontWeight.bold)),
                 ),
               ),
 
@@ -232,7 +231,7 @@ class _StatCard extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: AppTheme.bgElevated,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.zero,
         border: Border.all(color: AppTheme.bgMuted.withValues(alpha: 0.5)),
       ),
       child: Column(
@@ -277,7 +276,7 @@ class _SettingsTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.zero,
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
         decoration: const BoxDecoration(

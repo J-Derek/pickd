@@ -128,20 +128,19 @@ class _GemsScreenState extends ConsumerState<GemsScreen> {
                       ],
                     ),
                   ),
-                  GestureDetector(
-                    onTap: _loadGems,
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: AppTheme.bgSurface,
-                        borderRadius: BorderRadius.zero,
-                        border: Border.all(color: AppTheme.bgMuted, width: 2),
-                      ),
-                      child: const Icon(
-                        LucideIcons.refreshCw,
-                        color: AppTheme.textSecondary,
-                        size: 20,
+                  Material(
+                    color: AppTheme.bgSurface,
+                    shape: Border.all(color: AppTheme.bgMuted, width: 2),
+                    child: InkWell(
+                      onTap: _loadGems,
+                      child: const SizedBox(
+                        width: 40,
+                        height: 40,
+                        child: Icon(
+                          LucideIcons.refreshCw,
+                          color: AppTheme.textSecondary,
+                          size: 20,
+                        ),
                       ),
                     ),
                   ),
