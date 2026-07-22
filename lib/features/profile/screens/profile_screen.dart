@@ -866,38 +866,49 @@ class _SettingsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              color: isDestructive ? AppTheme.accentSecondary : AppTheme.textSecondary,
-              size: 20,
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Text(
-                title,
-                style: TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                  color: isDestructive ? AppTheme.accentSecondary : AppTheme.textPrimary,
-                ),
-              ),
-            ),
-            if (trailing != null)
-              trailing!
-            else if (onTap != null)
-              const Icon(
-                Icons.chevron_right_rounded,
-                color: AppTheme.textMuted,
+    return Container(
+      decoration: isDestructive
+          ? BoxDecoration(
+              color: AppTheme.accentSecondary.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppTheme.accentSecondary.withValues(alpha: 0.2)),
+            )
+          : null,
+      margin: isDestructive ? const EdgeInsets.symmetric(horizontal: 12, vertical: 4) : null,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          child: Row(
+            children: [
+              Icon(
+                icon,
+                color: isDestructive ? AppTheme.accentSecondary : AppTheme.textSecondary,
                 size: 20,
               ),
-          ],
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 15,
+                    fontWeight: isDestructive ? FontWeight.w600 : FontWeight.w500,
+                    color: isDestructive ? AppTheme.accentSecondary : AppTheme.textPrimary,
+                  ),
+                ),
+              ),
+              if (trailing != null)
+                trailing!
+              else if (onTap != null)
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: isDestructive ? AppTheme.accentSecondary : AppTheme.textMuted,
+                  size: 20,
+                ),
+            ],
+          ),
         ),
       ),
     );

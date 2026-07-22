@@ -8,6 +8,7 @@ import '../../../core/models/media_item.dart';
 import '../../../core/models/movie_model.dart';
 import '../../../core/models/tv_model.dart';
 import '../../../core/services/hive_service.dart';
+import '../../../core/widgets/custom_snackbar.dart';
 import '../../swipe/providers/swipe_provider.dart';
 
 class SwipeHistoryScreen extends ConsumerStatefulWidget {
@@ -76,13 +77,11 @@ class _SwipeHistoryScreenState extends ConsumerState<SwipeHistoryScreen> {
     _loadHistory();
     
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('${itemData['title']} recovered', style: const TextStyle(color: AppTheme.textInverse)),
-          backgroundColor: AppTheme.accentPrimary,
-          behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 1),
-        ),
+      showCustomSnackBar(
+        context,
+        message: '${itemData['title']} recovered',
+        isSuccess: true,
+        duration: const Duration(seconds: 1),
       );
     }
   }

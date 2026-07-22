@@ -102,9 +102,9 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppTheme.accentSecondary.withOpacity(0.1),
+                    color: AppTheme.accentSecondary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppTheme.accentSecondary.withOpacity(0.3)),
+                    border: Border.all(color: AppTheme.accentSecondary.withValues(alpha: 0.3)),
                   ),
                   child: Text(
                     _errorMessage!,

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/config/app_theme.dart';
 import '../../../core/models/media_item.dart';
+import '../../../core/widgets/custom_snackbar.dart';
 import '../providers/watchlist_provider.dart';
 import '../providers/watched_vault_provider.dart';
 
@@ -304,19 +305,10 @@ class _ToWatchTabState extends ConsumerState<_ToWatchTab> {
                                 .read(watchlistProvider.notifier)
                                 .remove(movie.mediaKey);
                             if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: const Text('Moved to Watched',
-                                      style: TextStyle(
-                                          color: AppTheme.textInverse)),
-                                  backgroundColor: AppTheme.accentGreen,
-                                  action: SnackBarAction(
-                                    label: 'View',
-                                    textColor: AppTheme.textInverse,
-                                    onPressed: () =>
-                                        widget.onSwitchToWatched(),
-                                  ),
-                                ),
+                              showCustomSnackBar(
+                                context,
+                                message: 'Moved to Watched',
+                                isSuccess: true,
                               );
                             }
                           },
@@ -324,17 +316,10 @@ class _ToWatchTabState extends ConsumerState<_ToWatchTab> {
                             final notifier = ref.read(watchlistProvider.notifier);
                             await notifier.remove(movie.mediaKey);
                             if (context.mounted) {
-                              ScaffoldMessenger.of(context).clearSnackBars();
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Removed ${movie.title}', style: const TextStyle(color: AppTheme.textInverse)),
-                                  backgroundColor: AppTheme.bgSurface,
-                                  action: SnackBarAction(
-                                    label: 'Undo',
-                                    textColor: AppTheme.accentPrimary,
-                                    onPressed: () => notifier.addMedia(movie),
-                                  ),
-                                ),
+                              showCustomSnackBar(
+                                context,
+                                message: 'Removed ${movie.title}',
+                                isSuccess: true,
                               );
                             }
                           },
@@ -364,19 +349,10 @@ class _ToWatchTabState extends ConsumerState<_ToWatchTab> {
                                 .read(watchlistProvider.notifier)
                                 .remove(movie.mediaKey);
                             if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: const Text('Moved to Watched',
-                                      style: TextStyle(
-                                          color: AppTheme.textInverse)),
-                                  backgroundColor: AppTheme.accentGreen,
-                                  action: SnackBarAction(
-                                    label: 'View',
-                                    textColor: AppTheme.textInverse,
-                                    onPressed: () =>
-                                        widget.onSwitchToWatched(),
-                                  ),
-                                ),
+                              showCustomSnackBar(
+                                context,
+                                message: 'Moved to Watched',
+                                isSuccess: true,
                               );
                             }
                           },
@@ -384,17 +360,10 @@ class _ToWatchTabState extends ConsumerState<_ToWatchTab> {
                             final notifier = ref.read(watchlistProvider.notifier);
                             await notifier.remove(movie.mediaKey);
                             if (context.mounted) {
-                              ScaffoldMessenger.of(context).clearSnackBars();
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Removed ${movie.title}', style: const TextStyle(color: AppTheme.textInverse)),
-                                  backgroundColor: AppTheme.bgSurface,
-                                  action: SnackBarAction(
-                                    label: 'Undo',
-                                    textColor: AppTheme.accentPrimary,
-                                    onPressed: () => notifier.addMedia(movie),
-                                  ),
-                                ),
+                              showCustomSnackBar(
+                                context,
+                                message: 'Removed ${movie.title}',
+                                isSuccess: true,
                               );
                             }
                           },
@@ -567,13 +536,10 @@ class _WatchedTabState extends ConsumerState<_WatchedTab> {
                                 .read(watchedVaultProvider.notifier)
                                 .remove(movie.mediaKey);
                             if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Moved back to Watchlist',
-                                      style: TextStyle(
-                                          color: AppTheme.textInverse)),
-                                  backgroundColor: AppTheme.accentPrimary,
-                                ),
+                              showCustomSnackBar(
+                                context,
+                                message: 'Moved back to Watchlist',
+                                isSuccess: true,
                               );
                             }
                           },
@@ -581,17 +547,10 @@ class _WatchedTabState extends ConsumerState<_WatchedTab> {
                             final notifier = ref.read(watchedVaultProvider.notifier);
                             await notifier.remove(movie.mediaKey);
                             if (context.mounted) {
-                              ScaffoldMessenger.of(context).clearSnackBars();
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Removed ${movie.title}', style: const TextStyle(color: AppTheme.textInverse)),
-                                  backgroundColor: AppTheme.bgSurface,
-                                  action: SnackBarAction(
-                                    label: 'Undo',
-                                    textColor: AppTheme.accentPrimary,
-                                    onPressed: () => notifier.addMedia(movie),
-                                  ),
-                                ),
+                              showCustomSnackBar(
+                                context,
+                                message: 'Removed ${movie.title}',
+                                isSuccess: true,
                               );
                             }
                           },
@@ -621,13 +580,10 @@ class _WatchedTabState extends ConsumerState<_WatchedTab> {
                                 .read(watchedVaultProvider.notifier)
                                 .remove(movie.mediaKey);
                             if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Moved back to Watchlist',
-                                      style: TextStyle(
-                                          color: AppTheme.textInverse)),
-                                  backgroundColor: AppTheme.accentPrimary,
-                                ),
+                              showCustomSnackBar(
+                                context,
+                                message: 'Moved back to Watchlist',
+                                isSuccess: true,
                               );
                             }
                           },
@@ -635,17 +591,10 @@ class _WatchedTabState extends ConsumerState<_WatchedTab> {
                             final notifier = ref.read(watchedVaultProvider.notifier);
                             await notifier.remove(movie.mediaKey);
                             if (context.mounted) {
-                              ScaffoldMessenger.of(context).clearSnackBars();
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Removed ${movie.title}', style: const TextStyle(color: AppTheme.textInverse)),
-                                  backgroundColor: AppTheme.bgSurface,
-                                  action: SnackBarAction(
-                                    label: 'Undo',
-                                    textColor: AppTheme.accentPrimary,
-                                    onPressed: () => notifier.addMedia(movie),
-                                  ),
-                                ),
+                              showCustomSnackBar(
+                                context,
+                                message: 'Removed ${movie.title}',
+                                isSuccess: true,
                               );
                             }
                           },

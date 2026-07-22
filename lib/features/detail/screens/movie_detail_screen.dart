@@ -4,10 +4,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 import '../../../core/config/app_theme.dart';
 import '../../../core/models/media_item.dart';
 import '../../../core/services/tmdb_service.dart';
+import '../../../core/widgets/custom_snackbar.dart';
 import '../../../core/widgets/genre_chip.dart';
 import '../../watchlist/providers/watchlist_provider.dart';
 
@@ -32,6 +34,8 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
   bool _loadingTrailer = false;
   Map<String, List<String>> _watchProviders = {};
   bool _loadingProviders = false;
+  List<MediaItem> _relatedItems = [];
+  bool _loadingRelated = false;
 
   bool get _isTv => _item?.isTv ?? false;
 
@@ -44,11 +48,10 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
     _fetchDetails();
     _fetchTrailer();
     _fetchWatchProviders();
+    _fetchRelated();
   }
 
   Future<void> _fetchDetails() async {
-    // We determine isTv based on the initial _item if available.
-    // If not available, we assume movie by default (though usually it's passed).
     final isTvItem = _item?.isTv ?? false;
     
     if (isTvItem) {
@@ -90,13 +93,42 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
     }
   }
 
-  Future<void> _openTrailer() async {
+  Future<void> _fetchRelated() async {
+    setState(() => _loadingRelated = true);
+    try {
+      final isTvItem = _item?.isTv ?? false;
+      List<MediaItem> related = [];
+      if (isTvItem) {
+        final shows = await TmdbService.getTvRecommendations(widget.movieId);
+        related = shows.map((s) => MediaItem.tv(s)).toList();
+      } else {
+        final movies = await TmdbService.getRecommendations(widget.movieId);
+        related = movies.map((m) => MediaItem.movie(m)).toList();
+      }
+      if (mounted) {
+        setState(() {
+          _relatedItems = related.where((i) => i.posterPath != null && i.id != widget.movieId).toList();
+          _loadingRelated = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _loadingRelated = false);
+    }
+  }
+
+  void _openTrailer() {
     if (_trailerKey == null) return;
     HapticFeedback.mediumImpact();
-    final url = Uri.parse('https://www.youtube.com/watch?v=$_trailerKey');
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url, mode: LaunchMode.externalApplication);
-    }
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.black,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => _InAppTrailerSheet(videoId: _trailerKey!),
+    );
   }
 
   @override
@@ -476,6 +508,88 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                                 ),
                               ),
                             ),
+                        const SizedBox(height: 32),
+
+                        // ── Related Items Section ("More Like This") ──
+                        if (_loadingRelated) ...[
+                          const SizedBox(height: 24),
+                          const Center(
+                            child: CircularProgressIndicator(color: AppTheme.accentPrimary),
+                          ),
+                        ] else if (_relatedItems.isNotEmpty) ...[
+                          const Text(
+                            'More Like This',
+                            style: TextStyle(
+                              fontFamily: 'Syne',
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                          SizedBox(
+                            height: 200,
+                            child: ListView.separated(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: _relatedItems.length,
+                              separatorBuilder: (_, __) => const SizedBox(width: 12),
+                              itemBuilder: (context, index) {
+                                final relatedItem = _relatedItems[index];
+                                return GestureDetector(
+                                  onTap: () {
+                                    HapticFeedback.lightImpact();
+                                    context.push('/movie/${relatedItem.id}', extra: relatedItem);
+                                  },
+                                  child: SizedBox(
+                                    width: 115,
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        ClipRRect(
+                                          borderRadius: BorderRadius.circular(12),
+                                          child: CachedNetworkImage(
+                                            imageUrl: relatedItem.posterUrl,
+                                            height: 145,
+                                            width: 115,
+                                            fit: BoxFit.cover,
+                                            placeholder: (_, __) => Container(
+                                              color: AppTheme.bgElevated,
+                                            ),
+                                            errorWidget: (_, __, ___) => Container(
+                                              color: AppTheme.bgElevated,
+                                              child: const Icon(Icons.movie_rounded, color: AppTheme.textMuted),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Text(
+                                          relatedItem.title,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            fontFamily: 'Inter',
+                                            color: AppTheme.textPrimary,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          '${relatedItem.year > 0 ? relatedItem.year : ''}  ⭐ ${relatedItem.voteAverage.toStringAsFixed(1)}',
+                                          style: const TextStyle(
+                                            fontFamily: 'Inter',
+                                            color: AppTheme.textMuted,
+                                            fontSize: 11,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
                         const SizedBox(height: 40),
                       ],
                     ),
@@ -483,6 +597,73 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                 ),
               ],
             ),
+    );
+  }
+}
+
+// ── In-App Trailer Player Sheet ──────────────────────────────────────────────
+
+class _InAppTrailerSheet extends StatefulWidget {
+  final String videoId;
+  const _InAppTrailerSheet({required this.videoId});
+
+  @override
+  State<_InAppTrailerSheet> createState() => _InAppTrailerSheetState();
+}
+
+class _InAppTrailerSheetState extends State<_InAppTrailerSheet> {
+  late YoutubePlayerController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = YoutubePlayerController.fromVideoId(
+      videoId: widget.videoId,
+      autoPlay: true,
+      params: const YoutubePlayerParams(
+        showControls: true,
+        showFullscreenButton: false,
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.close();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+        top: 12,
+        left: 12,
+        right: 12,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 36,
+            height: 4,
+            decoration: BoxDecoration(
+              color: AppTheme.textMuted.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: YoutubePlayer(
+              controller: _controller,
+              aspectRatio: 16 / 9,
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
+      ),
     );
   }
 }
@@ -559,15 +740,11 @@ class _WatchProviderSectionState extends State<_WatchProviderSection> {
                               HapticFeedback.lightImpact();
                               setState(() => _clickedProvider = name);
                               
-                              ScaffoldMessenger.of(context).clearSnackBars();
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Opening $name...', style: const TextStyle(color: AppTheme.textInverse, fontWeight: FontWeight.w600)),
-                                  backgroundColor: _typeColors[type],
-                                  duration: const Duration(seconds: 2),
-                                  behavior: SnackBarBehavior.floating,
-                                  margin: const EdgeInsets.only(bottom: 24, left: 24, right: 24),
-                                ),
+                              showCustomSnackBar(
+                                context,
+                                message: 'Opening $name...',
+                                isSuccess: true,
+                                duration: const Duration(seconds: 2),
                               );
                               
                               final uri = Uri.parse(widget.providerLink!);

@@ -9,6 +9,7 @@ import '../../../core/config/mood_config.dart';
 import '../../../core/models/media_item.dart';
 import '../../../core/services/tmdb_service.dart';
 import '../../../core/services/supabase_db_service.dart';
+import '../../../core/widgets/custom_snackbar.dart';
 import '../../../core/services/supabase_auth_service.dart';
 import '../../swipe/providers/swipe_provider.dart';
 import '../providers/onboarding_provider.dart';
@@ -205,22 +206,18 @@ class _TasteProfileScreenState extends ConsumerState<TasteProfileScreen> {
                           TextButton(
                             onPressed: () async {
                               if (state.tasteMedia.isEmpty) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('No titles selected. Falling back to mood preferences.', style: TextStyle(color: AppTheme.textInverse)),
-                                    backgroundColor: AppTheme.accentSecondary,
-                                    behavior: SnackBarBehavior.floating,
-                                    duration: Duration(seconds: 2),
-                                  ),
+                                showCustomSnackBar(
+                                  context,
+                                  message: 'No titles selected. Falling back to mood preferences.',
+                                  isError: true,
+                                  duration: const Duration(seconds: 2),
                                 );
                               } else if (state.tasteMedia.length < 3) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text('Only picked ${state.tasteMedia.length}? We\'ll use these plus your mood.', style: const TextStyle(color: AppTheme.textInverse)),
-                                    backgroundColor: AppTheme.accentPrimary,
-                                    behavior: SnackBarBehavior.floating,
-                                    duration: const Duration(seconds: 2),
-                                  ),
+                                showCustomSnackBar(
+                                  context,
+                                  message: 'Only picked ${state.tasteMedia.length}? We\'ll use these plus your mood.',
+                                  isSuccess: true,
+                                  duration: const Duration(seconds: 2),
                                 );
                               }
 
@@ -232,13 +229,11 @@ class _TasteProfileScreenState extends ConsumerState<TasteProfileScreen> {
                               if (widget.isEditing) {
                                 if (context.mounted) {
                                   context.pop();
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Taste Seeds updated', style: TextStyle(color: AppTheme.textInverse)),
-                                      backgroundColor: AppTheme.accentPrimary,
-                                      behavior: SnackBarBehavior.floating,
-                                      duration: Duration(seconds: 1),
-                                    ),
+                                  showCustomSnackBar(
+                                    context,
+                                    message: 'Taste Seeds updated',
+                                    isSuccess: true,
+                                    duration: const Duration(seconds: 1),
                                   );
                                 }
                               } else {
@@ -366,19 +361,12 @@ class _TasteProfileScreenState extends ConsumerState<TasteProfileScreen> {
                               } else {
                                 notifier.addTasteMedia(movie);
                                 if (state.tasteMedia.length == 2) { // 2 because it updates next frame to 3
-                                  ScaffoldMessenger.of(context)
-                                    ..clearSnackBars()
-                                    ..showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                          'Nice pick! Add more to fine-tune your recommendations.',
-                                          style: TextStyle(fontFamily: 'Inter', color: AppTheme.textPrimary),
-                                        ),
-                                        duration: Duration(seconds: 4),
-                                        backgroundColor: AppTheme.bgElevated,
-                                        behavior: SnackBarBehavior.floating,
-                                      ),
-                                    );
+                                  showCustomSnackBar(
+                                    context,
+                                    message: 'Nice pick! Add more to fine-tune your recommendations.',
+                                    isSuccess: true,
+                                    duration: const Duration(seconds: 4),
+                                  );
                                 }
                               }
                             },
@@ -490,19 +478,12 @@ class _TasteProfileScreenState extends ConsumerState<TasteProfileScreen> {
                               } else {
                                 notifier.addTasteMedia(movie);
                                 if (state.tasteMedia.length == 2) {
-                                  ScaffoldMessenger.of(context)
-                                    ..clearSnackBars()
-                                    ..showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                          'Nice pick! Add more to fine-tune your recommendations.',
-                                          style: TextStyle(fontFamily: 'Inter', color: AppTheme.textPrimary),
-                                        ),
-                                        duration: Duration(seconds: 4),
-                                        backgroundColor: AppTheme.bgElevated,
-                                        behavior: SnackBarBehavior.floating,
-                                      ),
-                                    );
+                                  showCustomSnackBar(
+                                    context,
+                                    message: 'Nice pick! Add more to fine-tune your recommendations.',
+                                    isSuccess: true,
+                                    duration: const Duration(seconds: 4),
+                                  );
                                 }
                               }
                             },

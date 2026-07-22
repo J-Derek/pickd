@@ -6,14 +6,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
-import 'dart:ui';
-
 import '../../../core/config/app_theme.dart';
 import '../../../core/models/media_item.dart';
 import '../../../core/services/discovery_service.dart';
+import '../../../core/services/hive_service.dart';
+import '../../../core/widgets/custom_snackbar.dart';
 import '../../../core/widgets/genre_chip.dart';
 import '../../../core/widgets/shimmer_card.dart';
-import '../../../core/services/hive_service.dart';
 import '../../../core/services/supabase_auth_service.dart';
 import '../../../core/services/supabase_db_service.dart';
 import '../providers/swipe_provider.dart';
@@ -60,16 +59,6 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
         });
       }
     } catch (_) {}
-  }
-
-  EdgeInsets get _snackbarMargin {
-    final navHeight = kBottomNavigationBarHeight;
-    final bottomInset = MediaQuery.of(context).padding.bottom;
-    return EdgeInsets.only(
-      bottom: navHeight + bottomInset + 24,
-      left: 24,
-      right: 24,
-    );
   }
 
   @override
@@ -408,29 +397,21 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
               if (dir == CardSwiperDirection.right) {
                 action = SwipeAction.save;
                 HapticFeedback.mediumImpact();
-                ScaffoldMessenger.of(context).clearSnackBars();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: const Text('Saved to Watchlist', style: TextStyle(color: AppTheme.textInverse, fontWeight: FontWeight.w600)),
-                    backgroundColor: AppTheme.accentPrimary,
-                    duration: const Duration(seconds: 1),
-                    behavior: SnackBarBehavior.floating,
-                    margin: _snackbarMargin,
-                  ),
+                showCustomSnackBar(
+                  context,
+                  message: 'Saved to Watchlist',
+                  isSuccess: true,
+                  duration: const Duration(seconds: 1),
                 );
               } else if (dir == CardSwiperDirection.top) {
                 action = SwipeAction.watched;
                 HapticFeedback.mediumImpact();
                 ref.read(swipeDeckProvider.notifier).onSwiped(item, action);
-                ScaffoldMessenger.of(context).clearSnackBars();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: const Text('Marked as Watched', style: TextStyle(color: AppTheme.textInverse, fontWeight: FontWeight.w600)),
-                    backgroundColor: AppTheme.accentGreen,
-                    duration: const Duration(seconds: 1),
-                    behavior: SnackBarBehavior.floating,
-                    margin: _snackbarMargin,
-                  ),
+                showCustomSnackBar(
+                  context,
+                  message: 'Marked as Watched',
+                  isSuccess: true,
+                  duration: const Duration(seconds: 1),
                 );
                 return true;
               } else if (dir == CardSwiperDirection.bottom) {

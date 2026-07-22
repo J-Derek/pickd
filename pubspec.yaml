@@ -39,6 +39,7 @@ dependencies:
   equatable: ^2.0.5
   lucide_icons: ^0.257.0
   supabase_flutter: ^2.16.0
+  youtube_player_flutter: ^10.0.1
 
 dev_dependencies:
   flutter_test:

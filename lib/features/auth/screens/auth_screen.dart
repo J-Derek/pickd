@@ -123,11 +123,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString(), style: const TextStyle(color: Colors.white)),
-            backgroundColor: AppTheme.accentSecondary,
-          ),
+        showCustomSnackBar(
+          context,
+          message: e.toString(),
+          isError: true,
         );
       }
     } finally {
