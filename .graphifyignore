@@ -1,0 +1,11 @@
+build/
+.dart_tool/
+*.g.dart
+*.freezed.dart
+windows/flutter/ephemeral/
+android/.gradle/
+ios/Pods/
+graphify-out/
+.gemini/
+.agents/
+*.md

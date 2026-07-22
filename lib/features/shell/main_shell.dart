@@ -11,7 +11,7 @@ class MainShell extends StatelessWidget {
 
   const MainShell({super.key, required this.child});
 
-  static const _tabs = ['/swipe', '/watchlist', '/gems', '/profile'];
+  static const _tabs = ['/swipe', '/search', '/watchlist', '/gems', '/profile'];
 
   int _currentIndex(BuildContext context) {
     final location = GoRouterState.of(context).uri.path;
@@ -50,104 +50,39 @@ class MainShell extends StatelessWidget {
       child: Scaffold(
         backgroundColor: AppTheme.bgPrimary,
         body: child,
-        bottomNavigationBar: Container(
-          decoration: const BoxDecoration(
-            color: AppTheme.bgElevated,
-            border: Border(
-              top: BorderSide(color: AppTheme.bgMuted, width: 1),
+        bottomNavigationBar: BottomNavigationBar(
+          backgroundColor: AppTheme.bgPrimary,
+          elevation: 0,
+          type: BottomNavigationBarType.fixed,
+          currentIndex: index,
+          selectedItemColor: AppTheme.accentPrimary,
+          unselectedItemColor: AppTheme.textMuted,
+          onTap: (i) => context.go(_tabs[i]),
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.movie_filter_outlined),
+              activeIcon: Icon(Icons.movie_filter),
+              label: 'Discover',
             ),
-          ),
-          child: SafeArea(
-            top: false,
-            child: SizedBox(
-              height: 64,
-              child: Row(
-                children: [
-                  _NavItem(
-                    icon: Icons.movie_filter_outlined,
-                    activeIcon: Icons.movie_filter,
-                    label: 'Discover',
-                    isActive: index == 0,
-                    onTap: () => context.go('/swipe'),
-                  ),
-                  _NavItem(
-                    icon: Icons.bookmark_border,
-                    activeIcon: Icons.bookmark,
-                    label: 'Watchlist',
-                    isActive: index == 1,
-                    onTap: () => context.go('/watchlist'),
-                  ),
-                  _NavItem(
-                    icon: LucideIcons.gem,
-                    activeIcon: LucideIcons.gem,
-                    label: 'Gems',
-                    isActive: index == 2,
-                    onTap: () => context.go('/gems'),
-                    isGems: true,
-                  ),
-                  _NavItem(
-                    icon: Icons.person_outline,
-                    activeIcon: Icons.person,
-                    label: 'Profile',
-                    isActive: index == 3,
-                    onTap: () => context.go('/profile'),
-                  ),
-                ],
-              ),
+            BottomNavigationBarItem(
+              icon: Icon(LucideIcons.search),
+              activeIcon: Icon(LucideIcons.search),
+              label: 'Search',
             ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _NavItem extends StatelessWidget {
-  final IconData icon;
-  final IconData activeIcon;
-  final String label;
-  final bool isActive;
-  final VoidCallback onTap;
-  final bool isGems;
-
-  const _NavItem({
-    required this.icon,
-    required this.activeIcon,
-    required this.label,
-    required this.isActive,
-    required this.onTap,
-    this.isGems = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        behavior: HitTestBehavior.opaque,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-              decoration: BoxDecoration(
-                color: isActive
-                    ? (isGems
-                        ? AppTheme.accentPrimary.withValues(alpha: 0.12)
-                        : AppTheme.accentPrimary.withValues(alpha: 0.12))
-                    : Colors.transparent,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Icon(
-                isActive ? activeIcon : icon,
-                size: 24,
-                color: isActive
-                    ? (isGems
-                        ? const Color(0xFFBB86FC)
-                        : AppTheme.accentPrimary)
-                    : AppTheme.textMuted,
-              ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.bookmark_border),
+              activeIcon: Icon(Icons.bookmark),
+              label: 'Watchlist',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(LucideIcons.gem),
+              activeIcon: Icon(LucideIcons.gem),
+              label: 'Gems',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person_outline),
+              activeIcon: Icon(Icons.person),
+              label: 'Profile',
             ),
           ],
         ),

@@ -7,10 +7,9 @@ import '../../../core/config/app_theme.dart';
 import '../../../core/services/hive_service.dart';
 import '../../../core/services/supabase_auth_service.dart';
 import '../../swipe/providers/swipe_provider.dart';
-
 import '../../../core/services/supabase_db_service.dart';
+import '../../../core/widgets/custom_snackbar.dart';
 
-import '../../swipe/screens/settings_sheet.dart';
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
@@ -45,123 +44,363 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     }
   }
 
-  Future<void> _showEditProfileDialog() async {
-    final nameCtrl = TextEditingController(text: _displayName);
-    final avatarCtrl = TextEditingController(text: _avatarUrl);
-
-    void showAvatarPicker(void Function(void Function()) setStateDialog) {
-      final seeds = ['Jack', 'Luna', 'Felix', 'Jasper', 'Max', 'Abby', 'Simba', 'Loki', 'Bella', 'Charlie', 'Milo', 'Oliver'];
-      showModalBottomSheet(
-        context: context,
-        backgroundColor: AppTheme.bgSurface,
-        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-        builder: (ctx) {
-          return Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text('Choose an Avatar', style: TextStyle(color: AppTheme.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 16),
-                Expanded(
-                  child: GridView.builder(
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 4,
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 12,
-                    ),
-                    itemCount: seeds.length,
-                    itemBuilder: (context, index) {
-                      final url = 'https://api.dicebear.com/7.x/bottts/png?seed=${seeds[index]}&backgroundColor=1f1f1f';
-                      return GestureDetector(
-                        onTap: () {
-                          setStateDialog(() {
-                            avatarCtrl.text = url;
-                          });
-                          Navigator.pop(ctx);
-                        },
-                        child: CircleAvatar(
-                          backgroundColor: AppTheme.bgMuted,
-                          backgroundImage: NetworkImage(url),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      );
-    }
-
-    await showDialog<bool>(
+  void _showAvatarPickerSheet() {
+    final seeds = [
+      'Jack', 'Luna', 'Felix', 'Jasper', 'Max', 'Abby',
+      'Simba', 'Loki', 'Bella', 'Charlie', 'Milo', 'Oliver'
+    ];
+    showModalBottomSheet(
       context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (context, setStateDialog) {
-          return AlertDialog(
-            backgroundColor: AppTheme.bgSurface,
-            shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-            title: const Text('Edit Profile', style: TextStyle(color: AppTheme.textPrimary)),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (avatarCtrl.text.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: CircleAvatar(
-                      radius: 40,
-                      backgroundColor: AppTheme.bgMuted,
-                      backgroundImage: NetworkImage(avatarCtrl.text),
-                    ),
+      backgroundColor: AppTheme.bgSurface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppTheme.bgMuted,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Choose Avatar',
+              style: TextStyle(color: AppTheme.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            GridView.builder(
+              shrinkWrap: true,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 4,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+              ),
+              itemCount: seeds.length,
+              itemBuilder: (context, i) {
+                final url = 'https://api.dicebear.com/7.x/bottts/png?seed=${seeds[i]}&backgroundColor=1f1f1f';
+                return GestureDetector(
+                  onTap: () async {
+                    Navigator.pop(ctx);
+                    final user = ref.read(currentUserProvider);
+                    if (user != null && !user.isAnonymous) {
+                      await ref.read(supabaseDbServiceProvider)
+                          .updateProfileDetails(user.id, _displayName, url);
+                    }
+                    if (mounted) setState(() => _avatarUrl = url);
+                  },
+                  child: CircleAvatar(
+                    backgroundColor: AppTheme.bgMuted,
+                    backgroundImage: NetworkImage(url),
                   ),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showAccountDetailsSheet() {
+    final nameCtrl = TextEditingController(text: _displayName);
+    bool isEditingName = false;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppTheme.bgSurface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setStateSheet) => Padding(
+          padding: EdgeInsets.only(
+            left: 24,
+            right: 24,
+            top: 20,
+            bottom: MediaQuery.of(ctx).viewInsets.bottom + 32,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppTheme.bgMuted,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 20),
+              GestureDetector(
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _showAvatarPickerSheet();
+                },
+                child: Stack(
+                  children: [
+                    _avatarUrl != null && _avatarUrl!.isNotEmpty
+                        ? CircleAvatar(
+                            radius: 44,
+                            backgroundImage: NetworkImage(_avatarUrl!),
+                          )
+                        : const CircleAvatar(
+                            radius: 44,
+                            backgroundColor: AppTheme.bgMuted,
+                            child: Icon(LucideIcons.user, size: 36, color: AppTheme.textSecondary),
+                          ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: const BoxDecoration(
+                          color: AppTheme.accentPrimary,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.edit, size: 14, color: Colors.white),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              _InfoRow(
+                label: 'Email',
+                value: ref.read(currentUserProvider)?.email ?? '—',
+              ),
+              const SizedBox(height: 16),
+              if (!isEditingName)
+                _InfoRow(
+                  label: 'Username',
+                  value: _displayName ?? 'Not set',
+                  trailing: IconButton(
+                    icon: const Icon(Icons.edit_outlined, size: 18, color: AppTheme.accentPrimary),
+                    onPressed: () => setStateSheet(() => isEditingName = true),
+                  ),
+                )
+              else
                 TextField(
                   controller: nameCtrl,
+                  autofocus: true,
                   style: const TextStyle(color: AppTheme.textPrimary),
-                  decoration: const InputDecoration(
-                    labelText: 'Display Name',
-                    labelStyle: TextStyle(color: AppTheme.textSecondary),
-                    enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppTheme.bgMuted)),
-                    focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppTheme.accentPrimary)),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    icon: const Icon(LucideIcons.image, color: AppTheme.accentPrimary),
-                    label: const Text('Choose Avatar', style: TextStyle(color: AppTheme.accentPrimary)),
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: AppTheme.bgMuted),
-                      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: InputDecoration(
+                    labelText: 'Username',
+                    labelStyle: const TextStyle(color: AppTheme.textSecondary),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppTheme.bgMuted),
                     ),
-                    onPressed: () => showAvatarPicker(setStateDialog),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppTheme.accentPrimary, width: 1.5),
+                    ),
                   ),
                 ),
-              ],
-            ),
-            actions: [
-              TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Cancel', style: TextStyle(color: AppTheme.textSecondary))),
-              TextButton(
-                onPressed: () async {
-                  final user = ref.read(currentUserProvider);
-                  if (user != null && !user.isAnonymous) {
-                    await ref.read(supabaseDbServiceProvider).updateProfileDetails(user.id, nameCtrl.text, avatarCtrl.text);
-                    if (mounted) {
-                      setState(() {
-                        _displayName = nameCtrl.text.isNotEmpty ? nameCtrl.text : null;
-                        _avatarUrl = avatarCtrl.text.isNotEmpty ? avatarCtrl.text : null;
-                      });
+              const SizedBox(height: 28),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.accentPrimary,
+                    foregroundColor: AppTheme.textInverse,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  onPressed: () async {
+                    final user = ref.read(currentUserProvider);
+                    if (user != null && !user.isAnonymous) {
+                      final newName = nameCtrl.text.trim().isEmpty ? null : nameCtrl.text.trim();
+                      await ref.read(supabaseDbServiceProvider)
+                          .updateProfileDetails(user.id, newName, _avatarUrl);
+                      if (mounted) setState(() => _displayName = newName);
                     }
-                  }
-                  if (ctx.mounted) Navigator.of(ctx).pop(true);
-                },
-                child: const Text('Save', style: TextStyle(color: AppTheme.accentPrimary)),
+                    if (ctx.mounted) Navigator.pop(ctx);
+                  },
+                  child: const Text('Save Changes', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                ),
               ),
             ],
-          );
-        }
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showChangePasswordSheet() {
+    final currentPasswordController = TextEditingController();
+    final newPasswordController = TextEditingController();
+    final confirmPasswordController = TextEditingController();
+    bool isLoading = false;
+    String? errorMessage;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppTheme.bgSurface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setSheetState) => Padding(
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20,
+            top: 20,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppTheme.bgMuted,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Change Password',
+                style: TextStyle(
+                  color: AppTheme.textPrimary,
+                  fontFamily: 'Syne',
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              if (errorMessage != null) ...[
+                Text(
+                  errorMessage!,
+                  style: const TextStyle(color: AppTheme.accentSecondary, fontSize: 13),
+                ),
+                const SizedBox(height: 12),
+              ],
+              TextField(
+                controller: currentPasswordController,
+                obscureText: true,
+                style: const TextStyle(color: AppTheme.textPrimary),
+                decoration: const InputDecoration(
+                  labelText: 'Current Password',
+                  labelStyle: TextStyle(color: AppTheme.textSecondary),
+                  enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: AppTheme.bgMuted)),
+                  focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: AppTheme.accentPrimary)),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: newPasswordController,
+                obscureText: true,
+                style: const TextStyle(color: AppTheme.textPrimary),
+                decoration: const InputDecoration(
+                  labelText: 'New Password',
+                  labelStyle: TextStyle(color: AppTheme.textSecondary),
+                  enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: AppTheme.bgMuted)),
+                  focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: AppTheme.accentPrimary)),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: confirmPasswordController,
+                obscureText: true,
+                style: const TextStyle(color: AppTheme.textPrimary),
+                decoration: const InputDecoration(
+                  labelText: 'Confirm New Password',
+                  labelStyle: TextStyle(color: AppTheme.textSecondary),
+                  enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: AppTheme.bgMuted)),
+                  focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: AppTheme.accentPrimary)),
+                ),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.accentPrimary,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  onPressed: isLoading
+                      ? null
+                      : () async {
+                          final currentPwd = currentPasswordController.text.trim();
+                          final newPwd = newPasswordController.text.trim();
+                          final confirmPwd = confirmPasswordController.text.trim();
+
+                          if (currentPwd.isEmpty || newPwd.isEmpty || confirmPwd.isEmpty) {
+                            setSheetState(() => errorMessage = 'Please fill in all password fields.');
+                            return;
+                          }
+                          if (newPwd.length < 6) {
+                            setSheetState(() => errorMessage = 'New password must be at least 6 characters.');
+                            return;
+                          }
+                          if (newPwd != confirmPwd) {
+                            setSheetState(() => errorMessage = 'New passwords do not match.');
+                            return;
+                          }
+
+                          setSheetState(() {
+                            isLoading = true;
+                            errorMessage = null;
+                          });
+
+                          try {
+                            final user = ref.read(currentUserProvider);
+                            if (user == null || user.email == null) {
+                              throw 'User session invalid. Please log in again.';
+                            }
+
+                            // 1. Re-authenticate to verify current password
+                            await ref.read(authServiceProvider).signInWithEmailPassword(
+                                  user.email!,
+                                  currentPwd,
+                                );
+
+                            // 2. Update password
+                            await ref.read(authServiceProvider).updatePassword(newPwd);
+
+                            if (context.mounted) {
+                              Navigator.of(context).pop();
+                              showCustomSnackBar(
+                                context,
+                                message: 'Password changed successfully!',
+                                isSuccess: true,
+                              );
+                            }
+                          } catch (e) {
+                            setSheetState(() {
+                              isLoading = false;
+                              errorMessage = 'Current password incorrect or update failed.';
+                            });
+                          }
+                        },
+                  child: isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
+                        )
+                      : const Text(
+                          'Update Password',
+                          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -170,338 +409,523 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Widget build(BuildContext context) {
     final user = ref.watch(currentUserProvider);
     final profile = HiveService.getProfile();
-    
     final bool isGuest = user == null || user.isAnonymous;
-    
-    String displayEmail = 'Guest User';
+
+    String resolvedName = 'Guest User';
     if (!isGuest) {
-      if (user.email != null && user.email!.isNotEmpty) {
-        displayEmail = user.email!;
+      if (_displayName != null && _displayName!.isNotEmpty) {
+        resolvedName = _displayName!;
+      } else if (user.email != null) {
+        final prefix = user.email!.split('@').first;
+        resolvedName = prefix.length > 12 ? prefix.substring(0, 12) : prefix;
       } else {
-        displayEmail = 'Connected User';
+        resolvedName = 'Connected User';
       }
     }
 
     return Scaffold(
       backgroundColor: AppTheme.bgPrimary,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: const Text('Your Profile', style: TextStyle(fontFamily: 'Syne', fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
-        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
-        actions: const [],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // User Header
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: AppTheme.bgSurface,
-                borderRadius: BorderRadius.zero,
-                border: Border.all(color: AppTheme.bgElevated),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 16),
+              // Settings Header Title
+              const Text(
+                'Settings',
+                style: TextStyle(
+                  fontFamily: 'Syne',
+                  fontSize: 32,
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.textPrimary,
+                ),
               ),
-              child: Row(
+              const SizedBox(height: 24),
+
+              // User Info Row
+              Row(
                 children: [
-                  _avatarUrl != null && _avatarUrl!.isNotEmpty
-                      ? CircleAvatar(
-                          radius: 30,
-                          backgroundColor: AppTheme.bgMuted,
-                          backgroundImage: NetworkImage(_avatarUrl!),
-                        )
-                      : const CircleAvatar(
-                          radius: 30,
-                          backgroundColor: AppTheme.bgMuted,
-                          child: Icon(LucideIcons.user, color: AppTheme.textSecondary, size: 30),
-                        ),
+                  GestureDetector(
+                    onTap: () {
+                      if (!isGuest) {
+                        _showAvatarPickerSheet();
+                      } else {
+                        showCustomSnackBar(
+                          context,
+                          message: 'Please sign in to change your avatar',
+                        );
+                      }
+                    },
+                    child: Stack(
+                      children: [
+                        _avatarUrl != null && _avatarUrl!.isNotEmpty
+                            ? CircleAvatar(
+                                radius: 36,
+                                backgroundColor: AppTheme.bgMuted,
+                                backgroundImage: NetworkImage(_avatarUrl!),
+                              )
+                            : const CircleAvatar(
+                                radius: 36,
+                                backgroundColor: AppTheme.bgMuted,
+                                child: Icon(LucideIcons.user, color: AppTheme.textSecondary, size: 36),
+                              ),
+                        if (!isGuest)
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: const BoxDecoration(
+                                color: AppTheme.accentPrimary,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.edit, size: 10, color: Colors.white),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
                   const SizedBox(width: 16),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          _displayName ?? displayEmail,
-                          style: const TextStyle(color: AppTheme.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
+                          resolvedName,
+                          style: const TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                            color: AppTheme.textPrimary,
+                          ),
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          !isGuest ? 'Cloud Sync Active' : 'Local device storage only',
-                          style: const TextStyle(color: AppTheme.accentPrimary, fontSize: 12),
+                          !isGuest ? user.email ?? 'Cloud Sync Active' : 'Local device storage only',
+                          style: const TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 13,
+                            color: AppTheme.textSecondary,
+                          ),
                         ),
                       ],
                     ),
                   ),
                 ],
               ),
-            ),
-            const SizedBox(height: 16),
-            
-            if (isGuest)
-              Material(
-                color: AppTheme.bgElevated,
-                shape: Border.all(color: AppTheme.bgMuted),
-                child: InkWell(
-                  onTap: () => context.push('/auth'),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    alignment: Alignment.center,
-                    child: const Text('Connect Account', style: TextStyle(color: AppTheme.accentPrimary, fontWeight: FontWeight.bold)),
-                  ),
-                ),
-              ),
+              const SizedBox(height: 24),
 
-            const SizedBox(height: 32),
-            const Text('Your Stats', style: TextStyle(color: AppTheme.textSecondary, fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
-            const SizedBox(height: 12),
-            
-            // Stats Grid
-            Row(
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      context.push('/swipe-history');
+              // Stats Cards
+              _StatsSection(
+                totalSwipes: profile.totalSwipeCount,
+                totalFavorites: profile.tasteSeedMovieIds.length + profile.tasteSeedTvIds.length,
+                onSwipesTap: () => context.push('/swipe-history'),
+                onFavoritesTap: () => context.push('/onboarding/mood'),
+              ),
+              const SizedBox(height: 8),
+
+              // ACCOUNT GROUP
+              _SettingsGroup(
+                title: 'Account',
+                children: [
+                  if (isGuest)
+                    _SettingsRow(
+                      icon: LucideIcons.userPlus,
+                      title: 'Connect Account',
+                      onTap: () => context.push('/auth'),
+                    )
+                  else ...[
+                    _SettingsRow(
+                      icon: LucideIcons.user,
+                      title: 'Edit Profile Details',
+                      onTap: _showAccountDetailsSheet,
+                    ),
+                    _SettingsRow(
+                      icon: LucideIcons.keyRound,
+                      title: 'Change Password',
+                      onTap: _showChangePasswordSheet,
+                    ),
+                  ],
+                  _SettingsRow(
+                    icon: LucideIcons.rotateCcw,
+                    title: 'Reset Swipe History',
+                    isDestructive: true,
+                    onTap: () async {
+                      final confirm = await showDialog<bool>(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          backgroundColor: AppTheme.bgSurface,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          title: const Text('Reset Algorithm', style: TextStyle(color: AppTheme.textPrimary)),
+                          content: const Text('This will clear all your swipe history and start fresh. Are you sure?', style: TextStyle(color: AppTheme.textSecondary)),
+                          actions: [
+                            TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Cancel', style: TextStyle(color: AppTheme.textSecondary))),
+                            TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('Reset', style: TextStyle(color: AppTheme.accentSecondary))),
+                          ],
+                        ),
+                      );
+
+                      if (confirm == true) {
+                        await HiveService.clearSwipeHistory();
+                        final profile = HiveService.getProfile();
+                        profile.totalSwipeCount = 0;
+                        profile.suppressAuthGate = false;
+                        await HiveService.saveProfile(profile);
+                        
+                        ref.read(swipeDeckProvider.notifier).resetSwipeGate();
+                        ref.read(swipeDeckProvider.notifier).loadDeck();
+                        
+                        if (mounted) setState(() {});
+                        
+                        if (context.mounted) {
+                          showCustomSnackBar(
+                            context,
+                            message: 'Algorithm reset successfully',
+                            isSuccess: true,
+                          );
+                        }
+                      }
                     },
-                    child: _StatCard(
-                      icon: LucideIcons.mousePointer2,
-                      title: 'Total Swipes',
-                      value: profile.totalSwipeCount.toString(),
-                      isClickable: true,
+                  ),
+                  if (!isGuest)
+                    _SettingsRow(
+                      icon: LucideIcons.logOut,
+                      title: 'Sign Out',
+                      isDestructive: true,
+                      onTap: () async {
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            backgroundColor: AppTheme.bgSurface,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            title: const Text('Sign Out', style: TextStyle(color: AppTheme.textPrimary)),
+                            content: const Text('Are you sure you want to sign out?', style: TextStyle(color: AppTheme.textSecondary)),
+                            actions: [
+                              TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Cancel', style: TextStyle(color: AppTheme.textSecondary))),
+                              TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('Sign Out', style: TextStyle(color: AppTheme.accentSecondary))),
+                            ],
+                          ),
+                        );
+                        if (confirm == true) {
+                          ref.read(authServiceProvider).signOut();
+                        }
+                      },
+                    ),
+                ],
+              ),
+
+              // PREFERENCES GROUP
+              _SettingsGroup(
+                title: 'Preferences',
+                children: [
+                  _SettingsRow(
+                    icon: LucideIcons.bell,
+                    title: 'Push Notifications',
+                    trailing: Switch(
+                      value: false,
+                      onChanged: (val) {
+                        showCustomSnackBar(
+                          context,
+                          message: 'Notifications coming soon',
+                        );
+                      },
+                      activeThumbColor: AppTheme.textPrimary,
+                      activeTrackColor: AppTheme.accentPrimary,
+                      inactiveThumbColor: AppTheme.textMuted,
+                      inactiveTrackColor: AppTheme.bgPrimary,
+                      trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
                     ),
                   ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: GestureDetector(
+                  _SettingsRow(
+                    icon: LucideIcons.calendar,
+                    title: 'Allow Classics (1990 & Older)',
+                    trailing: Switch(
+                      value: profile.allowOldMovies,
+                      onChanged: (val) async {
+                        setState(() {
+                          profile.allowOldMovies = val;
+                        });
+                        await HiveService.saveProfile(profile);
+                        final user = ref.read(currentUserProvider);
+                        if (user != null && !user.isAnonymous) {
+                          await ref.read(supabaseDbServiceProvider).updateAllowOldMovies(user.id, val);
+                        }
+                        ref.read(swipeDeckProvider.notifier).loadDeck();
+                      },
+                      activeThumbColor: AppTheme.textPrimary,
+                      activeTrackColor: AppTheme.accentPrimary,
+                      inactiveThumbColor: AppTheme.textMuted,
+                      inactiveTrackColor: AppTheme.bgPrimary,
+                      trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
+                    ),
+                  ),
+                  _SettingsRow(
+                    icon: LucideIcons.film,
+                    title: 'Edit Taste Seeds',
+                    onTap: () => context.push('/onboarding/mood'),
+                  ),
+                ],
+              ),
+
+              // SUPPORT GROUP
+              _SettingsGroup(
+                title: 'Support',
+                children: [
+                  _SettingsRow(
+                    icon: LucideIcons.helpCircle,
+                    title: 'Help Center',
                     onTap: () {
-                      context.push('/onboarding/mood');
+                      showCustomSnackBar(
+                        context,
+                        message: 'Help Center coming soon',
+                      );
                     },
-                    child: _StatCard(
-                      icon: LucideIcons.film,
-                      title: 'Favorite Titles',
-                      value: (profile.tasteSeedMovieIds.length + profile.tasteSeedTvIds.length).toString(),
-                      isClickable: true,
-                    ),
                   ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 32),
-            const Text('Settings', style: TextStyle(color: AppTheme.textSecondary, fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
-            const SizedBox(height: 12),
-
-            _SettingsTile(
-              icon: LucideIcons.settings,
-              title: 'Preferences',
-              subtitle: 'Change content filters and classic movies',
-              onTap: () {
-                showModalBottomSheet(
-                  context: context,
-                  backgroundColor: Colors.transparent,
-                  builder: (context) => const SettingsSheet(),
-                );
-              },
-            ),
-
-            _SettingsTile(
-              icon: LucideIcons.rotateCcw,
-              title: 'Reset Swipe History',
-              subtitle: 'Clear all swiped movies to start fresh',
-              isDestructive: true,
-              onTap: () async {
-                final confirm = await showDialog<bool>(
-                  context: context,
-                  builder: (ctx) => AlertDialog(
-                    backgroundColor: AppTheme.bgSurface,
-                    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-                    title: const Text('Reset Algorithm', style: TextStyle(color: AppTheme.textPrimary)),
-                    content: const Text('This will clear all your swipe history and start fresh. Are you sure?', style: TextStyle(color: AppTheme.textSecondary)),
-                    actions: [
-                      TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Cancel', style: TextStyle(color: AppTheme.textSecondary))),
-                      TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('Reset', style: TextStyle(color: AppTheme.accentSecondary))),
-                    ],
+                  _SettingsRow(
+                    icon: LucideIcons.mail,
+                    title: 'Send Feedback',
+                    onTap: () {
+                      showCustomSnackBar(
+                        context,
+                        message: 'Thank you for your feedback!',
+                        isSuccess: true,
+                      );
+                    },
                   ),
-                );
-
-                if (confirm == true) {
-                  await HiveService.clearSwipeHistory();
-                  final profile = HiveService.getProfile();
-                  profile.totalSwipeCount = 0;
-                  profile.suppressAuthGate = false;
-                  await HiveService.saveProfile(profile);
-                  
-                  ref.read(swipeDeckProvider.notifier).resetSwipeGate();
-                  ref.read(swipeDeckProvider.notifier).loadDeck();
-                  
-                  if (mounted) setState(() {});
-                  
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Algorithm reset', style: TextStyle(color: AppTheme.textInverse)), backgroundColor: AppTheme.accentPrimary),
-                    );
-                  }
-                }
-              },
-            ),
-            
-            if (!isGuest)
-              _SettingsTile(
-              icon: LucideIcons.user,
-              title: 'Account Details',
-              subtitle: 'Manage your name and avatar',
-              onTap: () {
-                if (isGuest) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Please sign in to edit your profile', style: TextStyle(color: AppTheme.textInverse)),
-                      backgroundColor: AppTheme.accentPrimary,
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                } else {
-                  _showEditProfileDialog();
-                }
-              },
-            ),
-
-            _SettingsTile(
-              icon: LucideIcons.bell,
-              title: 'Push Notifications',
-              subtitle: 'Get alerts for new releases',
-              trailing: Switch(
-                value: false,
-                onChanged: (val) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Notifications coming soon', style: TextStyle(color: AppTheme.textInverse)),
-                      backgroundColor: AppTheme.accentPrimary,
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                },
-                activeThumbColor: AppTheme.accentPrimary,
+                ],
               ),
-              onTap: () {},
-            ),
-
-            if (!isGuest)
-              _SettingsTile(
-                icon: LucideIcons.logOut,
-                title: 'Sign Out',
-                subtitle: 'Disconnect your account from this device',
-                isDestructive: true,
-                onTap: () async {
-                  final confirm = await showDialog<bool>(
-                    context: context,
-                    builder: (ctx) => AlertDialog(
-                      backgroundColor: AppTheme.bgSurface,
-                      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-                      title: const Text('Sign Out', style: TextStyle(color: AppTheme.textPrimary)),
-                      content: const Text('Are you sure you want to sign out?', style: TextStyle(color: AppTheme.textSecondary)),
-                      actions: [
-                        TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Cancel', style: TextStyle(color: AppTheme.textSecondary))),
-                        TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('Sign Out', style: TextStyle(color: AppTheme.accentSecondary))),
-                      ],
-                    ),
-                  );
-                  if (confirm == true) {
-                    ref.read(authServiceProvider).signOut();
-                  }
-                },
-              ),
-          ],
+              const SizedBox(height: 40),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _StatCard extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String value;
-  final bool isClickable;
+class _StatsSection extends StatelessWidget {
+  final int totalSwipes;
+  final int totalFavorites;
+  final VoidCallback onSwipesTap;
+  final VoidCallback onFavoritesTap;
 
-  const _StatCard({required this.icon, required this.title, required this.value, this.isClickable = false});
+  const _StatsSection({
+    required this.totalSwipes,
+    required this.totalFavorites,
+    required this.onSwipesTap,
+    required this.onFavoritesTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
-        color: AppTheme.bgElevated,
-        borderRadius: BorderRadius.zero,
+        color: AppTheme.bgSurface,
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppTheme.bgMuted.withValues(alpha: 0.5)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Icon(icon, color: AppTheme.accentPrimary, size: 24),
-              if (isClickable)
-                const Icon(Icons.edit, color: AppTheme.textSecondary, size: 16),
-            ],
+          Expanded(
+            child: InkWell(
+              onTap: onSwipesTap,
+              child: Column(
+                children: [
+                  Text(
+                    '$totalSwipes',
+                    style: const TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                      color: AppTheme.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Total Swipes',
+                    style: TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 12,
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
-          const SizedBox(height: 16),
-          Text(value, style: const TextStyle(color: AppTheme.textPrimary, fontSize: 24, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 4),
-          Text(title, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
+          Container(
+            width: 1,
+            height: 32,
+            color: AppTheme.bgMuted.withValues(alpha: 0.5),
+          ),
+          Expanded(
+            child: InkWell(
+              onTap: onFavoritesTap,
+              child: Column(
+                children: [
+                  Text(
+                    '$totalFavorites',
+                    style: const TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                      color: AppTheme.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Taste Seeds',
+                    style: TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 12,
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
 }
 
-class _SettingsTile extends StatelessWidget {
+class _SettingsGroup extends StatelessWidget {
+  final String title;
+  final List<Widget> children;
+
+  const _SettingsGroup({required this.title, required this.children});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 8, top: 24),
+          child: Text(
+            title.toUpperCase(),
+            style: const TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: AppTheme.textMuted,
+              letterSpacing: 1.5,
+            ),
+          ),
+        ),
+        Container(
+          decoration: BoxDecoration(
+            color: AppTheme.bgSurface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppTheme.bgMuted.withValues(alpha: 0.5)),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: Column(
+              children: [
+                for (int i = 0; i < children.length; i++) ...[
+                  children[i],
+                  if (i < children.length - 1)
+                    Divider(
+                      height: 1,
+                      thickness: 1,
+                      color: AppTheme.bgMuted.withValues(alpha: 0.3),
+                      indent: 16,
+                      endIndent: 16,
+                    ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SettingsRow extends StatelessWidget {
   final IconData icon;
   final String title;
-  final String subtitle;
-  final VoidCallback onTap;
-  final bool isDestructive;
   final Widget? trailing;
+  final VoidCallback? onTap;
+  final bool isDestructive;
 
-  const _SettingsTile({
+  const _SettingsRow({
     required this.icon,
     required this.title,
-    required this.subtitle,
-    required this.onTap,
-    this.isDestructive = false,
     this.trailing,
+    this.onTap,
+    this.isDestructive = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.zero,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-        decoration: const BoxDecoration(
-          border: Border(bottom: BorderSide(color: AppTheme.bgElevated)),
-        ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         child: Row(
           children: [
-            Icon(icon, color: isDestructive ? AppTheme.accentSecondary : AppTheme.textSecondary),
+            Icon(
+              icon,
+              color: isDestructive ? AppTheme.accentSecondary : AppTheme.textSecondary,
+              size: 20,
+            ),
             const SizedBox(width: 16),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: TextStyle(color: isDestructive ? AppTheme.accentSecondary : AppTheme.textPrimary, fontWeight: FontWeight.w600)),
-                  Text(subtitle, style: const TextStyle(color: AppTheme.textMuted, fontSize: 12)),
-                ],
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                  color: isDestructive ? AppTheme.accentSecondary : AppTheme.textPrimary,
+                ),
               ),
             ),
-            trailing ?? const Icon(LucideIcons.chevronRight, color: AppTheme.bgMuted, size: 20),
+            if (trailing != null)
+              trailing!
+            else if (onTap != null)
+              const Icon(
+                Icons.chevron_right_rounded,
+                color: AppTheme.textMuted,
+                size: 20,
+              ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  final String label;
+  final String value;
+  final Widget? trailing;
+  const _InfoRow({required this.label, required this.value, this.trailing});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: const TextStyle(color: AppTheme.textMuted, fontSize: 12, fontWeight: FontWeight.w600)),
+              const SizedBox(height: 4),
+              Text(value, style: const TextStyle(color: AppTheme.textPrimary, fontSize: 16)),
+            ],
+          ),
+        ),
+        if (trailing != null) trailing!,
+      ],
     );
   }
 }

@@ -53,8 +53,12 @@ class _GemsScreenState extends ConsumerState<GemsScreen> {
       
       Set<String> seenKeys = HiveService.getSwipedKeys();
       if (user != null) {
-        final supabaseKeys = await ref.read(supabaseDbServiceProvider).getSwipedMediaKeys(user.id);
-        seenKeys = {...seenKeys, ...supabaseKeys};
+        try {
+          final supabaseKeys = await ref.read(supabaseDbServiceProvider).getSwipedMediaKeys(user.id);
+          seenKeys = {...seenKeys, ...supabaseKeys};
+        } catch (e) {
+          debugPrint('Supabase gems seen-keys fetch failed, using local Hive: $e');
+        }
       }
       
       final gems = await DiscoveryService.buildDeck(
@@ -87,8 +91,12 @@ class _GemsScreenState extends ConsumerState<GemsScreen> {
       
       Set<String> seenKeys = HiveService.getSwipedKeys();
       if (user != null) {
-        final supabaseKeys = await ref.read(supabaseDbServiceProvider).getSwipedMediaKeys(user.id);
-        seenKeys = {...seenKeys, ...supabaseKeys};
+        try {
+          final supabaseKeys = await ref.read(supabaseDbServiceProvider).getSwipedMediaKeys(user.id);
+          seenKeys = {...seenKeys, ...supabaseKeys};
+        } catch (e) {
+          debugPrint('Supabase gems loadMore seen-keys fetch failed, using local Hive: $e');
+        }
       }
       
       final newGems = await DiscoveryService.buildDeck(
@@ -100,8 +108,8 @@ class _GemsScreenState extends ConsumerState<GemsScreen> {
       );
       if (mounted) {
         setState(() {
-          final existingIds = _gems.map((e) => e.id).toSet();
-          _gems.addAll(newGems.where((g) => !existingIds.contains(g.id)));
+          final existingKeys = _gems.map((e) => e.mediaKey).toSet();
+          _gems.addAll(newGems.where((g) => !existingKeys.contains(g.mediaKey)));
         });
       }
     } catch (e) {
@@ -129,9 +137,9 @@ class _GemsScreenState extends ConsumerState<GemsScreen> {
                         const Row(
                           children: [
                             Text(
-                              'HIDDEN GEMS',
+                              'Hidden Gems',
                               style: TextStyle(
-                                fontFamily: 'Syne',
+                                fontFamily: 'Inter',
                                 fontSize: 28,
                                 fontWeight: FontWeight.w800,
                                 color: AppTheme.textPrimary,
@@ -271,11 +279,12 @@ class _GemCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final opacity = (percentX.abs() / 100).clamp(0.0, 1.0);
     return Container(
-      decoration: const BoxDecoration(
-        borderRadius: BorderRadius.zero,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: AppTheme.cardShadow,
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.zero,
+        borderRadius: BorderRadius.circular(24),
         child: Stack(
           fit: StackFit.expand,
           children: [
@@ -285,27 +294,11 @@ class _GemCard extends StatelessWidget {
                     fit: BoxFit.cover,
                   )
                 : Container(color: AppTheme.bgSurface),
+            // Bottom gradient overlay
             const Positioned.fill(
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    stops: [0.0, 0.3, 1.0],
-                    colors: [Colors.transparent, Colors.transparent, Color(0xEA080808)],
-                  ),
-                ),
-              ),
-            ),
-            // Brutalist border overlay
-            Positioned.fill(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.zero,
-                  border: Border.all(
-                    color: AppTheme.textPrimary.withValues(alpha: 0.1),
-                    width: 1,
-                  ),
+                  gradient: AppTheme.cardBottomGradient,
                 ),
               ),
             ),
@@ -318,14 +311,16 @@ class _GemCard extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                     decoration: BoxDecoration(
-        color: AppTheme.bgSurface,
-        borderRadius: BorderRadius.circular(0),
-        border: Border.all(color: AppTheme.bgMuted, width: 1),
-      ),
+                      border: Border.all(
+                        color: AppTheme.accentPrimary,
+                        width: 2.5,
+                      ),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                     child: const Text(
                       'WATCH',
                       style: TextStyle(
-                        fontFamily: 'Syne',
+                        fontFamily: 'Inter',
                         fontSize: 22,
                         fontWeight: FontWeight.w800,
                         color: AppTheme.accentPrimary,
@@ -344,14 +339,16 @@ class _GemCard extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                     decoration: BoxDecoration(
-                      color: AppTheme.bgPrimary,
-                      border: Border.all(color: AppTheme.accentSecondary, width: 3),
-                      borderRadius: BorderRadius.zero,
+                      border: Border.all(
+                        color: AppTheme.accentSecondary,
+                        width: 2.5,
+                      ),
+                      borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Text(
                       'SKIP',
                       style: TextStyle(
-                        fontFamily: 'Syne',
+                        fontFamily: 'Inter',
                         fontSize: 22,
                         fontWeight: FontWeight.w800,
                         color: AppTheme.accentSecondary,
@@ -371,24 +368,6 @@ class _GemCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Gem badge
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      decoration: const BoxDecoration(
-                        color: AppTheme.accentPrimary,
-                        borderRadius: BorderRadius.zero,
-                      ),
-                      child: const Text(
-                        'HIDDEN GEM',
-                        style: TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
                     if (movie.genreIds.isNotEmpty)
                       Wrap(
                         spacing: 6,
@@ -401,7 +380,7 @@ class _GemCard extends StatelessWidget {
                     Text(
                       movie.title,
                       style: const TextStyle(
-                        fontFamily: 'Syne',
+                        fontFamily: 'Inter',
                         fontSize: 22,
                         fontWeight: FontWeight.w800,
                         color: Colors.white,
@@ -482,16 +461,16 @@ class _ActionButtons extends StatelessWidget {
             label: 'SKIP',
           ),
 
-          // Save / Bookmark (Large)
+          // Like / Heart (Large FAB)
           _LabeledGlassButton(
             onTap: () {
               HapticFeedback.mediumImpact();
               controller.swipe(CardSwiperDirection.right);
             },
             size: 72,
-            icon: Icons.bookmark_add_rounded,
-            iconColor: AppTheme.accentPrimary,
-            label: 'SAVE',
+            icon: Icons.favorite_rounded,
+            iconColor: AppTheme.gemsColor,
+            label: 'LIKE',
           ),
         ],
       ),
@@ -572,7 +551,7 @@ class _LabeledGlassButtonState extends State<_LabeledGlassButton> {
           Text(
             widget.label,
             style: TextStyle(
-              fontFamily: 'Syne',
+              fontFamily: 'Inter',
               fontSize: 10,
               fontWeight: FontWeight.w700,
               color: _isPressed ? widget.iconColor : AppTheme.textMuted,

@@ -86,6 +86,11 @@ class SupabaseDbService {
     return keys;
   }
 
+  Future<int> getSwipeCount(String userId) async {
+    final keys = await getSwipedMediaKeys(userId);
+    return keys.length;
+  }
+
   Future<void> removeFromSwipeHistory(String userId, int mediaId, String mediaType) async {
     await _supabase
         .from('swipe_history')

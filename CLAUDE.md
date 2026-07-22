@@ -1,4 +1,4 @@
-﻿# CLAUDE.md — Pickd Project Primer
+# CLAUDE.md — Pickd Project Primer
 
 > Read this first. Every time. Before touching a single file.
 > This is the single source of truth for Claude Code to understand Pickd instantly.
@@ -145,10 +145,9 @@ features/<feature>/
 
 | Box | Type | Contents |
 |---|---|---|
-| userProfile | UserProfileModel (typeId: 1) | Taste seeds, selected mood, swipe count |
-| watchlist | List<MovieModel> (typeId: 0) | All right-swiped movies |
-| swipeHistory | Set<int> | Already-seen movie IDs (prevents repeats) |
-| preferences | Map<String, dynamic> | Gems mode toggle, onboarding complete flag |
+| userProfile | UserProfileModel (typeId: 1) | Taste seeds, selected mood, swipe count, allowOldMovies |
+| swipeHistoryV2 | Map<String, String> (JSON) | Swiped media keys (`movie_123`, `tv_456`) mapped to action & full metadata |
+| recentSearches | String | Recently searched titles |
 
 ---
 
@@ -156,30 +155,33 @@ features/<feature>/
 
 Base URL: https://api.themoviedb.org/3
 Auth: Authorization: Bearer {TMDB_READ_ACCESS_TOKEN} (compile-time dart-define)
-Client: dio with logging interceptor (debug only), retry max 2, _CacheInterceptor (memory cache)
+Client: dio with logging interceptor (debug only), _CacheInterceptor (bounded LRU memory cache, max 200)
 
 | Method | Endpoint | Used For |
 |---|---|---|
-| searchMovies(query) | /search/movie | Taste profile search |
-| getMovie(id) | /movie/{id} | Full detail |
-| getRecommendations(id) | /movie/{id}/recommendations | Seed-based deck building |
-| getSimilar(id) | /movie/{id}/similar | Similar to taste seeds |
-| discoverMovies(params) | /discover/movie | Mood/genre filtered discovery |
+| searchMulti(query) | /search/multi | Taste profile search (movies & TV) |
+| getMovieDetails(id) | /movie/{id} | Full movie detail + watch/providers |
+| getTvDetails(id) | /tv/{id} | Full TV detail + watch/providers |
+| getRecommendations(id) | /movie/{id}/recommendations | Seed-based movie deck building |
+| getTvRecommendations(id) | /tv/{id}/recommendations | Seed-based TV deck building |
+| discoverMovies(params) | /discover/movie | Mood/genre/gems filtered movie discovery |
+| discoverTv(params) | /discover/tv | Mood/genre/gems filtered TV discovery |
 | getMovieVideos(id) | /movie/{id}/videos | YouTube trailer key |
-| getGenres() | /genre/movie/list | Genre list (cached) |
+| getTvVideos(id) | /tv/{id}/videos | YouTube trailer key |
 
 ---
 
 ## Discovery Engine Logic
 
-discovery_service.dart -> buildDeck(mood, tasteSeeds, isGemsMode):
+discovery_service.dart -> buildDeck(...):
 
-1. Call getRecommendations() for each taste seed ID
-2. Call discoverMovies() with mood genre IDs + keywords
-3. Deduplicate results
-4. Remove already-swiped IDs (from swipeHistory Hive box)
-5. If gemsMode = true: filter popularity < 30 AND release_date.year < 2020
-6. Return max 30 movies per deck
+1. Run movie and TV recommendation pipelines based on selected `MediaFilter` (moviesOnly, tvOnly, both)
+2. Fetch seed-based recommendations & discover queries (with `vote_average.desc` for gems mode)
+3. Interleave movie & TV items
+4. Deduplicate results by `mediaKey` (`movie_100` vs `tv_100`)
+5. Filter out already-swiped `mediaKey` items (from local Hive + Supabase)
+6. If gemsMode = true: filter popularity < `Env.hiddenGemMaxPopularity` AND releaseYear < `Env.hiddenGemMaxYear`
+7. Return max 30 items per deck
 
 ---
 

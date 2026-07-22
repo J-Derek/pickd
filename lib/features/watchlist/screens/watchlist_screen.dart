@@ -720,13 +720,13 @@ class _WatchlistFilterBar extends StatelessWidget {
                   onTap: onTypeChanged),
               const SizedBox(width: 8),
               _TypePill(
-                  label: '🎬 Movies',
+                  label: 'Movies',
                   value: _TypeFilter.movies,
                   current: typeFilter,
                   onTap: onTypeChanged),
               const SizedBox(width: 8),
               _TypePill(
-                  label: '📺 TV',
+                  label: 'TV',
                   value: _TypeFilter.tv,
                   current: typeFilter,
                   onTap: onTypeChanged),
@@ -933,11 +933,17 @@ class _GridItemCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppTheme.bgSurface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppTheme.glassBorder),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
             item.posterPath != null
                 ? CachedNetworkImage(
                     imageUrl: item.posterUrl,
@@ -981,6 +987,7 @@ class _GridItemCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
       ),
     );
   }

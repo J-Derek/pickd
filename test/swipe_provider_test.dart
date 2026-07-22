@@ -51,7 +51,7 @@ void main() {
       expect(state.isDeckEmpty, false);
     });
 
-    test('hasReachedSwipeGate triggers exactly at 5 swipes', () {
+    test('hasReachedSwipeGate triggers at 5+ swipes until gateShown is true', () {
       var state = const SwipeDeckState(swipeCount: 4);
       expect(state.hasReachedSwipeGate, false);
 
@@ -59,6 +59,9 @@ void main() {
       expect(state.hasReachedSwipeGate, true);
 
       state = state.copyWith(swipeCount: 6);
+      expect(state.hasReachedSwipeGate, true);
+
+      state = state.copyWith(gateShown: true);
       expect(state.hasReachedSwipeGate, false);
     });
   });

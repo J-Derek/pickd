@@ -84,11 +84,11 @@ class DiscoveryService {
       merged.addAll(tvItems);
     }
 
-    // De-duplicate by ID and cap at deck size
-    final seen = <int>{};
+    // De-duplicate by mediaKey and cap at deck size
+    final seen = <String>{};
     final finalDeck = <MediaItem>[];
     for (final item in merged) {
-      if (seen.add(item.id)) finalDeck.add(item);
+      if (seen.add(item.mediaKey)) finalDeck.add(item);
       if (finalDeck.length >= _deckSize) break;
     }
 

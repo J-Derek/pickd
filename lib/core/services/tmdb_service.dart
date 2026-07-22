@@ -97,15 +97,12 @@ class TmdbService {
       final params = <String, dynamic>{
         'language': 'en-US',
         'with_genres': genreIds.join('|'),
-        'sort_by': 'popularity.desc',
-        'vote_count.gte': 100,
+        'sort_by': maxPopularity != null ? 'vote_average.desc' : 'popularity.desc',
+        'vote_count.gte': maxPopularity != null ? 50 : 100,
         'include_adult': false,
         'page': page,
       };
 
-      if (maxPopularity != null) {
-        params['popularity.lte'] = maxPopularity;
-      }
       if (maxYear != null) {
         params['primary_release_date.lte'] = '$maxYear-12-31';
       }
@@ -227,6 +224,29 @@ class TmdbService {
     }
   }
 
+  /// Trending mixed media (movies & TV series)
+  static Future<List<MediaItem>> getTrendingMulti({int page = 1}) async {
+    try {
+      final response = await _dio.get(
+        '/trending/all/week',
+        queryParameters: {'language': 'en-US', 'page': page},
+      );
+      final results = response.data['results'] as List;
+      final out = <MediaItem>[];
+      for (final item in results) {
+        if (item['poster_path'] == null) continue;
+        if (item['media_type'] == 'movie') {
+          out.add(MediaItem.movie(MovieModel.fromJson(item as Map<String, dynamic>)));
+        } else if (item['media_type'] == 'tv') {
+          out.add(MediaItem.tv(TvModel.fromJson(item as Map<String, dynamic>)));
+        }
+      }
+      return out;
+    } catch (e) {
+      return [];
+    }
+  }
+
   // ─── TV Series Endpoints ──────────────────────────────────────
 
   /// Get recommendations based on a seed TV show ID.
@@ -275,13 +295,12 @@ class TmdbService {
       final params = <String, dynamic>{
         'language': 'en-US',
         'with_genres': genreIds.join('|'),
-        'sort_by': 'popularity.desc',
-        'vote_count.gte': 50,
+        'sort_by': maxPopularity != null ? 'vote_average.desc' : 'popularity.desc',
+        'vote_count.gte': maxPopularity != null ? 30 : 50,
         'include_adult': false,
         'page': page,
       };
 
-      if (maxPopularity != null) params['popularity.lte'] = maxPopularity;
       if (maxYear != null) params['first_air_date.lte'] = '$maxYear-12-31';
       if (minYear != null) params['first_air_date.gte'] = '$minYear-01-01';
 
@@ -408,6 +427,7 @@ class _CacheEntry {
 
 class _CacheInterceptor extends Interceptor {
   final Map<String, _CacheEntry> _cache = {};
+  static const _maxCacheSize = 200;
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
@@ -432,6 +452,11 @@ class _CacheInterceptor extends Interceptor {
   void onResponse(Response response, ResponseInterceptorHandler handler) {
     if (response.requestOptions.method == 'GET' && response.statusCode == 200) {
       final key = response.requestOptions.uri.toString();
+      if (_cache.length >= _maxCacheSize) {
+        final oldest = _cache.entries.reduce((a, b) =>
+            a.value.timestamp.isBefore(b.value.timestamp) ? a : b);
+        _cache.remove(oldest.key);
+      }
       _cache[key] = _CacheEntry(response.data, DateTime.now());
     }
     handler.next(response);

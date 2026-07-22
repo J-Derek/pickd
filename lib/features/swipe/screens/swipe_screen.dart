@@ -14,6 +14,8 @@ import '../../../core/services/discovery_service.dart';
 import '../../../core/widgets/genre_chip.dart';
 import '../../../core/widgets/shimmer_card.dart';
 import '../../../core/services/hive_service.dart';
+import '../../../core/services/supabase_auth_service.dart';
+import '../../../core/services/supabase_db_service.dart';
 import '../providers/swipe_provider.dart';
 import 'auth_gate_sheet.dart';
 import 'walkthrough_overlay.dart';
@@ -31,15 +33,43 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
   final CardSwiperController _swiperController = CardSwiperController();
   bool _gateShown = false;
   bool _showWalkthrough = false;
-  MediaFilter _activeFilter = MediaFilter.moviesOnly;
+  MediaFilter _activeFilter = MediaFilter.both;
+
+  String? _displayName;
+  String? _avatarUrl;
 
   @override
   void initState() {
     super.initState();
+    _loadUserProfile();
     _showWalkthrough = !HiveService.getProfile().hasSeenWalkthrough;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(swipeDeckProvider.notifier).loadDeck();
     });
+  }
+
+  Future<void> _loadUserProfile() async {
+    final user = ref.read(currentUserProvider);
+    if (user == null || user.isAnonymous) return;
+    try {
+      final details = await ref.read(supabaseDbServiceProvider).getProfileDetails(user.id);
+      if (mounted && details != null) {
+        setState(() {
+          _displayName = details['display_name'] as String?;
+          _avatarUrl = details['avatar_url'] as String?;
+        });
+      }
+    } catch (_) {}
+  }
+
+  EdgeInsets get _snackbarMargin {
+    final navHeight = kBottomNavigationBarHeight;
+    final bottomInset = MediaQuery.of(context).padding.bottom;
+    return EdgeInsets.only(
+      bottom: navHeight + bottomInset + 24,
+      left: 24,
+      right: 24,
+    );
   }
 
   @override
@@ -97,7 +127,7 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
               children: [
                 _buildHeader(context),
                 const SizedBox(height: 12),
-                _buildFilterToggle(),
+                _buildFilterToggle(deckState.filter),
                 Expanded(child: _buildBody(deckState)),
               ],
             ),
@@ -117,62 +147,97 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
   }
 
   Widget _buildHeader(BuildContext context) {
+    final hour = DateTime.now().hour;
+    String greeting = 'Good morning';
+    if (hour >= 12 && hour < 17) {
+      greeting = 'Good afternoon';
+    } else if (hour >= 17) {
+      greeting = 'Good evening';
+    }
+
+    final user = ref.read(currentUserProvider);
+    final isGuest = user == null || user.isAnonymous;
+    
+    String resolvedName = '';
+    if (_displayName != null && _displayName!.isNotEmpty) {
+      resolvedName = _displayName!;
+    } else if (!isGuest && user.email != null) {
+      final prefix = user.email!.split('@').first;
+      resolvedName = prefix.length > 12 ? prefix.substring(0, 12) : prefix;
+    }
+    
+    final greetingText = resolvedName.isNotEmpty ? '$greeting, $resolvedName 👋' : '$greeting 👋';
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
       child: Row(
         children: [
-          const Text(
-            'Pickd.',
-            style: TextStyle(
-              fontFamily: 'Syne',
-              fontSize: 26,
-              letterSpacing: -1.0,
-              fontWeight: FontWeight.w900,
-              color: AppTheme.accentPrimary,
-            ),
+          // Avatar
+          _avatarUrl != null && _avatarUrl!.isNotEmpty
+            ? CircleAvatar(
+                radius: 20,
+                backgroundColor: AppTheme.bgMuted,
+                backgroundImage: NetworkImage(_avatarUrl!),
+              )
+            : Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppTheme.bgMuted,
+                  border: Border.all(color: AppTheme.glassBorder),
+                ),
+                child: const Icon(
+                  Icons.person_rounded,
+                  color: AppTheme.textSecondary,
+                  size: 20,
+                ),
+              ),
+          const SizedBox(width: 12),
+          // Greeting
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                greetingText,
+                style: const TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+              const Text(
+                'Ready to find a movie?',
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 12,
+                  color: AppTheme.textSecondary,
+                ),
+              ),
+            ],
           ),
           const Spacer(),
           // Change Vibe
           GestureDetector(
             onTap: () {
               HapticFeedback.lightImpact();
-              // Reset Hive profile so old tastes are completely wiped
-              final profile = HiveService.getProfile();
-              profile.selectedMoodIds = [];
-              profile.tasteSeedMovieIds = [];
-              profile.tasteSeedTvIds = [];
-              profile.onboardingComplete = false;
-              HiveService.saveProfile(profile);
-
-              // Reset onboarding state so they can start fresh
+              // Reset onboarding state so they can start fresh,
+              // but preserve Hive profile until they complete onboarding
               ref.invalidate(onboardingProvider);
               context.push('/onboarding/mood');
             },
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: AppTheme.bgElevated,
-                borderRadius: BorderRadius.circular(24),
+                shape: BoxShape.circle,
                 border: Border.all(color: AppTheme.glassBorder),
               ),
-              child: const Row(
-                children: [
-                  Icon(
-                    Icons.tune_rounded,
-                    color: AppTheme.textSecondary,
-                    size: 16,
-                  ),
-                  SizedBox(width: 8),
-                  Text(
-                    'Change Vibe',
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.textSecondary,
-                    ),
-                  ),
-                ],
+              child: const Icon(
+                Icons.tune_rounded,
+                color: AppTheme.textSecondary,
+                size: 20,
               ),
             ),
           ),
@@ -181,69 +246,28 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
     );
   }
 
-  Widget _buildFilterToggle() {
-    String currentLabel = 'MOVIES';
-    switch (_activeFilter) {
-      case MediaFilter.moviesOnly:
-        currentLabel = 'MOVIES';
-      case MediaFilter.both:
-        currentLabel = 'BOTH';
-      case MediaFilter.tvOnly:
-        currentLabel = 'TV SHOWS';
-    }
-
+  Widget _buildFilterToggle(MediaFilter activeFilter) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: PopupMenuButton<MediaFilter>(
-        offset: const Offset(0, 48),
-        color: AppTheme.bgElevated,
-        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-        onSelected: _onFilterTap,
-        itemBuilder: (context) => [
-          _buildPopupMenuItem(MediaFilter.moviesOnly, 'MOVIES'),
-          _buildPopupMenuItem(MediaFilter.tvOnly, 'TV SHOWS'),
-          _buildPopupMenuItem(MediaFilter.both, 'BOTH'),
-        ],
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          decoration: BoxDecoration(
-            border: Border.all(color: AppTheme.textMuted, width: 1),
-            borderRadius: BorderRadius.zero,
-          ),
+      child: Container(
+        height: 40,
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          color: AppTheme.bgElevated,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppTheme.bgMuted),
+        ),
+        child: IntrinsicWidth(
           child: Row(
-            mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                'MEDIA: $currentLabel',
-                style: const TextStyle(
-                  fontFamily: 'Syne',
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: AppTheme.textPrimary,
-                  letterSpacing: 1.0,
-                ),
-              ),
-              const SizedBox(width: 8),
-              const Icon(LucideIcons.chevronDown, size: 16, color: AppTheme.textPrimary),
+              _FilterPill('Movies', activeFilter == MediaFilter.moviesOnly,
+                  () => _onFilterTap(MediaFilter.moviesOnly)),
+              _FilterPill('Both', activeFilter == MediaFilter.both,
+                  () => _onFilterTap(MediaFilter.both)),
+              _FilterPill('TV Shows', activeFilter == MediaFilter.tvOnly,
+                  () => _onFilterTap(MediaFilter.tvOnly)),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  PopupMenuItem<MediaFilter> _buildPopupMenuItem(MediaFilter filter, String label) {
-    final isSelected = _activeFilter == filter;
-    return PopupMenuItem(
-      value: filter,
-      child: Text(
-        label,
-        style: TextStyle(
-          fontFamily: 'Syne',
-          fontSize: 14,
-          fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-          color: isSelected ? AppTheme.accentPrimary : AppTheme.textPrimary,
-          letterSpacing: 1.0,
         ),
       ),
     );
@@ -386,12 +410,12 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
                 HapticFeedback.mediumImpact();
                 ScaffoldMessenger.of(context).clearSnackBars();
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Saved to Watchlist', style: TextStyle(color: AppTheme.textInverse, fontWeight: FontWeight.w600)),
+                  SnackBar(
+                    content: const Text('Saved to Watchlist', style: TextStyle(color: AppTheme.textInverse, fontWeight: FontWeight.w600)),
                     backgroundColor: AppTheme.accentPrimary,
-                    duration: Duration(seconds: 1),
+                    duration: const Duration(seconds: 1),
                     behavior: SnackBarBehavior.floating,
-                    margin: EdgeInsets.only(bottom: 120, left: 24, right: 24),
+                    margin: _snackbarMargin,
                   ),
                 );
               } else if (dir == CardSwiperDirection.top) {
@@ -400,12 +424,12 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
                 ref.read(swipeDeckProvider.notifier).onSwiped(item, action);
                 ScaffoldMessenger.of(context).clearSnackBars();
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Marked as Watched', style: TextStyle(color: AppTheme.textInverse, fontWeight: FontWeight.w600)),
+                  SnackBar(
+                    content: const Text('Marked as Watched', style: TextStyle(color: AppTheme.textInverse, fontWeight: FontWeight.w600)),
                     backgroundColor: AppTheme.accentGreen,
-                    duration: Duration(seconds: 1),
+                    duration: const Duration(seconds: 1),
                     behavior: SnackBarBehavior.floating,
-                    margin: EdgeInsets.only(bottom: 120, left: 24, right: 24),
+                    margin: _snackbarMargin,
                   ),
                 );
                 return true;
@@ -449,6 +473,36 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
   }
 }
 
+class _FilterPill extends StatelessWidget {
+  final String label;
+  final bool isActive;
+  final VoidCallback onTap;
+  const _FilterPill(this.label, this.isActive, this.onTap);
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOut,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        decoration: BoxDecoration(
+          color: isActive ? AppTheme.accentPrimary : Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Text(label,
+          style: TextStyle(
+            fontFamily: 'Inter', fontSize: 13,
+            fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+            color: isActive ? AppTheme.textInverse : AppTheme.textSecondary,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _SwipeCard extends StatelessWidget {
   final MediaItem movie;
   final double percentX;
@@ -471,11 +525,11 @@ class _SwipeCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(32),
+          borderRadius: BorderRadius.circular(24),
           boxShadow: AppTheme.cardShadow,
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(32),
+          borderRadius: BorderRadius.circular(24),
           child: Stack(
             fit: StackFit.expand,
             children: [
@@ -736,7 +790,7 @@ class _SwipeCard extends StatelessWidget {
                           const SizedBox(width: 12),
                           const Icon(
                             Icons.star_rounded,
-                            color: AppTheme.accentPrimary,
+                            color: AppTheme.gemsColor,
                             size: 16,
                           ),
                           const SizedBox(width: 4),
@@ -745,32 +799,10 @@ class _SwipeCard extends StatelessWidget {
                             style: const TextStyle(
                               fontFamily: 'JetBrains Mono',
                               fontSize: 13,
-                              color: AppTheme.textPrimary,
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.gemsColor,
                             ),
                           ),
-                          if (movie.isHiddenGem) ...[
-                            const SizedBox(width: 10),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 3,
-                              ),
-                              decoration: BoxDecoration(
-                                gradient: AppTheme.gemsBadgeGradient,
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: const Text(
-                                'GEM',
-                                style: TextStyle(
-                                  fontFamily: 'Inter',
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                            ),
-                          ],
                         ],
                       ),
                       const SizedBox(height: 10),
@@ -813,69 +845,50 @@ class _ActionButtons extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        crossAxisAlignment: CrossAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // Undo (Small)
-          _LabeledGlassButton(
+          _SmallActionButton(
             onTap: () {
               HapticFeedback.lightImpact();
               controller.undo();
             },
-            size: 52,
             icon: Icons.undo_rounded,
-            iconColor: AppTheme.textMuted,
-            label: 'UNDO',
           ),
           
           // Skip / X (Large)
-          _LabeledGlassButton(
+          _LargeActionButton(
             onTap: () {
               HapticFeedback.lightImpact();
               controller.swipe(CardSwiperDirection.left);
             },
-            size: 72,
             icon: Icons.close_rounded,
-            iconColor: AppTheme.accentSecondary,
-            label: 'SKIP',
+            iconColor: AppTheme.textSecondary,
+            backgroundColor: AppTheme.bgElevated,
           ),
 
-          // Heart / Like (Small, Bottom Swipe)
-          _LabeledGlassButton(
-            onTap: () {
-              HapticFeedback.mediumImpact();
-              controller.swipe(CardSwiperDirection.bottom);
-            },
-            size: 52,
-            icon: Icons.favorite_rounded,
-            iconColor: Colors.pinkAccent,
-            label: 'LIKE',
-          ),
-
-          // Save / Bookmark (Large)
-          _LabeledGlassButton(
+          // Like (Large Glowing)
+          _LargeActionButton(
             onTap: () {
               HapticFeedback.mediumImpact();
               controller.swipe(CardSwiperDirection.right);
             },
-            size: 72,
-            icon: Icons.bookmark_add_rounded,
-            iconColor: AppTheme.accentPrimary,
-            label: 'SAVE',
+            icon: Icons.favorite_rounded,
+            iconColor: Colors.white,
+            backgroundColor: AppTheme.errorColor, // Neon Pink
+            isGlowing: true,
           ),
 
-          // Eye / Watched (Small, Top Swipe)
-          _LabeledGlassButton(
+          // Watched (Small)
+          _SmallActionButton(
             onTap: () {
               HapticFeedback.mediumImpact();
               controller.swipe(CardSwiperDirection.top);
             },
-            size: 52,
             icon: Icons.visibility_rounded,
-            iconColor: AppTheme.accentGreen,
-            label: 'WATCHED',
           ),
         ],
       ),
@@ -883,32 +896,31 @@ class _ActionButtons extends StatelessWidget {
   }
 }
 
-class _LabeledGlassButton extends StatefulWidget {
+class _LargeActionButton extends StatefulWidget {
   final VoidCallback onTap;
-  final double size;
   final IconData icon;
   final Color iconColor;
-  final String label;
-  final List<BoxShadow>? boxShadow;
+  final Color backgroundColor;
+  final bool isGlowing;
 
-  const _LabeledGlassButton({
+  const _LargeActionButton({
     required this.onTap,
-    required this.size,
     required this.icon,
     required this.iconColor,
-    required this.label,
-    this.boxShadow,
+    required this.backgroundColor,
+    this.isGlowing = false,
   });
 
   @override
-  State<_LabeledGlassButton> createState() => _LabeledGlassButtonState();
+  State<_LargeActionButton> createState() => _LargeActionButtonState();
 }
 
-class _LabeledGlassButtonState extends State<_LabeledGlassButton> {
+class _LargeActionButtonState extends State<_LargeActionButton> {
   bool _isPressed = false;
 
   @override
   Widget build(BuildContext context) {
+    final double size = 72.0;
     return GestureDetector(
       onTapDown: (_) => setState(() => _isPressed = true),
       onTapUp: (_) {
@@ -916,56 +928,97 @@ class _LabeledGlassButtonState extends State<_LabeledGlassButton> {
         widget.onTap();
       },
       onTapCancel: () => setState(() => _isPressed = false),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 150),
-            width: widget.size,
-            height: widget.size,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              boxShadow: widget.boxShadow,
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(widget.size / 2),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: AppTheme.glassBlur, sigmaY: AppTheme.glassBlur),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 150),
-                  decoration: BoxDecoration(
-                    color: _isPressed 
-                        ? widget.iconColor.withValues(alpha: 0.3) 
-                        : AppTheme.glassBackground,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: _isPressed ? widget.iconColor : AppTheme.glassBorder, 
-                      width: 1.5,
-                    ),
-                  ),
-                  child: Icon(
-                    widget.icon, 
-                    color: _isPressed ? widget.iconColor : AppTheme.textMuted, 
-                    size: widget.size * 0.45,
-                  ),
-                ),
-              ),
+      child: AnimatedScale(
+        scale: _isPressed ? 0.9 : 1.0,
+        duration: const Duration(milliseconds: 150),
+        child: Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: widget.backgroundColor,
+            boxShadow: widget.isGlowing
+                ? [
+                    BoxShadow(
+                      color: widget.backgroundColor.withValues(alpha: 0.5),
+                      blurRadius: 24,
+                      spreadRadius: 4,
+                    )
+                  ]
+                : [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    )
+                  ],
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.1),
+              width: 1,
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            widget.label,
-            style: TextStyle(
-              fontFamily: 'Syne',
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-              color: _isPressed ? widget.iconColor : AppTheme.textMuted,
-              letterSpacing: 1.0,
+          child: Center(
+            child: Icon(
+              widget.icon,
+              color: widget.iconColor,
+              size: size * 0.45,
             ),
           ),
-        ],
+        ),
       ),
     );
   }
+}
 
+class _SmallActionButton extends StatefulWidget {
+  final VoidCallback onTap;
+  final IconData icon;
+
+  const _SmallActionButton({
+    required this.onTap,
+    required this.icon,
+  });
+
+  @override
+  State<_SmallActionButton> createState() => _SmallActionButtonState();
+}
+
+class _SmallActionButtonState extends State<_SmallActionButton> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final double size = 52.0;
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _isPressed = true),
+      onTapUp: (_) {
+        setState(() => _isPressed = false);
+        widget.onTap();
+      },
+      onTapCancel: () => setState(() => _isPressed = false),
+      child: AnimatedScale(
+        scale: _isPressed ? 0.9 : 1.0,
+        duration: const Duration(milliseconds: 150),
+        child: Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: AppTheme.bgElevated,
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.1),
+              width: 1,
+            ),
+          ),
+          child: Center(
+            child: Icon(
+              widget.icon,
+              color: AppTheme.textMuted,
+              size: size * 0.45,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }

@@ -1,5 +1,4 @@
 $DeviceName = "tecno bg7"
-
 # Check if the primary device is connected
 $devices = flutter devices
 if ($devices -match $DeviceName) {

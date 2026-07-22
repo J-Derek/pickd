@@ -36,23 +36,25 @@ class WatchlistNotifier extends StateNotifier<List<MediaItem>> {
               items.add(MediaItem.tv(TvModel(
                 id: row['id'],
                 name: row['title'] ?? 'Unknown',
-                overview: '',
+                overview: row['overview'] ?? '',
                 posterPath: row['posterPath'],
-                firstAirDate: '',
-                voteAverage: 0,
-                popularity: 0,
-                genreIds: const [],
+                backdropPath: row['backdropPath'],
+                firstAirDate: row['year']?.toString() ?? '',
+                voteAverage: (row['voteAverage'] as num?)?.toDouble() ?? 0,
+                popularity: (row['popularity'] as num?)?.toDouble() ?? 0,
+                genreIds: (row['genreIds'] as List?)?.cast<int>() ?? const [],
               )));
             } else {
               items.add(MediaItem.movie(MovieModel(
                 id: row['id'],
                 title: row['title'] ?? 'Unknown',
-                overview: '',
+                overview: row['overview'] ?? '',
                 posterPath: row['posterPath'],
-                releaseDate: '',
-                voteAverage: 0,
-                popularity: 0,
-                genreIds: const [],
+                backdropPath: row['backdropPath'],
+                releaseDate: row['year']?.toString() ?? '',
+                voteAverage: (row['voteAverage'] as num?)?.toDouble() ?? 0,
+                popularity: (row['popularity'] as num?)?.toDouble() ?? 0,
+                genreIds: (row['genreIds'] as List?)?.cast<int>() ?? const [],
               )));
             }
           }
@@ -108,17 +110,16 @@ class WatchlistNotifier extends StateNotifier<List<MediaItem>> {
   }
 
   Future<void> addMedia(MediaItem item) async {
+    // Optimistic state update
+    if (!state.any((i) => i.mediaKey == item.mediaKey)) {
+      state = [...state, item];
+    }
+    
     try {
       final user = ref.read(currentUserProvider);
-      if (user == null || user.isAnonymous) {
-        // We shouldn't actually add to Supabase for anon, but we probably should update the local state? 
-        // Wait, for local watchlist, add is done by SwipeProvider. We don't do it here. 
-        await _load();
-        return;
+      if (user != null && !user.isAnonymous) {
+        await ref.read(supabaseDbServiceProvider).addToWatchlist(user.id, item);
       }
-      
-      await ref.read(supabaseDbServiceProvider).addToWatchlist(user.id, item);
-      await _load();
     } catch (e) {
       debugPrint('Supabase add error: $e');
     }
@@ -128,48 +129,50 @@ class WatchlistNotifier extends StateNotifier<List<MediaItem>> {
   Future<void> addTv(TvModel show) => addMedia(MediaItem.tv(show));
 
   Future<void> remove(String mediaKey) async {
+    final itemIdx = state.indexWhere((i) => i.mediaKey == mediaKey);
+    if (itemIdx == -1) return;
+    final item = state[itemIdx];
+
+    // Optimistic state update
+    state = state.where((i) => i.mediaKey != mediaKey).toList();
+
     try {
       final user = ref.read(currentUserProvider);
       if (user == null || user.isAnonymous) {
-        final itemIdx = state.indexWhere((i) => i.mediaKey == mediaKey);
-        if (itemIdx != -1) {
-          await HiveService.removeFromSwipeHistory(state[itemIdx]);
-          await _load();
-        }
-        return;
+        await HiveService.removeFromSwipeHistory(item);
+      } else {
+        await ref.read(supabaseDbServiceProvider).removeFromWatchlist(
+          user.id,
+          item.id,
+          item.isTv ? 'tv' : 'movie',
+        );
       }
-      
-      final itemIdx = state.indexWhere((i) => i.mediaKey == mediaKey);
-      if (itemIdx == -1) return;
-      final mediaId = state[itemIdx].id;
-      final mediaType = state[itemIdx].isTv ? 'tv' : 'movie';
-      
-      await ref.read(supabaseDbServiceProvider).removeFromWatchlist(user.id, mediaId, mediaType);
-      await _load();
     } catch (e) {
       debugPrint('Supabase remove error: $e');
     }
   }
 
   Future<void> clear() async {
+    final oldState = state;
+    // Optimistic state update
+    state = [];
+
     try {
       final user = ref.read(currentUserProvider);
       if (user == null || user.isAnonymous) {
-        for (final item in state) {
+        for (final item in oldState) {
           await HiveService.removeFromSwipeHistory(item);
         }
-        await _load();
-        return;
+      } else {
+        final db = ref.read(supabaseDbServiceProvider);
+        for (final item in oldState) {
+          final mediaType = item.isTv ? 'tv' : 'movie';
+          await db.removeFromWatchlist(user.id, item.id, mediaType);
+        }
       }
-      
-      final db = ref.read(supabaseDbServiceProvider);
-      for (final item in state) {
-        final mediaType = item.isTv ? 'tv' : 'movie';
-        await db.removeFromWatchlist(user.id, item.id, mediaType);
-      }
-      await _load();
     } catch (e) {
       debugPrint('Supabase clear error: $e');
+      state = oldState; // revert on failure
     }
   }
 

@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/config/app_theme.dart';
+import '../../../core/services/hive_service.dart';
 import '../../../core/services/supabase_auth_service.dart';
+import '../../../core/widgets/custom_snackbar.dart';
 import '../services/migration_service.dart';
 
 class AuthScreen extends ConsumerStatefulWidget {
@@ -33,21 +35,19 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     final password = _passwordController.text.trim();
 
     if (email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please fill all fields', style: TextStyle(color: AppTheme.textInverse)),
-          backgroundColor: AppTheme.accentSecondary,
-        ),
+      showCustomSnackBar(
+        context,
+        message: 'Please fill in all fields',
+        isError: true,
       );
       return;
     }
 
     if (_isSignUp && password != _confirmPasswordController.text.trim()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Passwords do not match', style: TextStyle(color: AppTheme.textInverse)),
-          backgroundColor: AppTheme.accentSecondary,
-        ),
+      showCustomSnackBar(
+        context,
+        message: 'Passwords do not match',
+        isError: true,
       );
       return;
     }
@@ -61,12 +61,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         final needsConfirmation = response.session == null || response.user?.newEmail != null;
         if (needsConfirmation) {
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Verification email sent! Please check your inbox.', style: TextStyle(color: Colors.white)),
-                backgroundColor: AppTheme.accentGreen,
-                duration: Duration(seconds: 5),
-              ),
+            showCustomSnackBar(
+              context,
+              message: 'Verification email sent! Please check your inbox.',
+              isSuccess: true,
+              duration: const Duration(seconds: 5),
             );
             setState(() => _isSignUp = false);
             return;
@@ -75,9 +74,43 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       } else {
         await authService.signInWithEmailPassword(email, password);
         
-        // Perform migration of local data to Supabase ONLY on Sign In
+        // Ask to perform migration of local data to Supabase on Sign In if local data exists
         if (mounted) {
-          await ref.read(migrationServiceProvider).migrateGuestDataToSupabase();
+          final history = HiveService.getSwipeHistoryList();
+          final profile = HiveService.getProfile();
+          final hasLocalData = history.isNotEmpty ||
+              profile.tasteSeedMovieIds.isNotEmpty ||
+              profile.tasteSeedTvIds.isNotEmpty;
+
+          if (hasLocalData) {
+            final shouldSync = await showDialog<bool>(
+              context: context,
+              barrierDismissible: false,
+              builder: (ctx) => AlertDialog(
+                backgroundColor: AppTheme.bgSurface,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                title: const Text('Merge Guest Watchlist?', style: TextStyle(color: AppTheme.textPrimary, fontFamily: 'Syne', fontWeight: FontWeight.bold)),
+                content: const Text(
+                  'We found local swipes and watchlists on this device. Would you like to sync them into your account?',
+                  style: TextStyle(color: AppTheme.textSecondary, fontFamily: 'Inter'),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(ctx).pop(false),
+                    child: const Text('Skip', style: TextStyle(color: AppTheme.textMuted)),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(ctx).pop(true),
+                    child: const Text('Merge & Sync', style: TextStyle(color: AppTheme.accentPrimary, fontWeight: FontWeight.bold)),
+                  ),
+                ],
+              ),
+            );
+
+            if (shouldSync == true) {
+              await ref.read(migrationServiceProvider).migrateGuestDataToSupabase();
+            }
+          }
         }
       }
 
@@ -100,6 +133,38 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _handleForgotPassword() async {
+    final email = _emailController.text.trim();
+    if (email.isEmpty) {
+      showCustomSnackBar(
+        context,
+        message: 'Please enter your email address above first',
+        isError: true,
+      );
+      return;
+    }
+
+    try {
+      await ref.read(authServiceProvider).resetPasswordForEmail(email);
+      if (mounted) {
+        showCustomSnackBar(
+          context,
+          message: 'Password reset email sent to $email! Please check your inbox.',
+          isSuccess: true,
+          duration: const Duration(seconds: 5),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        showCustomSnackBar(
+          context,
+          message: e.toString(),
+          isError: true,
+        );
       }
     }
   }
@@ -195,15 +260,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Password reset coming soon.', style: TextStyle(color: AppTheme.textInverse)),
-                          backgroundColor: AppTheme.accentPrimary,
-                        ),
-                      );
-                    },
-                    child: const Text('Forgot Password?', style: TextStyle(color: AppTheme.textMuted)),
+                    onPressed: _handleForgotPassword,
+                    child: const Text('Forgot Password?', style: TextStyle(color: AppTheme.accentPrimary)),
                   ),
                 ),
               ],

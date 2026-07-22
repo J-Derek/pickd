@@ -8,12 +8,12 @@ import '../models/user_profile_model.dart';
 class HiveService {
   static const _swipeHistoryBoxName = 'swipeHistoryV2';
   static const _userProfileBoxName = 'userProfile';
-  static const _watchlistBoxName = 'watchlist';
-  static const _watchedBoxName = 'watched';
+  static const _recentSearchesBoxName = 'recentSearches';
 
   static Future<void> openBoxes() async {
     await Hive.openBox<UserProfileModel>(_userProfileBoxName);
     await Hive.openBox<String>(_swipeHistoryBoxName);
+    await Hive.openBox<String>(_recentSearchesBoxName);
   }
 
   // ─── User Profile ─────────────────────────────────────────────
@@ -47,6 +47,12 @@ class HiveService {
       'id': item.id,
       'title': item.title,
       'posterPath': item.posterPath,
+      'backdropPath': item.backdropPath,
+      'overview': item.overview,
+      'voteAverage': item.voteAverage,
+      'popularity': item.popularity,
+      'genreIds': item.genreIds,
+      'year': item.year,
     };
     
     if (rating != null) payload['rating'] = rating;
@@ -118,5 +124,49 @@ class HiveService {
         // ignore
       }
     }
+  }
+
+  // ─── Recent Searches ──────────────────────────────────────────
+  static Box<String> get _recentSearchesBox => Hive.box<String>(_recentSearchesBoxName);
+
+  static List<String> getRecentSearches() {
+    return _recentSearchesBox.values.toList().reversed.toList();
+  }
+
+  static Future<void> addRecentSearch(String query) async {
+    final q = query.trim();
+    if (q.isEmpty) return;
+
+    // Remove duplicates
+    final existingKey = _recentSearchesBox.keys.firstWhere(
+      (k) => _recentSearchesBox.get(k)?.toLowerCase() == q.toLowerCase(),
+      orElse: () => null,
+    );
+    if (existingKey != null) {
+      await _recentSearchesBox.delete(existingKey);
+    }
+
+    // Keep history at 10 items max
+    if (_recentSearchesBox.length >= 10) {
+      await _recentSearchesBox.deleteAt(0);
+    }
+
+    // Add new search (keys can just be timestamps to preserve order)
+    final key = DateTime.now().millisecondsSinceEpoch.toString();
+    await _recentSearchesBox.put(key, q);
+  }
+
+  static Future<void> removeRecentSearch(String query) async {
+    final key = _recentSearchesBox.keys.firstWhere(
+      (k) => _recentSearchesBox.get(k) == query,
+      orElse: () => null,
+    );
+    if (key != null) {
+      await _recentSearchesBox.delete(key);
+    }
+  }
+
+  static Future<void> clearRecentSearches() async {
+    await _recentSearchesBox.clear();
   }
 }

@@ -251,34 +251,11 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                                   Text(
                                     item.voteAverage.toStringAsFixed(1),
                                     style: const TextStyle(
-                                      fontFamily: 'JetBrains Mono',
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w600,
-                                      color: AppTheme.textPrimary,
-                                    ),
-                                  ),
-                                  if (item.isHiddenGem) ...[
-                                    const SizedBox(width: 12),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 4,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        gradient: AppTheme.gemsBadgeGradient,
-                                        borderRadius: BorderRadius.circular(6),
-                                      ),
-                                      child: const Text(
-                                        'Hidden Gem',
-                                        style: TextStyle(
-                                          fontFamily: 'Inter',
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w700,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                                       fontFamily: 'JetBrains Mono',
+                                       fontSize: 15,
+                                       fontWeight: FontWeight.w600,
+                                     ),
+                                   ),
                                   if (item.watchProviderLogoUrl != null) ...[
                                     const SizedBox(width: 12),
                                     GestureDetector(

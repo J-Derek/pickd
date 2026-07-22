@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -48,6 +49,19 @@ class SupabaseAuthService {
       email: email,
       password: password,
     );
+  }
+
+  Future<void> resetPasswordForEmail(String email) async {
+    await _supabase.auth.resetPasswordForEmail(
+      email,
+      redirectTo: kIsWeb ? null : 'io.supabase.pickd://reset-password',
+    );
+  }
+
+  Future<UserResponse> updatePassword(String newPassword) async {
+    return await _supabase.auth.updateUser(UserAttributes(
+      password: newPassword,
+    ));
   }
 
   Future<void> signOut() async {

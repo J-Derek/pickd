@@ -225,9 +225,11 @@ class _TasteProfileScreenState extends ConsumerState<TasteProfileScreen> {
                               }
 
                               await notifier.completeOnboarding();
+                              // Always reload deck to reflect new onboarding seeds and mood selections
+                              ref.read(swipeDeckProvider.notifier).resetSwipeGate();
+                              ref.read(swipeDeckProvider.notifier).loadDeck();
+
                               if (widget.isEditing) {
-                                ref.read(swipeDeckProvider.notifier).resetSwipeGate();
-                                ref.read(swipeDeckProvider.notifier).loadDeck();
                                 if (context.mounted) {
                                   context.pop();
                                   ScaffoldMessenger.of(context).showSnackBar(
@@ -272,17 +274,17 @@ class _TasteProfileScreenState extends ConsumerState<TasteProfileScreen> {
                       filled: true,
                       fillColor: AppTheme.bgSurface,
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                      border: const OutlineInputBorder(
-                        borderRadius: BorderRadius.zero,
-                        borderSide: BorderSide(color: AppTheme.bgElevated),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: const BorderSide(color: AppTheme.bgElevated),
                       ),
-                      enabledBorder: const OutlineInputBorder(
-                        borderRadius: BorderRadius.zero,
-                        borderSide: BorderSide(color: AppTheme.bgElevated),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: const BorderSide(color: AppTheme.bgElevated),
                       ),
-                      focusedBorder: const OutlineInputBorder(
-                        borderRadius: BorderRadius.zero,
-                        borderSide: BorderSide(color: AppTheme.accentPrimary, width: 1.5),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: const BorderSide(color: AppTheme.accentPrimary, width: 1.5),
                       ),
                     ),
                   ),
@@ -390,14 +392,14 @@ class _TasteProfileScreenState extends ConsumerState<TasteProfileScreen> {
                               ),
                               transformAlignment: Alignment.center,
                               decoration: BoxDecoration(
-                                borderRadius: BorderRadius.zero,
+                                borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
                                   color: isSelected ? AppTheme.accentPrimary : Colors.transparent,
                                   width: 3,
                                 ),
                               ),
                               child: ClipRRect(
-                                borderRadius: BorderRadius.zero,
+                                borderRadius: BorderRadius.circular(12),
                               child: Stack(
                                 fit: StackFit.expand,
                                 children: [
@@ -510,7 +512,7 @@ class _TasteProfileScreenState extends ConsumerState<TasteProfileScreen> {
                                 height: 90,
                                 decoration: BoxDecoration(
                                   color: isSelected ? AppTheme.accentPrimary.withValues(alpha: 0.1) : AppTheme.bgSurface,
-                                  borderRadius: BorderRadius.zero,
+                                  borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
                                     color: isSelected ? AppTheme.accentPrimary : AppTheme.bgMuted,
                                     width: isSelected ? 1.5 : 1,
@@ -519,7 +521,7 @@ class _TasteProfileScreenState extends ConsumerState<TasteProfileScreen> {
                                 child: Row(
                                   children: [
                                     ClipRRect(
-                                      borderRadius: BorderRadius.zero,
+                                      borderRadius: BorderRadius.circular(10),
                                     child: movie.posterPath != null
                                         ? CachedNetworkImage(
                                             imageUrl: movie.posterUrl,
@@ -540,10 +542,11 @@ class _TasteProfileScreenState extends ConsumerState<TasteProfileScreen> {
                                         Text(
                                           movie.title,
                                           style: const TextStyle(
-                                            fontFamily: 'Syne',
+                                            fontFamily: 'Inter',
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold,
                                             color: AppTheme.textPrimary,
+                                            letterSpacing: -0.3,
                                           ),
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,

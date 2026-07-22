@@ -84,42 +84,49 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
               children: [
                 // Logo mark
                 Container(
-                  width: 88,
-                  height: 88,
+                  width: 96,
+                  height: 96,
                   decoration: BoxDecoration(
                     color: AppTheme.bgSurface,
-                    borderRadius: BorderRadius.circular(24),
+                    borderRadius: BorderRadius.circular(28),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppTheme.accentPrimary.withValues(alpha: 0.2),
+                        blurRadius: 32,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
                     border: Border.all(
-                      color: AppTheme.accentPrimary.withValues(alpha: 0.3),
-                      width: 1,
+                      color: AppTheme.glassBorder,
+                      width: 1.5,
                     ),
                   ),
                   child: const Center(
                     child: Text(
-                      'p',
+                      'P',
                       style: TextStyle(
-                        fontFamily: 'Syne',
-                        fontSize: 52,
+                        fontFamily: 'Inter',
+                        fontSize: 48,
                         fontWeight: FontWeight.w800,
-                        color: AppTheme.accentPrimary,
-                        height: 1.1,
+                        color: AppTheme.textPrimary,
+                        letterSpacing: -2,
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 24),
                 // App name
                 const Text(
                   'Pickd',
                   style: TextStyle(
-                    fontFamily: 'Syne',
-                    fontSize: 36,
+                    fontFamily: 'Inter',
+                    fontSize: 40,
                     fontWeight: FontWeight.w800,
                     color: AppTheme.textPrimary,
-                    letterSpacing: -1,
+                    letterSpacing: -2,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 const Text(
                   'Stop scrolling. Start watching.',
                   style: TextStyle(

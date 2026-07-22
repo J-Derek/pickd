@@ -1,4 +1,5 @@
 import 'package:hive/hive.dart';
+import '../config/env.dart';
 
 part 'tv_model.g.dart';
 
@@ -66,7 +67,7 @@ class TvModel extends HiveObject {
 
     return TvModel(
       id: json['id'] as int,
-      name: (json['name'] ?? 'Unknown') as String,
+      name: (json['name'] ?? json['title'] ?? 'Unknown') as String,
       posterPath: json['poster_path'] as String?,
       backdropPath: json['backdrop_path'] as String?,
       overview: (json['overview'] ?? '') as String,
@@ -83,12 +84,12 @@ class TvModel extends HiveObject {
 
   String get posterUrl =>
       posterPath != null
-          ? 'https://image.tmdb.org/t/p/w500$posterPath'
+          ? '${Env.tmdbImageBaseW500}$posterPath'
           : '';
 
   String get backdropUrl =>
       backdropPath != null
-          ? 'https://image.tmdb.org/t/p/original$backdropPath'
+          ? '${Env.tmdbImageBaseOriginal}$backdropPath'
           : '';
 
   int get airYear {
@@ -98,12 +99,14 @@ class TvModel extends HiveObject {
 
   String get youtubeUrl =>
       trailerKey != null
-          ? 'https://www.youtube.com/watch?v=$trailerKey'
+          ? '${Env.youtubeBaseUrl}$trailerKey'
           : '';
 
   bool get hasTrailer => trailerKey != null && trailerKey!.isNotEmpty;
 
-  bool get isHiddenGem => popularity < 30 && airYear < 2020;
+  bool get isHiddenGem =>
+      popularity < Env.hiddenGemMaxPopularity &&
+      airYear < Env.hiddenGemMaxYear;
 
   TvModel copyWith({
     String? trailerKey,

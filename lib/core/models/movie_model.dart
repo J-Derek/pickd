@@ -1,4 +1,5 @@
 import 'package:hive/hive.dart';
+import '../config/env.dart';
 
 part 'movie_model.g.dart';
 
@@ -81,12 +82,12 @@ class MovieModel extends HiveObject {
 
   String get posterUrl =>
       posterPath != null
-          ? 'https://image.tmdb.org/t/p/w500$posterPath'
+          ? '${Env.tmdbImageBaseW500}$posterPath'
           : '';
 
   String get backdropUrl =>
       backdropPath != null
-          ? 'https://image.tmdb.org/t/p/original$backdropPath'
+          ? '${Env.tmdbImageBaseOriginal}$backdropPath'
           : '';
 
   int get releaseYear {
@@ -96,12 +97,14 @@ class MovieModel extends HiveObject {
 
   String get youtubeUrl =>
       trailerKey != null
-          ? 'https://www.youtube.com/watch?v=$trailerKey'
+          ? '${Env.youtubeBaseUrl}$trailerKey'
           : '';
 
   bool get hasTrailer => trailerKey != null && trailerKey!.isNotEmpty;
 
-  bool get isHiddenGem => popularity < 30 && releaseYear < 2020;
+  bool get isHiddenGem =>
+      popularity < Env.hiddenGemMaxPopularity &&
+      releaseYear < Env.hiddenGemMaxYear;
 
   MovieModel copyWith({
     String? trailerKey,

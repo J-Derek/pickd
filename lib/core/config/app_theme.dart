@@ -1,23 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// App theme derived from DESIGN.md — Dark Cinematic palette
+/// App theme derived from Figma Integration Plan — OLED & Neon
 class AppTheme {
   // ─── Colors ──────────────────────────────────────────────────
-  static const bgPrimary = Color(0xFF0E1417);
-  static const bgSurface = Color(0xFF161D1F);
-  static const bgElevated = Color(0xFF1A2123);
-  static const bgMuted = Color(0xFF2F3639);
+  static const bgPrimary = Color(0xFF0A0A0F); // OLED Black
+  static const bgSurface = Color(0xFF13131A); // Slightly lighter for cards
+  static const bgElevated = Color(0xFF1C1C26);
+  static const bgMuted = Color(0xFF252530);
 
-  static const accentPrimary = Color(0xFF00D1FF);
-  static const accentGlow = Color(0x4000D1FF);
-  static const accentSecondary = Color(0xFF00566A);
-  static const accentGreen = Color(0xFF4CAF88);
+  static const accentPrimary = Color(0xFF6B4EFF); // Neon Indigo/Purple
+  static const accentGlow = Color(0x666B4EFF);
+  static const accentSecondary = Color(0xFF00F0FF); // Electric Cyan
+  static const accentGreen = Color(0xFF00F0FF); // Swap green for cyan
 
-  static const textPrimary = Color(0xFFDDE3E7);
-  static const textSecondary = Color(0xFFBBC9CF);
-  static const textMuted = Color(0xFF859399);
-  static const textInverse = Color(0xFF00566A);
+  static const gemsColor = Color(0xFFFFC107); // Bright Yellow/Gold
+  static const errorColor = Color(0xFFFF4081); // Neon Pink
+
+  static const textPrimary = Color(0xFFFFFFFF);
+  static const textSecondary = Color(0xFFB0B0C0);
+  static const textMuted = Color(0xFF6B6B80);
+  static const textInverse = Color(0xFF0A0A0F);
 
   // ─── Gradients ────────────────────────────────────────────────
   static const cardBottomGradient = LinearGradient(
@@ -30,34 +33,33 @@ class AppTheme {
   static const gemsBadgeGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF7B2FBE), accentPrimary],
+    colors: [Color(0xFFFF4081), gemsColor], // Pink to Yellow
   );
 
   // ─── Shadows & Glass ──────────────────────────────────────────
   static List<BoxShadow> cardShadow = [
     BoxShadow(
-      color: Colors.black.withValues(alpha: 0.5),
+      color: Colors.black.withValues(alpha: 0.8),
       blurRadius: 32,
-      offset: const Offset(0, 12),
+      offset: const Offset(0, 16),
     ),
   ];
 
   static List<BoxShadow> cardDraggingShadow = [
     BoxShadow(
-      color: accentPrimary.withValues(alpha: 0.2),
+      color: accentPrimary.withValues(alpha: 0.3),
       blurRadius: 40,
-      spreadRadius: 4,
+      spreadRadius: 8,
       offset: const Offset(0, 16),
     ),
   ];
 
-
   // Glassmorphism background color
-  static Color get glassBackground => const Color(0xFF161D1F).withValues(alpha: 0.4);
+  static Color get glassBackground => const Color(0xFF13131A).withValues(alpha: 0.6);
   // Glassmorphism border color
-  static Color get glassBorder => Colors.white.withValues(alpha: 0.05);
+  static Color get glassBorder => Colors.white.withValues(alpha: 0.1);
   // Glassmorphism blur sigma
-  static const double glassBlur = 32.0;
+  static const double glassBlur = 24.0;
 
   // ─── Theme ────────────────────────────────────────────────────
   static ThemeData get theme {
@@ -68,9 +70,10 @@ class AppTheme {
         primary: accentPrimary,
         secondary: accentSecondary,
         surface: bgSurface,
-        onPrimary: textInverse,
+        onPrimary: textPrimary,
         onSecondary: textPrimary,
         onSurface: textPrimary,
+        error: errorColor,
       ),
       textTheme: _buildTextTheme(),
       appBarTheme: const AppBarTheme(
@@ -78,46 +81,86 @@ class AppTheme {
         elevation: 0,
         centerTitle: false,
         titleTextStyle: TextStyle(
-          fontFamily: 'Syne',
+          fontFamily: 'Inter',
           fontSize: 24,
           fontWeight: FontWeight.w700,
           color: textPrimary,
+          letterSpacing: -0.5,
         ),
-        iconTheme: IconThemeData(color: textSecondary),
+        iconTheme: IconThemeData(color: textPrimary),
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: bgElevated,
+        backgroundColor: bgPrimary,
         selectedItemColor: accentPrimary,
         unselectedItemColor: textMuted,
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
+        showSelectedLabels: true,
+        showUnselectedLabels: true,
         type: BottomNavigationBarType.fixed,
+        elevation: 0,
+        selectedLabelStyle: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, fontFamily: 'Inter'),
+        unselectedLabelStyle: TextStyle(fontSize: 10, fontWeight: FontWeight.w500, fontFamily: 'Inter'),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: accentPrimary,
-          foregroundColor: textInverse,
-          minimumSize: const Size(double.infinity, 52),
+          foregroundColor: textPrimary,
+          minimumSize: const Size(double.infinity, 56),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(16),
           ),
+          elevation: 0,
           textStyle: GoogleFonts.inter(
             fontSize: 16,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -0.2,
           ),
         ),
       ),
       chipTheme: ChipThemeData(
-        backgroundColor: Colors.white.withValues(alpha: 0.08),
+        backgroundColor: Colors.white.withValues(alpha: 0.1),
         labelStyle: GoogleFonts.inter(
           fontSize: 12,
           fontWeight: FontWeight.w600,
-          color: textSecondary,
-          letterSpacing: 0.5,
+          color: textPrimary,
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9999)),
-        side: BorderSide.none,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(9999),
+          side: BorderSide(color: glassBorder, width: 1),
+        ),
+      ),
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: bgElevated,
+        contentTextStyle: GoogleFonts.inter(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: textPrimary,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: glassBorder, width: 1),
+        ),
+        behavior: SnackBarBehavior.floating,
+        elevation: 0,
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: bgSurface,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+          side: BorderSide(color: glassBorder, width: 1),
+        ),
+        titleTextStyle: GoogleFonts.inter(
+          fontSize: 20,
+          fontWeight: FontWeight.w800,
+          color: textPrimary,
+          letterSpacing: -0.5,
+        ),
+        contentTextStyle: GoogleFonts.inter(
+          fontSize: 16,
+          fontWeight: FontWeight.w400,
+          color: textSecondary,
+        ),
       ),
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
@@ -130,33 +173,32 @@ class AppTheme {
 
   static TextTheme _buildTextTheme() {
     return TextTheme(
-      // Display — Syne 800
-      displayLarge: GoogleFonts.syne(
+      displayLarge: GoogleFonts.inter(
         fontSize: 32,
         fontWeight: FontWeight.w800,
         color: textPrimary,
         height: 1.15,
+        letterSpacing: -1.0,
       ),
-      // Heading — Syne 700
-      headlineLarge: GoogleFonts.syne(
+      headlineLarge: GoogleFonts.inter(
         fontSize: 24,
         fontWeight: FontWeight.w700,
         color: textPrimary,
         height: 1.2,
+        letterSpacing: -0.5,
       ),
-      // Title — Syne 700
-      titleLarge: GoogleFonts.syne(
+      titleLarge: GoogleFonts.inter(
         fontSize: 18,
         fontWeight: FontWeight.w700,
         color: textPrimary,
         height: 1.3,
+        letterSpacing: -0.2,
       ),
-      titleMedium: GoogleFonts.syne(
+      titleMedium: GoogleFonts.inter(
         fontSize: 16,
         fontWeight: FontWeight.w600,
         color: textPrimary,
       ),
-      // Body — Inter
       bodyLarge: GoogleFonts.inter(
         fontSize: 16,
         fontWeight: FontWeight.w400,
@@ -175,12 +217,11 @@ class AppTheme {
         color: textMuted,
         height: 1.4,
       ),
-      // Caption
       labelSmall: GoogleFonts.inter(
         fontSize: 11,
-        fontWeight: FontWeight.w600,
+        fontWeight: FontWeight.w700,
         color: textSecondary,
-        letterSpacing: 0.5,
+        letterSpacing: 0.2,
       ),
     );
   }

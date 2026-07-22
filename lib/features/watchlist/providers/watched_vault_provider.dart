@@ -36,23 +36,25 @@ class WatchedVaultNotifier extends StateNotifier<List<MediaItem>> {
               items.add(MediaItem.tv(TvModel(
                 id: row['id'],
                 name: row['title'] ?? 'Unknown',
-                overview: '',
+                overview: row['overview'] ?? '',
                 posterPath: row['posterPath'],
-                firstAirDate: '',
-                voteAverage: 0,
-                popularity: 0,
-                genreIds: const [],
+                backdropPath: row['backdropPath'],
+                firstAirDate: row['year']?.toString() ?? '',
+                voteAverage: (row['voteAverage'] as num?)?.toDouble() ?? 0,
+                popularity: (row['popularity'] as num?)?.toDouble() ?? 0,
+                genreIds: (row['genreIds'] as List?)?.cast<int>() ?? const [],
               )));
             } else {
               items.add(MediaItem.movie(MovieModel(
                 id: row['id'],
                 title: row['title'] ?? 'Unknown',
-                overview: '',
+                overview: row['overview'] ?? '',
                 posterPath: row['posterPath'],
-                releaseDate: '',
-                voteAverage: 0,
-                popularity: 0,
-                genreIds: const [],
+                backdropPath: row['backdropPath'],
+                releaseDate: row['year']?.toString() ?? '',
+                voteAverage: (row['voteAverage'] as num?)?.toDouble() ?? 0,
+                popularity: (row['popularity'] as num?)?.toDouble() ?? 0,
+                genreIds: (row['genreIds'] as List?)?.cast<int>() ?? const [],
               )));
             }
           }

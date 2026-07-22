@@ -18,13 +18,15 @@ class SwipeDeckState {
   final String? error;
   final int swipeCount;
   final MediaFilter filter;
+  final bool gateShown;
 
   const SwipeDeckState({
     this.deck = const [],
     this.isLoading = false,
     this.error,
     this.swipeCount = 0,
-    this.filter = MediaFilter.moviesOnly,
+    this.filter = MediaFilter.both,
+    this.gateShown = false,
   });
 
   SwipeDeckState copyWith({
@@ -33,6 +35,7 @@ class SwipeDeckState {
     String? error,
     int? swipeCount,
     MediaFilter? filter,
+    bool? gateShown,
   }) {
     return SwipeDeckState(
       deck: deck ?? this.deck,
@@ -40,10 +43,11 @@ class SwipeDeckState {
       error: error,
       swipeCount: swipeCount ?? this.swipeCount,
       filter: filter ?? this.filter,
+      gateShown: gateShown ?? this.gateShown,
     );
   }
 
-  bool get hasReachedSwipeGate => swipeCount == 5;
+  bool get hasReachedSwipeGate => swipeCount >= 5 && !gateShown;
   bool get isDeckEmpty => swipeCount >= deck.length && !isLoading;
 }
 
@@ -63,8 +67,12 @@ class SwipeDeckNotifier extends StateNotifier<SwipeDeckState> {
       
       Set<String> seenKeys = HiveService.getSwipedKeys();
       if (user != null) {
-        final supabaseKeys = await ref.read(supabaseDbServiceProvider).getSwipedMediaKeys(user.id);
-        seenKeys = {...seenKeys, ...supabaseKeys};
+        try {
+          final supabaseKeys = await ref.read(supabaseDbServiceProvider).getSwipedMediaKeys(user.id);
+          seenKeys = {...seenKeys, ...supabaseKeys};
+        } catch (e) {
+          debugPrint('Supabase seen-keys fetch failed, using local Hive: $e');
+        }
       }
       
       final deck = await DiscoveryService.buildDeck(
@@ -94,8 +102,12 @@ class SwipeDeckNotifier extends StateNotifier<SwipeDeckState> {
       
       Set<String> seenKeys = HiveService.getSwipedKeys();
       if (user != null) {
-        final supabaseKeys = await ref.read(supabaseDbServiceProvider).getSwipedMediaKeys(user.id);
-        seenKeys = {...seenKeys, ...supabaseKeys};
+        try {
+          final supabaseKeys = await ref.read(supabaseDbServiceProvider).getSwipedMediaKeys(user.id);
+          seenKeys = {...seenKeys, ...supabaseKeys};
+        } catch (e) {
+          debugPrint('Supabase seen-keys fetch failed, using local Hive: $e');
+        }
       }
 
       final newCards = await DiscoveryService.buildDeck(
@@ -107,8 +119,8 @@ class SwipeDeckNotifier extends StateNotifier<SwipeDeckState> {
         page: _currentPage,
         seenKeys: seenKeys,
       );
-      final existingIds = state.deck.map((e) => e.id).toSet();
-      final filtered = newCards.where((m) => !existingIds.contains(m.id)).toList();
+      final existingKeys = state.deck.map((e) => e.mediaKey).toSet();
+      final filtered = newCards.where((m) => !existingKeys.contains(m.mediaKey)).toList();
       if (!mounted) return;
       if (filtered.isNotEmpty) {
         state = state.copyWith(deck: [...state.deck, ...filtered]);
@@ -191,7 +203,7 @@ class SwipeDeckNotifier extends StateNotifier<SwipeDeckState> {
   }
 
   void resetSwipeGate() {
-    state = state.copyWith(swipeCount: 0);
+    state = state.copyWith(gateShown: true);
   }
 
   /// Switch the media filter and reload the deck.
