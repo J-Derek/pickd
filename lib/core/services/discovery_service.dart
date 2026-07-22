@@ -156,21 +156,16 @@ class DiscoveryService {
     }
 
     // 2. Mood-based discover
-    if (moodIds.isNotEmpty) {
-      final genreIds =
-          kMoods.where((m) => moodIds.contains(m.id)).expand((m) => m.genreIds).toList();
-
-      if (genreIds.isNotEmpty) {
-        final moodMovies = await TmdbService.discoverMovies(
-          genreIds: genreIds,
-          maxPopularity: gemsMode ? Env.hiddenGemMaxPopularity : null,
-          maxYear: gemsMode ? Env.hiddenGemMaxYear : null,
-          minYear: (gemsMode || allowOldMovies) ? null : 1991,
-          page: page,
-        );
-        for (final movie in moodMovies) {
-          if (isRecent(movie)) collected[movie.id] = movie;
-        }
+    if (moodGenreIds.isNotEmpty) {
+      final moodMovies = await TmdbService.discoverMovies(
+        genreIds: moodGenreIds.toList(),
+        maxPopularity: gemsMode ? Env.hiddenGemMaxPopularity : null,
+        maxYear: gemsMode ? Env.hiddenGemMaxYear : null,
+        minYear: (gemsMode || allowOldMovies) ? null : 1991,
+        page: page,
+      );
+      for (final movie in moodMovies) {
+        if (isRecent(movie)) collected[movie.id] = movie;
       }
     }
 
@@ -182,6 +177,14 @@ class DiscoveryService {
             movie.genreIds.any((id) => moodGenreIds.contains(id))) {
           collected[movie.id] = movie;
         }
+      }
+    }
+
+    // If still empty, add trending movies unconditionally so deck is never blank
+    if (collected.isEmpty) {
+      final trending = await TmdbService.getTrending(page: page);
+      for (final movie in trending) {
+        if (isRecent(movie)) collected[movie.id] = movie;
       }
     }
 
@@ -299,21 +302,18 @@ class DiscoveryService {
     }
 
     // 2. Mood-based TV discover
-    if (moodIds.isNotEmpty) {
-      var genreIds =
-          kMoods.where((m) => moodIds.contains(m.id)).expand((m) => m.genreIds).map(mapMovieToTvGenre).toSet().toList();
+    if (moodGenreIds.isNotEmpty) {
+      final genreIds = moodGenreIds.map(mapMovieToTvGenre).toSet().toList();
 
-      if (genreIds.isNotEmpty) {
-        final shows = await TmdbService.discoverTv(
-          genreIds: genreIds,
-          maxPopularity: gemsMode ? Env.hiddenGemMaxPopularity : null,
-          maxYear: gemsMode ? Env.hiddenGemMaxYear : null,
-          minYear: (gemsMode || allowOldMovies) ? null : 1991,
-          page: page,
-        );
-        for (final show in shows) {
-          collected[show.id] = show;
-        }
+      final shows = await TmdbService.discoverTv(
+        genreIds: genreIds,
+        maxPopularity: gemsMode ? Env.hiddenGemMaxPopularity : null,
+        maxYear: gemsMode ? Env.hiddenGemMaxYear : null,
+        minYear: (gemsMode || allowOldMovies) ? null : 1991,
+        page: page,
+      );
+      for (final show in shows) {
+        if (isRecent(show)) collected[show.id] = show;
       }
     }
 

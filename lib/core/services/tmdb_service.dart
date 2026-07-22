@@ -96,13 +96,15 @@ class TmdbService {
     try {
       final params = <String, dynamic>{
         'language': 'en-US',
-        'with_genres': genreIds.join('|'),
         'sort_by': maxPopularity != null ? 'vote_average.desc' : 'popularity.desc',
         'vote_count.gte': maxPopularity != null ? 50 : 100,
         'include_adult': false,
         'page': page,
       };
 
+      if (genreIds.isNotEmpty) {
+        params['with_genres'] = genreIds.join('|');
+      }
       if (maxYear != null) {
         params['primary_release_date.lte'] = '$maxYear-12-31';
       }
@@ -294,13 +296,15 @@ class TmdbService {
     try {
       final params = <String, dynamic>{
         'language': 'en-US',
-        'with_genres': genreIds.join('|'),
         'sort_by': maxPopularity != null ? 'vote_average.desc' : 'popularity.desc',
         'vote_count.gte': maxPopularity != null ? 30 : 50,
         'include_adult': false,
         'page': page,
       };
 
+      if (genreIds.isNotEmpty) {
+        params['with_genres'] = genreIds.join('|');
+      }
       if (maxYear != null) params['first_air_date.lte'] = '$maxYear-12-31';
       if (minYear != null) params['first_air_date.gte'] = '$minYear-01-01';
 
