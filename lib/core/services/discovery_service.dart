@@ -178,13 +178,12 @@ class DiscoveryService {
           collected[movie.id] = movie;
         }
       }
-    }
 
-    // If still empty, add trending movies unconditionally so deck is never blank
-    if (collected.isEmpty) {
-      final trending = await TmdbService.getTrending(page: page);
-      for (final movie in trending) {
-        if (isRecent(movie)) collected[movie.id] = movie;
+      // If still empty after genre filtering, add trending movies unconditionally so deck is never blank
+      if (collected.isEmpty) {
+        for (final movie in trending) {
+          if (isRecent(movie)) collected[movie.id] = movie;
+        }
       }
     }
 
@@ -326,13 +325,12 @@ class DiscoveryService {
           collected[show.id] = show;
         }
       }
-    }
 
-    // If still empty (e.g. extremely strict mood filter), just force add trending so deck isn't empty
-    if (collected.isEmpty) {
-      final trending = await TmdbService.getTrendingTv(page: page);
-      for (final show in trending) {
-        collected[show.id] = show;
+      // If still empty (e.g. extremely strict mood filter), just force add trending so deck isn't empty
+      if (collected.isEmpty) {
+        for (final show in trending) {
+          collected[show.id] = show;
+        }
       }
     }
 

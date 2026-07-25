@@ -372,12 +372,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             await ref.read(authServiceProvider).updatePassword(newPwd);
 
                             if (context.mounted) {
-                              Navigator.of(context).pop();
                               showCustomSnackBar(
                                 context,
                                 message: 'Password changed successfully!',
                                 isSuccess: true,
                               );
+                              Navigator.of(context).pop();
                             }
                           } catch (e) {
                             setSheetState(() {

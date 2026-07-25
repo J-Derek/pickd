@@ -420,45 +420,35 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                         Material(
                           color: Colors.transparent,
                           child: InkWell(
-                            onTap: () {
+                            onTap: () async {
                               HapticFeedback.mediumImpact();
                               if (isInWatchlist) {
-                                ref
+                                await ref
                                     .read(watchlistProvider.notifier)
                                     .remove(item.mediaKey);
                                 if (context.mounted) {
-                                  ScaffoldMessenger.of(context).clearSnackBars();
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: const Text('Removed from Watchlist', style: TextStyle(color: AppTheme.textInverse)),
-                                      backgroundColor: AppTheme.bgSurface,
-                                      action: SnackBarAction(
-                                        label: 'Undo',
-                                        textColor: AppTheme.accentPrimary,
-                                        onPressed: () => ref.read(watchlistProvider.notifier).addMedia(item),
-                                      ),
-                                    ),
+                                  showCustomSnackBar(
+                                    context,
+                                    message: 'Removed from Watchlist',
+                                    isSuccess: true,
                                   );
                                 }
                               } else {
-                                // Route to correct watchlist by type
                                 switch (item) {
                                   case MovieItem(:final movie):
-                                    ref
+                                    await ref
                                         .read(watchlistProvider.notifier)
                                         .add(movie);
                                   case TvItem(:final show):
-                                    ref
+                                    await ref
                                         .read(watchlistProvider.notifier)
                                         .addTv(show);
                                 }
                                 if (context.mounted) {
-                                  ScaffoldMessenger.of(context).clearSnackBars();
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Added to Watchlist', style: TextStyle(color: AppTheme.textInverse)),
-                                      backgroundColor: AppTheme.accentPrimary,
-                                    ),
+                                  showCustomSnackBar(
+                                    context,
+                                    message: 'Added to Watchlist',
+                                    isSuccess: true,
                                   );
                                 }
                               }

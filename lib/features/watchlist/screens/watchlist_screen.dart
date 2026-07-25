@@ -291,37 +291,33 @@ class _ToWatchTabState extends ConsumerState<_ToWatchTab> {
                               crossAxisSpacing: 12,
                               mainAxisSpacing: 16),
                       itemCount: filtered.length,
-                      itemBuilder: (context, index) {
+                      itemBuilder: (itemCtx, index) {
                         final movie = filtered[index];
                         return _GridItemCard(
                           item: movie,
                           actionIcon: Icons.visibility_outlined,
                           actionColor: AppTheme.accentGreen,
                           onActionTap: () async {
+                            showCustomSnackBar(
+                              context,
+                              message: 'Moved to Watched',
+                              isSuccess: true,
+                            );
                             await ref
                                 .read(watchedVaultProvider.notifier)
                                 .addMedia(movie);
                             await ref
                                 .read(watchlistProvider.notifier)
                                 .remove(movie.mediaKey);
-                            if (context.mounted) {
-                              showCustomSnackBar(
-                                context,
-                                message: 'Moved to Watched',
-                                isSuccess: true,
-                              );
-                            }
                           },
                           onRemove: () async {
+                            showCustomSnackBar(
+                              context,
+                              message: 'Removed ${movie.title}',
+                              isSuccess: true,
+                            );
                             final notifier = ref.read(watchlistProvider.notifier);
                             await notifier.remove(movie.mediaKey);
-                            if (context.mounted) {
-                              showCustomSnackBar(
-                                context,
-                                message: 'Removed ${movie.title}',
-                                isSuccess: true,
-                              );
-                            }
                           },
                           onTap: () => context.push(
                               '/movie/${movie.id}',
@@ -335,37 +331,33 @@ class _ToWatchTabState extends ConsumerState<_ToWatchTab> {
                       itemCount: filtered.length,
                       separatorBuilder: (_, __) =>
                           const SizedBox(height: 16),
-                      itemBuilder: (context, index) {
+                      itemBuilder: (itemCtx, index) {
                         final movie = filtered[index];
                         return _ListItemCard(
                           item: movie,
                           actionIcon: Icons.visibility_outlined,
                           actionColor: AppTheme.accentGreen,
                           onActionTap: () async {
+                            showCustomSnackBar(
+                              context,
+                              message: 'Moved to Watched',
+                              isSuccess: true,
+                            );
                             await ref
                                 .read(watchedVaultProvider.notifier)
                                 .addMedia(movie);
                             await ref
                                 .read(watchlistProvider.notifier)
                                 .remove(movie.mediaKey);
-                            if (context.mounted) {
-                              showCustomSnackBar(
-                                context,
-                                message: 'Moved to Watched',
-                                isSuccess: true,
-                              );
-                            }
                           },
                           onRemove: () async {
+                            showCustomSnackBar(
+                              context,
+                              message: 'Removed ${movie.title}',
+                              isSuccess: true,
+                            );
                             final notifier = ref.read(watchlistProvider.notifier);
                             await notifier.remove(movie.mediaKey);
-                            if (context.mounted) {
-                              showCustomSnackBar(
-                                context,
-                                message: 'Removed ${movie.title}',
-                                isSuccess: true,
-                              );
-                            }
                           },
                           onTap: () => context.push(
                               '/movie/${movie.id}',
@@ -522,37 +514,33 @@ class _WatchedTabState extends ConsumerState<_WatchedTab> {
                               crossAxisSpacing: 12,
                               mainAxisSpacing: 16),
                       itemCount: filtered.length,
-                      itemBuilder: (context, index) {
+                      itemBuilder: (itemCtx, index) {
                         final movie = filtered[index];
                         return _GridItemCard(
                           item: movie,
                           actionIcon: Icons.bookmark_add_outlined,
                           actionColor: AppTheme.accentPrimary,
                           onActionTap: () async {
+                            showCustomSnackBar(
+                              context,
+                              message: 'Moved back to Watchlist',
+                              isSuccess: true,
+                            );
                             await ref
                                 .read(watchlistProvider.notifier)
                                 .addMedia(movie);
                             await ref
                                 .read(watchedVaultProvider.notifier)
                                 .remove(movie.mediaKey);
-                            if (context.mounted) {
-                              showCustomSnackBar(
-                                context,
-                                message: 'Moved back to Watchlist',
-                                isSuccess: true,
-                              );
-                            }
                           },
                           onRemove: () async {
+                            showCustomSnackBar(
+                              context,
+                              message: 'Removed ${movie.title}',
+                              isSuccess: true,
+                            );
                             final notifier = ref.read(watchedVaultProvider.notifier);
                             await notifier.remove(movie.mediaKey);
-                            if (context.mounted) {
-                              showCustomSnackBar(
-                                context,
-                                message: 'Removed ${movie.title}',
-                                isSuccess: true,
-                              );
-                            }
                           },
                           onTap: () => context.push(
                               '/movie/${movie.id}',
@@ -566,37 +554,33 @@ class _WatchedTabState extends ConsumerState<_WatchedTab> {
                       itemCount: filtered.length,
                       separatorBuilder: (_, __) =>
                           const SizedBox(height: 16),
-                      itemBuilder: (context, index) {
+                      itemBuilder: (itemCtx, index) {
                         final movie = filtered[index];
                         return _ListItemCard(
                           item: movie,
                           actionIcon: Icons.bookmark_add_outlined,
                           actionColor: AppTheme.accentPrimary,
                           onActionTap: () async {
+                            showCustomSnackBar(
+                              context,
+                              message: 'Moved back to Watchlist',
+                              isSuccess: true,
+                            );
                             await ref
                                 .read(watchlistProvider.notifier)
                                 .addMedia(movie);
                             await ref
                                 .read(watchedVaultProvider.notifier)
                                 .remove(movie.mediaKey);
-                            if (context.mounted) {
-                              showCustomSnackBar(
-                                context,
-                                message: 'Moved back to Watchlist',
-                                isSuccess: true,
-                              );
-                            }
                           },
                           onRemove: () async {
+                            showCustomSnackBar(
+                              context,
+                              message: 'Removed ${movie.title}',
+                              isSuccess: true,
+                            );
                             final notifier = ref.read(watchedVaultProvider.notifier);
                             await notifier.remove(movie.mediaKey);
-                            if (context.mounted) {
-                              showCustomSnackBar(
-                                context,
-                                message: 'Removed ${movie.title}',
-                                isSuccess: true,
-                              );
-                            }
                           },
                           onTap: () => context.push(
                               '/movie/${movie.id}',

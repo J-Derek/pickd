@@ -68,6 +68,7 @@ class _TasteProfileScreenState extends ConsumerState<TasteProfileScreen> {
   void _onSearchChanged(String query) {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     _debounce = Timer(const Duration(milliseconds: 500), () {
+      if (!mounted) return;
       if (query.isEmpty) {
         setState(() {
           _isSearching = false;
