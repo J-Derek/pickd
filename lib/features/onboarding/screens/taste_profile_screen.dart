@@ -274,6 +274,7 @@ class _TasteProfileScreenState extends ConsumerState<TasteProfileScreen> {
                           _onSearchChanged('');
                         },
                       ),
+                      suffixIconConstraints: const BoxConstraints(minWidth: 36, minHeight: 36),
                       filled: true,
                       fillColor: AppTheme.bgSurface,
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),

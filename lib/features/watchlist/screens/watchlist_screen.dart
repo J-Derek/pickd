@@ -668,6 +668,7 @@ class _WatchlistFilterBarState extends State<_WatchlistFilterBar> {
                 controller: _controller,
                 onCleared: () => widget.onSearchChanged(''),
               ),
+              suffixIconConstraints: const BoxConstraints(minWidth: 36, minHeight: 36),
               filled: true,
               fillColor: AppTheme.bgElevated,
               contentPadding: const EdgeInsets.symmetric(vertical: 12),

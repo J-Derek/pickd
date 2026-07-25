@@ -22,6 +22,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   final _confirmPasswordController = TextEditingController();
   bool _isSignUp = false;
   bool _isLoading = false;
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
 
   @override
   void dispose() {
@@ -218,20 +220,28 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
               const SizedBox(height: 16),
               TextField(
                 controller: _passwordController,
+                obscureText: _obscurePassword,
                 style: const TextStyle(color: AppTheme.textPrimary),
                 decoration: InputDecoration(
                   labelText: 'Password',
                   labelStyle: const TextStyle(color: AppTheme.textSecondary),
-                  enabledBorder: const OutlineInputBorder(
-                    borderSide: BorderSide(color: AppTheme.bgMuted),
-                    borderRadius: BorderRadius.zero,
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                      color: AppTheme.textMuted,
+                      size: 20,
+                    ),
+                    onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                   ),
-                  focusedBorder: const OutlineInputBorder(
-                    borderSide: BorderSide(color: AppTheme.accentPrimary),
-                    borderRadius: BorderRadius.zero,
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: AppTheme.bgMuted),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: AppTheme.accentPrimary),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                obscureText: true,
                 textInputAction: _isSignUp ? TextInputAction.next : TextInputAction.done,
                 onSubmitted: _isSignUp ? null : (_) => _submit(),
               ),
@@ -239,20 +249,28 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                 const SizedBox(height: 16),
                 TextField(
                   controller: _confirmPasswordController,
+                  obscureText: _obscureConfirmPassword,
                   style: const TextStyle(color: AppTheme.textPrimary),
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Confirm Password',
-                    labelStyle: TextStyle(color: AppTheme.textSecondary),
+                    labelStyle: const TextStyle(color: AppTheme.textSecondary),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscureConfirmPassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                        color: AppTheme.textMuted,
+                        size: 20,
+                      ),
+                      onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+                    ),
                     enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: AppTheme.bgMuted),
-                      borderRadius: BorderRadius.zero,
+                      borderSide: const BorderSide(color: AppTheme.bgMuted),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: AppTheme.accentPrimary),
-                      borderRadius: BorderRadius.zero,
+                      borderSide: const BorderSide(color: AppTheme.accentPrimary),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  obscureText: true,
                   textInputAction: TextInputAction.done,
                   onSubmitted: (_) => _submit(),
                 ),

@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/config/app_theme.dart';
-import 'core/navigation/back_button_dispatcher.dart';
 import 'features/onboarding/screens/splash_screen.dart';
 import 'features/onboarding/screens/mood_selection_screen.dart';
 import 'features/onboarding/screens/taste_profile_screen.dart';
@@ -104,13 +103,11 @@ class PickdApp extends ConsumerStatefulWidget {
 }
 
 class _PickdAppState extends ConsumerState<PickdApp> {
-  late final PickdBackButtonDispatcher _backButtonDispatcher;
   StreamSubscription<AuthState>? _authSub;
 
   @override
   void initState() {
     super.initState();
-    _backButtonDispatcher = PickdBackButtonDispatcher(_router);
     try {
       _authSub = Supabase.instance.client.auth.onAuthStateChange.listen((data) {
         if (data.event == AuthChangeEvent.passwordRecovery) {
@@ -135,7 +132,6 @@ class _PickdAppState extends ConsumerState<PickdApp> {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.theme,
       routerConfig: _router,
-      backButtonDispatcher: _backButtonDispatcher,
       scrollBehavior: const MaterialScrollBehavior().copyWith(
         dragDevices: {
           PointerDeviceKind.mouse,

@@ -118,46 +118,17 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             // Header & Search Box
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: AppTheme.bgSurface,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppTheme.bgMuted),
-                      ),
-                      child: TextField(
-                        controller: _searchController,
-                        focusNode: _focusNode,
-                        textInputAction: TextInputAction.search,
-                        onSubmitted: _onSearchSubmitted,
-                        style: const TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 15,
-                          color: AppTheme.textPrimary,
-                        ),
-                        decoration: InputDecoration(
-                          hintText: 'Movies, shows, directors...',
-                          hintStyle: const TextStyle(
-                            fontFamily: 'Inter',
-                            color: AppTheme.textMuted,
-                            fontSize: 15,
-                          ),
-                          prefixIcon: const Icon(
-                            LucideIcons.search,
-                            color: AppTheme.textMuted,
-                            size: 18,
-                          ),
-                          suffixIcon: ClearSuffixIcon(controller: _searchController),
-                          border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+              child: ClearableTextField(
+                controller: _searchController,
+                focusNode: _focusNode,
+                textInputAction: TextInputAction.search,
+                onSubmitted: _onSearchSubmitted,
+                hintText: 'Movies, shows, directors...',
+                prefixIcon: const Icon(
+                  LucideIcons.search,
+                  color: AppTheme.textMuted,
+                  size: 18,
+                ),
               ),
             ),
             const SizedBox(height: 24),
