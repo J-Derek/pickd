@@ -124,6 +124,8 @@ class SwipeDeckNotifier extends StateNotifier<SwipeDeckState> {
       if (!mounted) return;
       if (filtered.isNotEmpty) {
         state = state.copyWith(deck: [...state.deck, ...filtered]);
+      } else if (_currentPage < 10) {
+        await loadMore(gemsMode: gemsMode);
       }
     } catch (e) {
       // Silently fail for background pagination

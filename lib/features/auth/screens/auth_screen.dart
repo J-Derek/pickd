@@ -6,6 +6,7 @@ import '../../../core/config/app_theme.dart';
 import '../../../core/services/hive_service.dart';
 import '../../../core/services/supabase_auth_service.dart';
 import '../../../core/widgets/custom_snackbar.dart';
+import '../../../core/widgets/clearable_text_field.dart';
 import '../services/migration_service.dart';
 
 class AuthScreen extends ConsumerStatefulWidget {
@@ -201,13 +202,14 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                 decoration: InputDecoration(
                   labelText: 'Email',
                   labelStyle: const TextStyle(color: AppTheme.textSecondary),
-                  enabledBorder: const OutlineInputBorder(
-                    borderSide: BorderSide(color: AppTheme.bgMuted),
-                    borderRadius: BorderRadius.zero,
+                  suffixIcon: ClearSuffixIcon(controller: _emailController),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: AppTheme.bgMuted),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  focusedBorder: const OutlineInputBorder(
-                    borderSide: BorderSide(color: AppTheme.accentPrimary),
-                    borderRadius: BorderRadius.zero,
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: AppTheme.accentPrimary),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
                 keyboardType: TextInputType.emailAddress,

@@ -12,6 +12,8 @@ import '../../../core/services/tmdb_service.dart';
 import '../../../core/widgets/custom_snackbar.dart';
 import '../../../core/widgets/genre_chip.dart';
 import '../../watchlist/providers/watchlist_provider.dart';
+import '../widgets/floating_trailer_player.dart';
+import '../widgets/trailer_fullscreen_dialog.dart';
 
 /// Detail screen for any MediaItem — works for both movies and TV series.
 class MovieDetailScreen extends ConsumerStatefulWidget {
@@ -36,6 +38,7 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
   bool _loadingProviders = false;
   List<MediaItem> _relatedItems = [];
   bool _loadingRelated = false;
+  bool _showFloatingTrailer = false;
 
   bool get _isTv => _item?.isTv ?? false;
 
@@ -116,19 +119,21 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
     }
   }
 
-  void _openTrailer() {
+  Future<void> _openTrailer() async {
     if (_trailerKey == null) return;
     HapticFeedback.mediumImpact();
 
-    showModalBottomSheet(
+    // Launch in Full Screen Dialog first
+    final result = await showDialog<String>(
       context: context,
-      backgroundColor: Colors.black,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => _InAppTrailerSheet(videoId: _trailerKey!),
+      useSafeArea: false,
+      builder: (context) => TrailerFullScreenDialog(videoId: _trailerKey!),
     );
+
+    // If user tapped "Pop-Out", switch to floating overlay player
+    if (result == 'popout' && mounted) {
+      setState(() => _showFloatingTrailer = true);
+    }
   }
 
   @override
@@ -137,8 +142,10 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
     final isInWatchlist =
         item != null ? ref.watch(isInWatchlistProvider(item.mediaKey)) : false;
 
-    return Scaffold(
-      backgroundColor: AppTheme.bgPrimary,
+    return Stack(
+      children: [
+        Scaffold(
+          backgroundColor: AppTheme.bgPrimary,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -312,6 +319,7 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                                 ],
                               ),
                             ),
+                        if (item.isTv) _buildTvSeriesInfoCard(item),
                         const SizedBox(height: 24),
                         // Overview
                         if (item.overview.isNotEmpty) ...[
@@ -587,6 +595,174 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                 ),
               ],
             ),
+        ),
+        if (_showFloatingTrailer && _trailerKey != null)
+          FloatingTrailerPlayer(
+            videoId: _trailerKey!,
+            onClose: () => setState(() => _showFloatingTrailer = false),
+            onExpandToFullscreen: () {
+              setState(() => _showFloatingTrailer = false);
+              _openTrailer();
+            },
+          ),
+      ],
+    );
+  }
+
+  Widget _buildTvSeriesInfoCard(MediaItem item) {
+    if (!item.isTv) return const SizedBox.shrink();
+
+    final seasons = item.numberOfSeasons;
+    final episodes = item.numberOfEpisodes;
+    final status = item.status;
+    final createdBy = item.createdBy;
+    final episodeRunTime = item.episodeRunTime;
+    final networks = item.networks;
+    final startYear = item.year;
+    final lastAirDate = item.lastAirDate;
+
+    int lastYear = 0;
+    if (lastAirDate != null && lastAirDate.isNotEmpty) {
+      lastYear = int.tryParse(lastAirDate.split('-').first) ?? 0;
+    }
+
+    Color statusColor = AppTheme.textSecondary;
+    String statusDot = '⚪';
+    if (status != null) {
+      final s = status.toLowerCase();
+      if (s.contains('returning') || s.contains('in production')) {
+        statusColor = const Color(0xFF00E676);
+        statusDot = '🟢';
+      } else if (s.contains('ended')) {
+        statusColor = AppTheme.textSecondary;
+        statusDot = '⚪';
+      } else if (s.contains('cancel')) {
+        statusColor = AppTheme.destructiveRed;
+        statusDot = '🔴';
+      }
+    }
+
+    String yearsText = '';
+    if (startYear > 0) {
+      if (status?.toLowerCase().contains('returning') == true) {
+        yearsText = '$startYear – Present';
+      } else if (lastYear > 0 && lastYear != startYear) {
+        yearsText = '$startYear – $lastYear';
+      } else {
+        yearsText = '$startYear';
+      }
+    }
+
+    String runtimeText = '';
+    if (episodeRunTime != null && episodeRunTime.isNotEmpty) {
+      final avg = (episodeRunTime.reduce((a, b) => a + b) / episodeRunTime.length).round();
+      if (avg > 0) runtimeText = '~ $avg min/ep';
+    }
+
+    List<String> statsParts = [];
+    if (seasons != null && seasons > 0) statsParts.add('$seasons ${seasons == 1 ? 'Season' : 'Seasons'}');
+    if (episodes != null && episodes > 0) statsParts.add('$episodes Episodes');
+    if (runtimeText.isNotEmpty) statsParts.add(runtimeText);
+
+    return GestureDetector(
+      onTap: () => context.push('/tv/${item.id}/seasons', extra: item.title),
+      child: Container(
+        width: double.infinity,
+        margin: const EdgeInsets.only(top: 16),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppTheme.bgSurface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppTheme.glassBorder),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text(statusDot, style: const TextStyle(fontSize: 12)),
+                const SizedBox(width: 8),
+                Text(
+                  status ?? 'TV Series',
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: statusColor,
+                  ),
+                ),
+                if (yearsText.isNotEmpty) ...[
+                  const Spacer(),
+                  Text(
+                    yearsText,
+                    style: const TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 13,
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+            if (statsParts.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(
+                statsParts.join('  •  '),
+                style: const TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+            ],
+            if (createdBy != null && createdBy.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(
+                'Created by ${createdBy.join(', ')}',
+                style: const TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 13,
+                  color: AppTheme.textSecondary,
+                ),
+              ),
+            ],
+            if (networks != null && networks.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Text(
+                'Network: ${networks.join(', ')}',
+                style: const TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 13,
+                  color: AppTheme.textMuted,
+                ),
+              ),
+            ],
+            const SizedBox(height: 12),
+            const Divider(color: AppTheme.bgMuted, height: 1),
+            const SizedBox(height: 10),
+            const Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Season & Episode Guide',
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.accentPrimary,
+                  ),
+                ),
+                Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 14,
+                  color: AppTheme.accentPrimary,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

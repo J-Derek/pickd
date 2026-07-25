@@ -9,6 +9,7 @@ import '../../../core/config/app_theme.dart';
 import '../../../core/models/media_item.dart';
 import '../../../core/services/hive_service.dart';
 import '../../../core/services/tmdb_service.dart';
+import '../../../core/widgets/clearable_text_field.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
   const SearchScreen({super.key});
@@ -149,19 +150,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                             color: AppTheme.textMuted,
                             size: 18,
                           ),
-                          suffixIcon: hasQuery
-                              ? IconButton(
-                                  icon: const Icon(
-                                    Icons.close_rounded,
-                                    color: AppTheme.textMuted,
-                                    size: 18,
-                                  ),
-                                  onPressed: () {
-                                    _searchController.clear();
-                                    _focusNode.unfocus();
-                                  },
-                                )
-                              : null,
+                          suffixIcon: ClearSuffixIcon(controller: _searchController),
                           border: InputBorder.none,
                           contentPadding: const EdgeInsets.symmetric(vertical: 12),
                         ),

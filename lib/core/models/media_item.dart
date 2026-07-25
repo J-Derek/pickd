@@ -130,6 +130,42 @@ sealed class MediaItem {
   /// True if this item is a movie.
   bool get isMovie => this is MovieItem;
 
+  // TV-specific detail getters (null for movies)
+  int? get numberOfSeasons => switch (this) {
+        MovieItem() => null,
+        TvItem(:final show) => show.numberOfSeasons,
+      };
+
+  int? get numberOfEpisodes => switch (this) {
+        MovieItem() => null,
+        TvItem(:final show) => show.numberOfEpisodes,
+      };
+
+  String? get status => switch (this) {
+        MovieItem() => null,
+        TvItem(:final show) => show.status,
+      };
+
+  String? get lastAirDate => switch (this) {
+        MovieItem() => null,
+        TvItem(:final show) => show.lastAirDate,
+      };
+
+  List<String>? get createdBy => switch (this) {
+        MovieItem() => null,
+        TvItem(:final show) => show.createdBy,
+      };
+
+  List<int>? get episodeRunTime => switch (this) {
+        MovieItem() => null,
+        TvItem(:final show) => show.episodeRunTime,
+      };
+
+  List<String>? get networks => switch (this) {
+        MovieItem() => null,
+        TvItem(:final show) => show.networks,
+      };
+
   /// Returns a new instance with the trailer key applied.
   MediaItem withTrailerKey(String key) => switch (this) {
         MovieItem(:final movie) => MediaItem.movie(movie.copyWith(trailerKey: key)),

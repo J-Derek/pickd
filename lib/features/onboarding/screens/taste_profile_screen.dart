@@ -10,6 +10,7 @@ import '../../../core/models/media_item.dart';
 import '../../../core/services/tmdb_service.dart';
 import '../../../core/services/supabase_db_service.dart';
 import '../../../core/widgets/custom_snackbar.dart';
+import '../../../core/widgets/clearable_text_field.dart';
 import '../../../core/services/supabase_auth_service.dart';
 import '../../swipe/providers/swipe_provider.dart';
 import '../providers/onboarding_provider.dart';
@@ -267,6 +268,12 @@ class _TasteProfileScreenState extends ConsumerState<TasteProfileScreen> {
                       hintText: 'Search movies & TV...',
                       hintStyle: const TextStyle(color: AppTheme.textMuted),
                       prefixIcon: const Icon(Icons.search, color: AppTheme.textMuted),
+                      suffixIcon: ClearSuffixIcon(
+                        controller: _searchController,
+                        onCleared: () {
+                          _onSearchChanged('');
+                        },
+                      ),
                       filled: true,
                       fillColor: AppTheme.bgSurface,
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),

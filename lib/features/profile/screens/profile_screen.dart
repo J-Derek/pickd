@@ -8,6 +8,7 @@ import '../../../core/services/hive_service.dart';
 import '../../../core/services/supabase_auth_service.dart';
 import '../../swipe/providers/swipe_provider.dart';
 import '../../../core/services/supabase_db_service.dart';
+import '../../../core/providers/user_profile_details_provider.dart';
 import '../../../core/widgets/custom_snackbar.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
@@ -18,31 +19,7 @@ class ProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
-  String? _displayName;
-  String? _avatarUrl;
 
-  @override
-  void initState() {
-    super.initState();
-    _loadProfile();
-  }
-
-  Future<void> _loadProfile() async {
-    final user = ref.read(currentUserProvider);
-    if (user != null && !user.isAnonymous) {
-      try {
-        final profileDetails = await ref.read(supabaseDbServiceProvider).getProfileDetails(user.id);
-        if (profileDetails != null && mounted) {
-          setState(() {
-            _displayName = profileDetails['display_name'] as String?;
-            _avatarUrl = profileDetails['avatar_url'] as String?;
-          });
-        }
-      } catch (e) {
-        // ignore
-      }
-    }
-  }
 
   void _showAvatarPickerSheet() {
     final seeds = [
@@ -88,11 +65,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   onTap: () async {
                     Navigator.pop(ctx);
                     final user = ref.read(currentUserProvider);
+                    final currentDetails = ref.read(userProfileDetailsProvider).valueOrNull;
                     if (user != null && !user.isAnonymous) {
                       await ref.read(supabaseDbServiceProvider)
-                          .updateProfileDetails(user.id, _displayName, url);
+                          .updateProfileDetails(user.id, currentDetails?.displayName, url);
                     }
-                    if (mounted) setState(() => _avatarUrl = url);
+                    ref.read(userProfileDetailsProvider.notifier).updateLocally(avatarUrl: url);
                   },
                   child: CircleAvatar(
                     backgroundColor: AppTheme.bgMuted,
@@ -108,7 +86,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   void _showAccountDetailsSheet() {
-    final nameCtrl = TextEditingController(text: _displayName);
+    final currentDetails = ref.read(userProfileDetailsProvider).valueOrNull;
+    final nameCtrl = TextEditingController(text: currentDetails?.displayName);
     bool isEditingName = false;
 
     showModalBottomSheet(
@@ -121,10 +100,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       builder: (ctx) => StatefulBuilder(
         builder: (context, setStateSheet) => Padding(
           padding: EdgeInsets.only(
-            left: 24,
-            right: 24,
-            top: 20,
-            bottom: MediaQuery.of(ctx).viewInsets.bottom + 32,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+            left: 20,
+            right: 20,
+            top: 12,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -145,10 +124,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 },
                 child: Stack(
                   children: [
-                    _avatarUrl != null && _avatarUrl!.isNotEmpty
+                    currentDetails?.avatarUrl != null && currentDetails!.avatarUrl!.isNotEmpty
                         ? CircleAvatar(
                             radius: 44,
-                            backgroundImage: NetworkImage(_avatarUrl!),
+                            backgroundImage: NetworkImage(currentDetails.avatarUrl!),
                           )
                         : const CircleAvatar(
                             radius: 44,
@@ -179,7 +158,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               if (!isEditingName)
                 _InfoRow(
                   label: 'Username',
-                  value: _displayName ?? 'Not set',
+                  value: currentDetails?.displayName ?? 'Not set',
                   trailing: IconButton(
                     icon: const Icon(Icons.edit_outlined, size: 18, color: AppTheme.accentPrimary),
                     onPressed: () => setStateSheet(() => isEditingName = true),
@@ -218,8 +197,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     if (user != null && !user.isAnonymous) {
                       final newName = nameCtrl.text.trim().isEmpty ? null : nameCtrl.text.trim();
                       await ref.read(supabaseDbServiceProvider)
-                          .updateProfileDetails(user.id, newName, _avatarUrl);
-                      if (mounted) setState(() => _displayName = newName);
+                          .updateProfileDetails(user.id, newName, currentDetails?.avatarUrl);
+                      ref.read(userProfileDetailsProvider.notifier).updateLocally(displayName: newName);
                     }
                     if (ctx.mounted) Navigator.pop(ctx);
                   },
@@ -408,13 +387,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(currentUserProvider);
+    final profileDetails = ref.watch(userProfileDetailsProvider).valueOrNull;
+    final displayName = profileDetails?.displayName;
+    final avatarUrl = profileDetails?.avatarUrl;
     final profile = HiveService.getProfile();
     final bool isGuest = user == null || user.isAnonymous;
 
     String resolvedName = 'Guest User';
     if (!isGuest) {
-      if (_displayName != null && _displayName!.isNotEmpty) {
-        resolvedName = _displayName!;
+      if (displayName != null && displayName.isNotEmpty) {
+        resolvedName = displayName;
       } else if (user.email != null) {
         final prefix = user.email!.split('@').first;
         resolvedName = prefix.length > 12 ? prefix.substring(0, 12) : prefix;
@@ -461,11 +443,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     },
                     child: Stack(
                       children: [
-                        _avatarUrl != null && _avatarUrl!.isNotEmpty
+                        avatarUrl != null && avatarUrl.isNotEmpty
                             ? CircleAvatar(
                                 radius: 36,
                                 backgroundColor: AppTheme.bgMuted,
-                                backgroundImage: NetworkImage(_avatarUrl!),
+                                backgroundImage: NetworkImage(avatarUrl),
                               )
                             : const CircleAvatar(
                                 radius: 36,
@@ -605,7 +587,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             content: const Text('Are you sure you want to sign out?', style: TextStyle(color: AppTheme.textSecondary)),
                             actions: [
                               TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Cancel', style: TextStyle(color: AppTheme.textSecondary))),
-                              TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('Sign Out', style: TextStyle(color: AppTheme.accentSecondary))),
+                              TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('Sign Out', style: TextStyle(color: AppTheme.destructiveRed))),
                             ],
                           ),
                         );
@@ -869,9 +851,9 @@ class _SettingsRow extends StatelessWidget {
     return Container(
       decoration: isDestructive
           ? BoxDecoration(
-              color: AppTheme.accentSecondary.withValues(alpha: 0.08),
+              color: AppTheme.destructiveRed.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppTheme.accentSecondary.withValues(alpha: 0.2)),
+              border: Border.all(color: AppTheme.destructiveRed.withValues(alpha: 0.2)),
             )
           : null,
       margin: isDestructive ? const EdgeInsets.symmetric(horizontal: 12, vertical: 4) : null,
@@ -884,7 +866,7 @@ class _SettingsRow extends StatelessWidget {
             children: [
               Icon(
                 icon,
-                color: isDestructive ? AppTheme.accentSecondary : AppTheme.textSecondary,
+                color: isDestructive ? AppTheme.destructiveRed : AppTheme.textSecondary,
                 size: 20,
               ),
               const SizedBox(width: 16),
@@ -895,7 +877,7 @@ class _SettingsRow extends StatelessWidget {
                     fontFamily: 'Inter',
                     fontSize: 15,
                     fontWeight: isDestructive ? FontWeight.w600 : FontWeight.w500,
-                    color: isDestructive ? AppTheme.accentSecondary : AppTheme.textPrimary,
+                    color: isDestructive ? AppTheme.destructiveRed : AppTheme.textPrimary,
                   ),
                 ),
               ),
@@ -904,7 +886,7 @@ class _SettingsRow extends StatelessWidget {
               else if (onTap != null)
                 Icon(
                   Icons.chevron_right_rounded,
-                  color: isDestructive ? AppTheme.accentSecondary : AppTheme.textMuted,
+                  color: isDestructive ? AppTheme.destructiveRed : AppTheme.textMuted,
                   size: 20,
                 ),
             ],

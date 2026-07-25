@@ -42,6 +42,15 @@ class TvModel extends HiveObject {
 
   final String? watchProviderLink; // Not stored in Hive
 
+  // Rich TV detail fields (not stored in Hive)
+  final int? numberOfSeasons;
+  final int? numberOfEpisodes;
+  final String? status;
+  final String? lastAirDate;
+  final List<String>? createdBy;
+  final List<int>? episodeRunTime;
+  final List<String>? networks;
+
   TvModel({
     required this.id,
     required this.name,
@@ -55,6 +64,13 @@ class TvModel extends HiveObject {
     this.trailerKey,
     this.watchProviderLogoPath,
     this.watchProviderLink,
+    this.numberOfSeasons,
+    this.numberOfEpisodes,
+    this.status,
+    this.lastAirDate,
+    this.createdBy,
+    this.episodeRunTime,
+    this.networks,
   });
 
   factory TvModel.fromJson(Map<String, dynamic> json) {
@@ -64,6 +80,37 @@ class TvModel extends HiveObject {
       logoPath = json['watch/providers']['results']['US']['flatrate'][0]['logo_path'] as String?;
       link = json['watch/providers']['results']['US']['link'] as String?;
     } catch (_) {}
+
+    int? numSeasons = json['number_of_seasons'] as int?;
+    int? numEpisodes = json['number_of_episodes'] as int?;
+    String? showStatus = json['status'] as String?;
+    String? lastAir = json['last_air_date'] as String?;
+    List<String>? creators;
+    if (json['created_by'] != null) {
+      try {
+        creators = (json['created_by'] as List)
+            .map((c) => (c['name'] ?? '') as String)
+            .where((n) => n.isNotEmpty)
+            .toList();
+      } catch (_) {}
+    }
+    List<int>? runtimes;
+    if (json['episode_run_time'] != null) {
+      try {
+        runtimes = (json['episode_run_time'] as List)
+            .map((r) => (r as num).toInt())
+            .toList();
+      } catch (_) {}
+    }
+    List<String>? netList;
+    if (json['networks'] != null) {
+      try {
+        netList = (json['networks'] as List)
+            .map((n) => (n['name'] ?? '') as String)
+            .where((s) => s.isNotEmpty)
+            .toList();
+      } catch (_) {}
+    }
 
     return TvModel(
       id: json['id'] as int,
@@ -79,6 +126,13 @@ class TvModel extends HiveObject {
           .toList(),
       watchProviderLogoPath: logoPath,
       watchProviderLink: link,
+      numberOfSeasons: numSeasons,
+      numberOfEpisodes: numEpisodes,
+      status: showStatus,
+      lastAirDate: lastAir,
+      createdBy: creators,
+      episodeRunTime: runtimes,
+      networks: netList,
     );
   }
 

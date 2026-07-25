@@ -4,6 +4,7 @@ import '../config/env.dart';
 import '../models/media_item.dart';
 import '../models/movie_model.dart';
 import '../models/tv_model.dart';
+import '../models/tv_season_model.dart';
 
 /// All TMDB API calls. Direct client-to-API, no backend.
 class TmdbService {
@@ -52,11 +53,11 @@ class TmdbService {
   }
 
   /// Get recommendations based on a seed movie ID.
-  static Future<List<MovieModel>> getRecommendations(int movieId) async {
+  static Future<List<MovieModel>> getRecommendations(int movieId, {int page = 1}) async {
     try {
       final response = await _dio.get(
         '/movie/$movieId/recommendations',
-        queryParameters: {'language': 'en-US', 'page': 1},
+        queryParameters: {'language': 'en-US', 'page': page},
       );
       final results = response.data['results'] as List;
       return results
@@ -69,11 +70,11 @@ class TmdbService {
   }
 
   /// Get similar movies to a seed.
-  static Future<List<MovieModel>> getSimilar(int movieId) async {
+  static Future<List<MovieModel>> getSimilar(int movieId, {int page = 1}) async {
     try {
       final response = await _dio.get(
         '/movie/$movieId/similar',
-        queryParameters: {'language': 'en-US', 'page': 1},
+        queryParameters: {'language': 'en-US', 'page': page},
       );
       final results = response.data['results'] as List;
       return results
@@ -252,11 +253,11 @@ class TmdbService {
   // ─── TV Series Endpoints ──────────────────────────────────────
 
   /// Get recommendations based on a seed TV show ID.
-  static Future<List<TvModel>> getTvRecommendations(int seriesId) async {
+  static Future<List<TvModel>> getTvRecommendations(int seriesId, {int page = 1}) async {
     try {
       final response = await _dio.get(
         '/tv/$seriesId/recommendations',
-        queryParameters: {'language': 'en-US', 'page': 1},
+        queryParameters: {'language': 'en-US', 'page': page},
       );
       final results = response.data['results'] as List;
       return results
@@ -269,11 +270,11 @@ class TmdbService {
   }
 
   /// Get similar TV shows to a seed.
-  static Future<List<TvModel>> getTvSimilar(int seriesId) async {
+  static Future<List<TvModel>> getTvSimilar(int seriesId, {int page = 1}) async {
     try {
       final response = await _dio.get(
         '/tv/$seriesId/similar',
-        queryParameters: {'language': 'en-US', 'page': 1},
+        queryParameters: {'language': 'en-US', 'page': page},
       );
       final results = response.data['results'] as List;
       return results
@@ -282,6 +283,22 @@ class TmdbService {
           .toList();
     } catch (e) {
       return [];
+    }
+  }
+
+  /// Get full details and episode list for a specific TV season.
+  static Future<TvSeasonModel?> getTvSeasonDetails(
+    int seriesId,
+    int seasonNumber,
+  ) async {
+    try {
+      final response = await _dio.get(
+        '/tv/$seriesId/season/$seasonNumber',
+        queryParameters: {'language': 'en-US'},
+      );
+      return TvSeasonModel.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      return null;
     }
   }
 

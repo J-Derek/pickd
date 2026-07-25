@@ -25,6 +25,10 @@ class MainShell extends StatelessWidget {
       canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
+        if (index != 0) {
+          context.go('/swipe');
+          return;
+        }
         final confirm = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(

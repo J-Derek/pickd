@@ -140,8 +140,8 @@ class DiscoveryService {
       final seedsToUse = tasteSeedMovieIds.take(3).toList();
 
       final [recs, similar] = await Future.wait([
-        Future.wait(seedsToUse.map(TmdbService.getRecommendations)),
-        Future.wait(seedsToUse.map(TmdbService.getSimilar)),
+        Future.wait(seedsToUse.map((id) => TmdbService.getRecommendations(id, page: page))),
+        Future.wait(seedsToUse.map((id) => TmdbService.getSimilar(id, page: page))),
       ]);
 
       for (final list in [...recs, ...similar]) {
@@ -285,8 +285,8 @@ class DiscoveryService {
       final seedsToUse = tasteSeedTvIds.take(3).toList();
 
       final [recs, similar] = await Future.wait([
-        Future.wait(seedsToUse.map(TmdbService.getTvRecommendations)),
-        Future.wait(seedsToUse.map(TmdbService.getTvSimilar)),
+        Future.wait(seedsToUse.map((id) => TmdbService.getTvRecommendations(id, page: page))),
+        Future.wait(seedsToUse.map((id) => TmdbService.getTvSimilar(id, page: page))),
       ]);
 
       for (final list in [...recs, ...similar]) {

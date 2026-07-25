@@ -14,7 +14,7 @@ import '../../../core/widgets/custom_snackbar.dart';
 import '../../../core/widgets/genre_chip.dart';
 import '../../../core/widgets/shimmer_card.dart';
 import '../../../core/services/supabase_auth_service.dart';
-import '../../../core/services/supabase_db_service.dart';
+import '../../../core/providers/user_profile_details_provider.dart';
 import '../providers/swipe_provider.dart';
 import 'auth_gate_sheet.dart';
 import 'walkthrough_overlay.dart';
@@ -34,31 +34,13 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
   bool _showWalkthrough = false;
   MediaFilter _activeFilter = MediaFilter.both;
 
-  String? _displayName;
-  String? _avatarUrl;
-
   @override
   void initState() {
     super.initState();
-    _loadUserProfile();
     _showWalkthrough = !HiveService.getProfile().hasSeenWalkthrough;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(swipeDeckProvider.notifier).loadDeck();
     });
-  }
-
-  Future<void> _loadUserProfile() async {
-    final user = ref.read(currentUserProvider);
-    if (user == null || user.isAnonymous) return;
-    try {
-      final details = await ref.read(supabaseDbServiceProvider).getProfileDetails(user.id);
-      if (mounted && details != null) {
-        setState(() {
-          _displayName = details['display_name'] as String?;
-          _avatarUrl = details['avatar_url'] as String?;
-        });
-      }
-    } catch (_) {}
   }
 
   @override
@@ -144,12 +126,15 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
       greeting = 'Good evening';
     }
 
-    final user = ref.read(currentUserProvider);
+    final user = ref.watch(currentUserProvider);
+    final profileDetails = ref.watch(userProfileDetailsProvider).valueOrNull;
+    final displayName = profileDetails?.displayName;
+    final avatarUrl = profileDetails?.avatarUrl;
     final isGuest = user == null || user.isAnonymous;
     
     String resolvedName = '';
-    if (_displayName != null && _displayName!.isNotEmpty) {
-      resolvedName = _displayName!;
+    if (displayName != null && displayName.isNotEmpty) {
+      resolvedName = displayName;
     } else if (!isGuest && user.email != null) {
       final prefix = user.email!.split('@').first;
       resolvedName = prefix.length > 12 ? prefix.substring(0, 12) : prefix;
@@ -162,11 +147,11 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
       child: Row(
         children: [
           // Avatar
-          _avatarUrl != null && _avatarUrl!.isNotEmpty
+          avatarUrl != null && avatarUrl.isNotEmpty
             ? CircleAvatar(
                 radius: 20,
                 backgroundColor: AppTheme.bgMuted,
-                backgroundImage: NetworkImage(_avatarUrl!),
+                backgroundImage: NetworkImage(avatarUrl),
               )
             : Container(
                 width: 40,
@@ -346,7 +331,7 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
               child: InkWell(
                 onTap: () {
                   HapticFeedback.lightImpact();
-                  ref.read(swipeDeckProvider.notifier).loadDeck();
+                  ref.read(swipeDeckProvider.notifier).loadMore();
                 },
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),

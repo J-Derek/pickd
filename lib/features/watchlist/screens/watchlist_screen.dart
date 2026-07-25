@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/config/app_theme.dart';
 import '../../../core/models/media_item.dart';
 import '../../../core/widgets/custom_snackbar.dart';
+import '../../../core/widgets/clearable_text_field.dart';
 import '../providers/watchlist_provider.dart';
 import '../providers/watched_vault_provider.dart';
 
@@ -596,7 +597,7 @@ class _WatchedTabState extends ConsumerState<_WatchedTab> {
 
 // ─── Filter Bar Widget ────────────────────────────────────────────────────────
 
-class _WatchlistFilterBar extends StatelessWidget {
+class _WatchlistFilterBar extends StatefulWidget {
   final String searchHint;
   final String searchQuery;
   final _TypeFilter typeFilter;
@@ -616,25 +617,57 @@ class _WatchlistFilterBar extends StatelessWidget {
   });
 
   @override
+  State<_WatchlistFilterBar> createState() => _WatchlistFilterBarState();
+}
+
+class _WatchlistFilterBarState extends State<_WatchlistFilterBar> {
+  late TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.searchQuery);
+  }
+
+  @override
+  void didUpdateWidget(covariant _WatchlistFilterBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.searchQuery != oldWidget.searchQuery && widget.searchQuery != _controller.text) {
+      _controller.text = widget.searchQuery;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
       child: Column(
         children: [
           TextField(
-            onChanged: onSearchChanged,
+            controller: _controller,
+            onChanged: widget.onSearchChanged,
             style: const TextStyle(
                 fontFamily: 'Inter',
                 color: AppTheme.textPrimary,
                 fontSize: 14),
             decoration: InputDecoration(
-              hintText: searchHint,
+              hintText: widget.searchHint,
               hintStyle: const TextStyle(
                   fontFamily: 'Inter',
                   color: AppTheme.textMuted,
                   fontSize: 14),
               prefixIcon: const Icon(Icons.search_rounded,
                   color: AppTheme.textMuted, size: 20),
+              suffixIcon: ClearSuffixIcon(
+                controller: _controller,
+                onCleared: () => widget.onSearchChanged(''),
+              ),
               filled: true,
               fillColor: AppTheme.bgElevated,
               contentPadding: const EdgeInsets.symmetric(vertical: 12),
@@ -649,22 +682,22 @@ class _WatchlistFilterBar extends StatelessWidget {
               _TypePill(
                   label: 'All',
                   value: _TypeFilter.all,
-                  current: typeFilter,
-                  onTap: onTypeChanged),
+                  current: widget.typeFilter,
+                  onTap: widget.onTypeChanged),
               const SizedBox(width: 8),
               _TypePill(
                   label: 'Movies',
                   value: _TypeFilter.movies,
-                  current: typeFilter,
-                  onTap: onTypeChanged),
+                  current: widget.typeFilter,
+                  onTap: widget.onTypeChanged),
               const SizedBox(width: 8),
               _TypePill(
                   label: 'TV',
                   value: _TypeFilter.tv,
-                  current: typeFilter,
-                  onTap: onTypeChanged),
+                  current: widget.typeFilter,
+                  onTap: widget.onTypeChanged),
               const Spacer(),
-              _SortBtn(current: sortOrder, onChanged: onSortChanged),
+              _SortBtn(current: widget.sortOrder, onChanged: widget.onSortChanged),
             ],
           ),
         ],

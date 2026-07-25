@@ -16,6 +16,7 @@ class AppTheme {
 
   static const gemsColor = Color(0xFFFFC107); // Bright Yellow/Gold
   static const errorColor = Color(0xFFFF4081); // Neon Pink
+  static const destructiveRed = Color(0xFFFF4444); // Destructive Red
 
   static const textPrimary = Color(0xFFFFFFFF);
   static const textSecondary = Color(0xFFB0B0C0);
