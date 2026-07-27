@@ -87,29 +87,17 @@ class _FloatingTrailerPlayerState extends State<FloatingTrailerPlayer> {
     return Positioned(
       left: clampedX,
       top: clampedY,
-      child: GestureDetector(
-        onScaleUpdate: (details) {
-          setState(() {
-            _xPos += details.focalPointDelta.dx;
-            _yPos += details.focalPointDelta.dy;
-            if (details.scale > 1.25 && _playerSize != MiniPlayerSize.large) {
-              _playerSize = _playerSize == MiniPlayerSize.small ? MiniPlayerSize.medium : MiniPlayerSize.large;
-            } else if (details.scale < 0.75 && _playerSize != MiniPlayerSize.small) {
-              _playerSize = _playerSize == MiniPlayerSize.large ? MiniPlayerSize.medium : MiniPlayerSize.small;
-            }
-          });
-        },
-        child: Material(
-          elevation: 12,
-          color: Colors.transparent,
-          borderRadius: BorderRadius.circular(16),
-          child: Container(
-            width: width,
-            height: height,
-            decoration: BoxDecoration(
-              color: Colors.black,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppTheme.accentPrimary.withValues(alpha: 0.6), width: 1.5),
+      child: Material(
+        elevation: 12,
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          width: width,
+          height: height,
+          decoration: BoxDecoration(
+            color: Colors.black,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppTheme.accentPrimary.withValues(alpha: 0.6), width: 1.5),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.8),
@@ -133,12 +121,25 @@ class _FloatingTrailerPlayerState extends State<FloatingTrailerPlayer> {
                   top: 4,
                   left: 4,
                   right: 4,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.75),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onScaleUpdate: (details) {
+                      setState(() {
+                        _xPos = (_xPos + details.focalPointDelta.dx).clamp(minX, maxX);
+                        _yPos = (_yPos + details.focalPointDelta.dy).clamp(minY, maxY);
+                        if (details.scale > 1.25 && _playerSize != MiniPlayerSize.large) {
+                          _playerSize = _playerSize == MiniPlayerSize.small ? MiniPlayerSize.medium : MiniPlayerSize.large;
+                        } else if (details.scale < 0.75 && _playerSize != MiniPlayerSize.small) {
+                          _playerSize = _playerSize == MiniPlayerSize.large ? MiniPlayerSize.medium : MiniPlayerSize.small;
+                        }
+                      });
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.75),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -160,7 +161,7 @@ class _FloatingTrailerPlayerState extends State<FloatingTrailerPlayer> {
                                         ? 'M'
                                         : 'L',
                                 style: const TextStyle(
-                                  fontFamily: 'Inter',
+                                  fontFamily: 'SFProText',
                                   fontSize: 10,
                                   fontWeight: FontWeight.bold,
                                   color: AppTheme.accentPrimary,
@@ -204,12 +205,12 @@ class _FloatingTrailerPlayerState extends State<FloatingTrailerPlayer> {
                       ],
                     ),
                   ),
+                  ),
                 ),
               ],
             ),
           ),
         ),
-      ),
     );
   }
 }

@@ -169,4 +169,12 @@ class HiveService {
   static Future<void> clearRecentSearches() async {
     await _recentSearchesBox.clear();
   }
+
+  static Future<void> clearAllUserData() async {
+    await _profileBox.clear();
+    await _swipeHistoryBox.clear();
+    // Intentionally leaving recent searches since they are app-wide, 
+    // or we can clear them too if required. We will clear them.
+    await _recentSearchesBox.clear();
+  }
 }

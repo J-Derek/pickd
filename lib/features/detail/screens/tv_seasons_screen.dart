@@ -83,8 +83,8 @@ class _TvSeasonsScreenState extends State<TvSeasonsScreen> {
         title: Text(
           title,
           style: const TextStyle(
-            fontFamily: 'Syne',
-            fontSize: 18,
+            fontFamily: 'SFProDisplay',
+            fontSize: 20,
             fontWeight: FontWeight.bold,
             color: AppTheme.textPrimary,
           ),
@@ -113,9 +113,9 @@ class _TvSeasonsScreenState extends State<TvSeasonsScreen> {
                           label: Text(
                             'Season $seasonNum',
                             style: TextStyle(
-                              fontFamily: 'Inter',
-                              fontSize: 13,
-                              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                              fontFamily: 'SFProText',
+                              fontSize: 14,
+                              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                               color: isSelected ? AppTheme.textInverse : AppTheme.textSecondary,
                             ),
                           ),
@@ -193,7 +193,7 @@ class _TvSeasonsScreenState extends State<TvSeasonsScreen> {
                 Text(
                   season.name.isNotEmpty ? season.name : 'Season ${season.seasonNumber}',
                   style: const TextStyle(
-                    fontFamily: 'Inter',
+                    fontFamily: 'SFProText',
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: AppTheme.textPrimary,
@@ -203,7 +203,7 @@ class _TvSeasonsScreenState extends State<TvSeasonsScreen> {
                 Text(
                   '${season.episodes.length} Episodes${season.airDate != null ? ' • ${season.airDate!.split('-').first}' : ''}',
                   style: const TextStyle(
-                    fontFamily: 'Inter',
+                    fontFamily: 'SFProText',
                     fontSize: 13,
                     color: AppTheme.accentPrimary,
                     fontWeight: FontWeight.w600,
@@ -216,7 +216,7 @@ class _TvSeasonsScreenState extends State<TvSeasonsScreen> {
                     maxLines: 4,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      fontFamily: 'Inter',
+                      fontFamily: 'SFProText',
                       fontSize: 12,
                       color: AppTheme.textSecondary,
                       height: 1.4,
@@ -279,7 +279,7 @@ class _TvSeasonsScreenState extends State<TvSeasonsScreen> {
                       child: Text(
                         'E$epNum',
                         style: const TextStyle(
-                          fontFamily: 'Inter',
+                          fontFamily: 'SFProText',
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
                           color: AppTheme.accentPrimary,
@@ -297,7 +297,7 @@ class _TvSeasonsScreenState extends State<TvSeasonsScreen> {
                     Text(
                       ep.name,
                       style: const TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'SFProText',
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
                         color: AppTheme.textPrimary,
@@ -310,7 +310,7 @@ class _TvSeasonsScreenState extends State<TvSeasonsScreen> {
                           Text(
                             runtimeStr,
                             style: const TextStyle(
-                              fontFamily: 'Inter',
+                              fontFamily: 'SFProText',
                               fontSize: 12,
                               color: AppTheme.textMuted,
                             ),
@@ -323,8 +323,9 @@ class _TvSeasonsScreenState extends State<TvSeasonsScreen> {
                           Text(
                             ep.voteAverage.toStringAsFixed(1),
                             style: const TextStyle(
-                              fontFamily: 'JetBrains Mono',
+                              fontFamily: 'SFProDisplay',
                               fontSize: 12,
+                              fontWeight: FontWeight.w600,
                               color: AppTheme.textSecondary,
                             ),
                           ),
@@ -343,7 +344,7 @@ class _TvSeasonsScreenState extends State<TvSeasonsScreen> {
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: 'SFProText',
                 fontSize: 12,
                 color: AppTheme.textSecondary,
                 height: 1.4,

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 /// App theme derived from Figma Integration Plan — OLED & Neon
 class AppTheme {
@@ -82,7 +81,7 @@ class AppTheme {
         elevation: 0,
         centerTitle: false,
         titleTextStyle: TextStyle(
-          fontFamily: 'Inter',
+          fontFamily: 'SFProDisplay',
           fontSize: 24,
           fontWeight: FontWeight.w700,
           color: textPrimary,
@@ -98,8 +97,8 @@ class AppTheme {
         showUnselectedLabels: true,
         type: BottomNavigationBarType.fixed,
         elevation: 0,
-        selectedLabelStyle: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, fontFamily: 'Inter'),
-        unselectedLabelStyle: TextStyle(fontSize: 10, fontWeight: FontWeight.w500, fontFamily: 'Inter'),
+        selectedLabelStyle: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, fontFamily: 'SFProText'),
+        unselectedLabelStyle: TextStyle(fontSize: 10, fontWeight: FontWeight.w500, fontFamily: 'SFProText'),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -110,7 +109,8 @@ class AppTheme {
             borderRadius: BorderRadius.circular(16),
           ),
           elevation: 0,
-          textStyle: GoogleFonts.inter(
+          textStyle: const TextStyle(
+            fontFamily: 'SFProText',
             fontSize: 16,
             fontWeight: FontWeight.w700,
             letterSpacing: -0.2,
@@ -119,7 +119,8 @@ class AppTheme {
       ),
       chipTheme: ChipThemeData(
         backgroundColor: Colors.white.withValues(alpha: 0.1),
-        labelStyle: GoogleFonts.inter(
+        labelStyle: const TextStyle(
+          fontFamily: 'SFProText',
           fontSize: 12,
           fontWeight: FontWeight.w600,
           color: textPrimary,
@@ -132,7 +133,8 @@ class AppTheme {
       ),
       snackBarTheme: SnackBarThemeData(
         backgroundColor: bgElevated,
-        contentTextStyle: GoogleFonts.inter(
+        contentTextStyle: const TextStyle(
+          fontFamily: 'SFProText',
           fontSize: 14,
           fontWeight: FontWeight.w600,
           color: textPrimary,
@@ -151,13 +153,15 @@ class AppTheme {
           borderRadius: BorderRadius.circular(24),
           side: BorderSide(color: glassBorder, width: 1),
         ),
-        titleTextStyle: GoogleFonts.inter(
+        titleTextStyle: const TextStyle(
+          fontFamily: 'SFProDisplay',
           fontSize: 20,
           fontWeight: FontWeight.w800,
           color: textPrimary,
           letterSpacing: -0.5,
         ),
-        contentTextStyle: GoogleFonts.inter(
+        contentTextStyle: const TextStyle(
+          fontFamily: 'SFProText',
           fontSize: 16,
           fontWeight: FontWeight.w400,
           color: textSecondary,
@@ -173,52 +177,60 @@ class AppTheme {
   }
 
   static TextTheme _buildTextTheme() {
-    return TextTheme(
-      displayLarge: GoogleFonts.inter(
+    return const TextTheme(
+      displayLarge: TextStyle(
+        fontFamily: 'SFProDisplay',
         fontSize: 32,
         fontWeight: FontWeight.w800,
         color: textPrimary,
         height: 1.15,
         letterSpacing: -1.0,
       ),
-      headlineLarge: GoogleFonts.inter(
+      headlineLarge: TextStyle(
+        fontFamily: 'SFProDisplay',
         fontSize: 24,
         fontWeight: FontWeight.w700,
         color: textPrimary,
         height: 1.2,
         letterSpacing: -0.5,
       ),
-      titleLarge: GoogleFonts.inter(
+      titleLarge: TextStyle(
+        fontFamily: 'SFProDisplay',
         fontSize: 18,
         fontWeight: FontWeight.w700,
         color: textPrimary,
         height: 1.3,
         letterSpacing: -0.2,
       ),
-      titleMedium: GoogleFonts.inter(
+      titleMedium: TextStyle(
+        fontFamily: 'SFProDisplay',
         fontSize: 16,
         fontWeight: FontWeight.w600,
         color: textPrimary,
       ),
-      bodyLarge: GoogleFonts.inter(
+      bodyLarge: TextStyle(
+        fontFamily: 'SFProText',
         fontSize: 16,
         fontWeight: FontWeight.w400,
         color: textPrimary,
         height: 1.6,
       ),
-      bodyMedium: GoogleFonts.inter(
+      bodyMedium: TextStyle(
+        fontFamily: 'SFProText',
         fontSize: 14,
         fontWeight: FontWeight.w400,
         color: textSecondary,
         height: 1.5,
       ),
-      bodySmall: GoogleFonts.inter(
+      bodySmall: TextStyle(
+        fontFamily: 'SFProText',
         fontSize: 12,
         fontWeight: FontWeight.w400,
         color: textMuted,
         height: 1.4,
       ),
-      labelSmall: GoogleFonts.inter(
+      labelSmall: TextStyle(
+        fontFamily: 'SFProText',
         fontSize: 11,
         fontWeight: FontWeight.w700,
         color: textSecondary,

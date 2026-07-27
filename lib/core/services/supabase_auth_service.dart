@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'hive_service.dart';
 
 final supabaseClientProvider = Provider<SupabaseClient>((ref) {
   return Supabase.instance.client;
@@ -65,6 +66,7 @@ class SupabaseAuthService {
   }
 
   Future<void> signOut() async {
+    await HiveService.clearAllUserData();
     await _supabase.auth.signOut();
   }
 }

@@ -248,11 +248,12 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                         Text(
                           item.title,
                           style: const TextStyle(
-                            fontFamily: 'Syne',
-                            fontSize: 28,
+                            fontFamily: 'SFProDisplay',
+                            fontSize: 34,
                             fontWeight: FontWeight.w800,
                             color: AppTheme.textPrimary,
                             height: 1.1,
+                            letterSpacing: -1.0,
                           ),
                         ),
                         const SizedBox(height: 10),
@@ -274,7 +275,7 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                                     Text(
                                       '${item.year}',
                                       style: const TextStyle(
-                                        fontFamily: 'Inter',
+                                        fontFamily: 'SFProText',
                                         fontSize: 14,
                                         fontWeight: FontWeight.w600,
                                         color: AppTheme.textSecondary,
@@ -290,9 +291,9 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                                   Text(
                                     item.voteAverage.toStringAsFixed(1),
                                     style: const TextStyle(
-                                       fontFamily: 'JetBrains Mono',
+                                       fontFamily: 'SFProDisplay',
                                        fontSize: 15,
-                                       fontWeight: FontWeight.w600,
+                                       fontWeight: FontWeight.w700,
                                      ),
                                    ),
                                   if (item.watchProviderLogoUrl != null) ...[
@@ -326,7 +327,7 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                           const Text(
                             'Overview',
                             style: TextStyle(
-                              fontFamily: 'Syne',
+                              fontFamily: 'SFProDisplay',
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
                               color: AppTheme.textPrimary,
@@ -336,7 +337,7 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                           Text(
                             item.overview,
                             style: const TextStyle(
-                              fontFamily: 'Inter',
+                              fontFamily: 'SFProText',
                               fontSize: 15,
                               color: AppTheme.textSecondary,
                               height: 1.6,
@@ -364,7 +365,7 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                           const Text(
                             'Where to Watch',
                             style: TextStyle(
-                              fontFamily: 'Syne',
+                              fontFamily: 'SFProDisplay',
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
                               color: AppTheme.textPrimary,
@@ -395,26 +396,25 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                                 width: double.infinity,
                                 padding: const EdgeInsets.symmetric(vertical: 16),
                                 decoration: BoxDecoration(
-                                  color: AppTheme.bgElevated,
-                                  borderRadius: BorderRadius.zero,
-                                  border: Border.all(color: AppTheme.textMuted.withValues(alpha: 0.3)),
+                                  color: AppTheme.accentPrimary,
+                                  borderRadius: BorderRadius.circular(32),
                                 ),
                                 child: const Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                         Icon(
                                           Icons.play_circle_filled,
-                                          color: AppTheme.textPrimary,
+                                          color: AppTheme.textInverse,
                                           size: 24,
                                         ),
                                         SizedBox(width: 10),
                                         Text(
                                           'Watch Trailer on YouTube',
                                           style: TextStyle(
-                                            fontFamily: 'Inter',
+                                            fontFamily: 'SFProText',
                                             fontSize: 15,
                                             fontWeight: FontWeight.w600,
-                                            color: AppTheme.textPrimary,
+                                            color: AppTheme.textInverse,
                                           ),
                                         ),
                                   ],
@@ -467,12 +467,12 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                               decoration: BoxDecoration(
                                 color: isInWatchlist
                                     ? AppTheme.bgElevated
-                                    : AppTheme.accentPrimary,
-                                borderRadius: BorderRadius.zero,
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(32),
                                 border: Border.all(
                                   color: isInWatchlist
                                       ? AppTheme.textMuted.withValues(alpha: 0.3)
-                                      : Colors.transparent,
+                                      : AppTheme.accentPrimary,
                                 ),
                               ),
                               child: Row(
@@ -485,7 +485,7 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                                         size: 20,
                                         color: isInWatchlist
                                             ? AppTheme.textSecondary
-                                            : AppTheme.textInverse,
+                                            : AppTheme.accentPrimary,
                                       ),
                                       const SizedBox(width: 8),
                                       Text(
@@ -493,12 +493,12 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                                             ? 'Remove from Watchlist'
                                             : 'Add to Watchlist',
                                         style: TextStyle(
-                                          fontFamily: 'Inter',
+                                          fontFamily: 'SFProText',
                                           fontSize: 16,
                                           fontWeight: FontWeight.w600,
                                           color: isInWatchlist
                                               ? AppTheme.textPrimary
-                                              : AppTheme.textInverse,
+                                              : AppTheme.accentPrimary,
                                         ),
                                       ),
                                     ],
@@ -518,7 +518,7 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                           const Text(
                             'More Like This',
                             style: TextStyle(
-                              fontFamily: 'Syne',
+                              fontFamily: 'SFProDisplay',
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: AppTheme.textPrimary,
@@ -551,10 +551,22 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                                             width: 115,
                                             fit: BoxFit.cover,
                                             placeholder: (_, __) => Container(
-                                              color: AppTheme.bgElevated,
+                                              decoration: const BoxDecoration(
+                                                gradient: LinearGradient(
+                                                  begin: Alignment.topLeft,
+                                                  end: Alignment.bottomRight,
+                                                  colors: [Color(0xFF2A2A38), AppTheme.bgElevated],
+                                                ),
+                                              ),
                                             ),
                                             errorWidget: (_, __, ___) => Container(
-                                              color: AppTheme.bgElevated,
+                                              decoration: const BoxDecoration(
+                                                gradient: LinearGradient(
+                                                  begin: Alignment.topLeft,
+                                                  end: Alignment.bottomRight,
+                                                  colors: [Color(0xFF2A2A38), AppTheme.bgElevated],
+                                                ),
+                                              ),
                                               child: const Icon(Icons.movie_rounded, color: AppTheme.textMuted),
                                             ),
                                           ),
@@ -565,7 +577,7 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
                                           style: const TextStyle(
-                                            fontFamily: 'Inter',
+                                            fontFamily: 'SFProText',
                                             color: AppTheme.textPrimary,
                                             fontSize: 12,
                                             fontWeight: FontWeight.w600,
@@ -575,7 +587,7 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                                         Text(
                                           '${relatedItem.year > 0 ? relatedItem.year : ''}  ⭐ ${relatedItem.voteAverage.toStringAsFixed(1)}',
                                           style: const TextStyle(
-                                            fontFamily: 'Inter',
+                                            fontFamily: 'SFProText',
                                             color: AppTheme.textMuted,
                                             fontSize: 11,
                                           ),
@@ -685,7 +697,7 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                 Text(
                   status ?? 'TV Series',
                   style: TextStyle(
-                    fontFamily: 'Inter',
+                    fontFamily: 'SFProText',
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
                     color: statusColor,
@@ -696,7 +708,7 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                   Text(
                     yearsText,
                     style: const TextStyle(
-                      fontFamily: 'Inter',
+                      fontFamily: 'SFProText',
                       fontSize: 13,
                       color: AppTheme.textSecondary,
                     ),
@@ -709,7 +721,7 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
               Text(
                 statsParts.join('  •  '),
                 style: const TextStyle(
-                  fontFamily: 'Inter',
+                  fontFamily: 'SFProText',
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: AppTheme.textPrimary,
@@ -721,7 +733,7 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
               Text(
                 'Created by ${createdBy.join(', ')}',
                 style: const TextStyle(
-                  fontFamily: 'Inter',
+                  fontFamily: 'SFProText',
                   fontSize: 13,
                   color: AppTheme.textSecondary,
                 ),
@@ -732,7 +744,7 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
               Text(
                 'Network: ${networks.join(', ')}',
                 style: const TextStyle(
-                  fontFamily: 'Inter',
+                  fontFamily: 'SFProText',
                   fontSize: 13,
                   color: AppTheme.textMuted,
                 ),
@@ -747,7 +759,7 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen> {
                 Text(
                   'Season & Episode Guide',
                   style: TextStyle(
-                    fontFamily: 'Inter',
+                    fontFamily: 'SFProText',
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                     color: AppTheme.accentPrimary,
@@ -882,7 +894,7 @@ class _WatchProviderSectionState extends State<_WatchProviderSection> {
                 Text(
                   _typeLabels[type]!,
                   style: TextStyle(
-                    fontFamily: 'Inter',
+                    fontFamily: 'SFProText',
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: _typeColors[type],
@@ -940,7 +952,7 @@ class _WatchProviderSectionState extends State<_WatchProviderSection> {
                             child: Text(
                               name,
                               style: TextStyle(
-                                fontFamily: 'Inter',
+                                fontFamily: 'SFProText',
                                 fontSize: 13,
                                 fontWeight: isClicked ? FontWeight.w700 : FontWeight.w500,
                                 color: isClicked ? AppTheme.textInverse : AppTheme.textPrimary,

@@ -87,25 +87,30 @@ class _WatchlistScreenState extends ConsumerState<WatchlistScreen>
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Container(
-                decoration: const BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(color: AppTheme.bgElevated, width: 2),
-                  ),
+                height: 48,
+                decoration: BoxDecoration(
+                  color: AppTheme.bgElevated,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: AppTheme.bgMuted),
                 ),
                 child: TabBar(
                   controller: _tabController,
-                  indicatorColor: AppTheme.accentPrimary,
-                  indicatorWeight: 3,
-                  labelColor: AppTheme.accentPrimary,
-                  unselectedLabelColor: AppTheme.textMuted,
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  indicator: BoxDecoration(
+                    color: AppTheme.accentPrimary,
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  dividerColor: Colors.transparent,
+                  labelColor: AppTheme.textPrimary,
+                  unselectedLabelColor: AppTheme.textSecondary,
                   labelStyle: const TextStyle(
-                      fontFamily: 'Inter',
+                      fontFamily: 'SFProText',
                       fontWeight: FontWeight.w700,
-                      fontSize: 15),
+                      fontSize: 14),
                   unselectedLabelStyle: const TextStyle(
-                      fontFamily: 'Inter',
+                      fontFamily: 'SFProText',
                       fontWeight: FontWeight.w500,
-                      fontSize: 15),
+                      fontSize: 14),
                   tabs: const [
                     Tab(text: 'To Watch'),
                     Tab(text: 'Watched'),
@@ -167,7 +172,7 @@ class _ToWatchTabState extends ConsumerState<_ToWatchTab> {
           children: [
             const Text('0 items.',
                 style: TextStyle(
-                    fontFamily: 'Syne',
+                    fontFamily: 'SFProDisplay',
                     fontSize: 48,
                     fontWeight: FontWeight.w800,
                     color: AppTheme.textPrimary,
@@ -408,7 +413,7 @@ class _WatchedTabState extends ConsumerState<_WatchedTab> {
           children: [
             Text('0 watched.',
                 style: TextStyle(
-                    fontFamily: 'Syne',
+                    fontFamily: 'SFProDisplay',
                     fontSize: 48,
                     fontWeight: FontWeight.w800,
                     color: AppTheme.textPrimary,
@@ -653,13 +658,13 @@ class _WatchlistFilterBarState extends State<_WatchlistFilterBar> {
             controller: _controller,
             onChanged: widget.onSearchChanged,
             style: const TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: 'SFProText',
                 color: AppTheme.textPrimary,
                 fontSize: 14),
             decoration: InputDecoration(
               hintText: widget.searchHint,
               hintStyle: const TextStyle(
-                  fontFamily: 'Inter',
+                  fontFamily: 'SFProText',
                   color: AppTheme.textMuted,
                   fontSize: 14),
               prefixIcon: const Icon(Icons.search_rounded,
@@ -673,7 +678,7 @@ class _WatchlistFilterBarState extends State<_WatchlistFilterBar> {
               fillColor: AppTheme.bgElevated,
               contentPadding: const EdgeInsets.symmetric(vertical: 12),
               border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(24),
                   borderSide: BorderSide.none),
             ),
           ),
@@ -727,20 +732,23 @@ class _TypePill extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding:
-            const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isActive ? AppTheme.accentPrimary : AppTheme.bgElevated,
-          borderRadius: BorderRadius.circular(20),
+          color: isActive ? AppTheme.accentPrimary : Colors.transparent,
+          border: Border.all(
+            color: isActive ? AppTheme.accentPrimary : AppTheme.glassBorder,
+          ),
+          borderRadius: BorderRadius.circular(24),
         ),
         child: Text(
           label,
           style: TextStyle(
-            fontFamily: 'Inter',
+            fontFamily: 'SFProText',
             fontSize: 12,
             fontWeight: FontWeight.w600,
             color: isActive
                 ? AppTheme.textInverse
-                : AppTheme.textSecondary,
+                : AppTheme.textPrimary,
           ),
         ),
       ),
@@ -917,9 +925,13 @@ class _GridItemCard extends StatelessWidget {
                     fit: BoxFit.cover,
                   )
                 : Container(
-                    color: AppTheme.bgSurface,
-                    child:
-                        const Icon(Icons.movie, color: AppTheme.textMuted),
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Color(0xFF2A2A38), AppTheme.bgElevated],
+                      ),
+                    ),
                   ),
             Positioned(
               top: 6,

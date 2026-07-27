@@ -56,7 +56,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
     await Future.delayed(const Duration(milliseconds: 2200));
     if (!mounted) return;
-    final currentPath = GoRouterState.of(context).uri.path;
+    final currentPath = GoRouter.of(context).routerDelegate.currentConfiguration.uri.path;
     if (currentPath == '/reset-password') {
       return;
     }
@@ -87,35 +87,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
               mainAxisSize: MainAxisSize.min,
               children: [
                 // Logo mark
-                Container(
-                  width: 96,
-                  height: 96,
-                  decoration: BoxDecoration(
-                    color: AppTheme.bgSurface,
-                    borderRadius: BorderRadius.circular(28),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppTheme.accentPrimary.withValues(alpha: 0.2),
-                        blurRadius: 32,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                    border: Border.all(
-                      color: AppTheme.glassBorder,
-                      width: 1.5,
-                    ),
-                  ),
-                  child: const Center(
-                    child: Text(
-                      'P',
-                      style: TextStyle(
-                        fontFamily: 'Inter',
-                        fontSize: 48,
-                        fontWeight: FontWeight.w800,
-                        color: AppTheme.textPrimary,
-                        letterSpacing: -2,
-                      ),
-                    ),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(28),
+                  child: Image.asset(
+                    'assets/images/pickd_logo_enhanced.jpg',
+                    width: 96,
+                    height: 96,
+                    fit: BoxFit.cover,
                   ),
                 ),
                 const SizedBox(height: 24),

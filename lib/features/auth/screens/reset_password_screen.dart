@@ -18,6 +18,8 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
   final _confirmPasswordController = TextEditingController();
   bool _isLoading = false;
   String? _errorMessage;
+  bool _obscureNewPassword = true;
+  bool _obscureConfirmPassword = true;
 
   @override
   void dispose() {
@@ -127,11 +129,19 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
               // New Password Field
               TextField(
                 controller: _newPasswordController,
-                obscureText: true,
+                obscureText: _obscureNewPassword,
                 style: const TextStyle(color: AppTheme.textPrimary),
                 decoration: InputDecoration(
                   labelText: 'New Password',
                   labelStyle: const TextStyle(color: AppTheme.textSecondary),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscureNewPassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                      color: AppTheme.textMuted,
+                      size: 20,
+                    ),
+                    onPressed: () => setState(() => _obscureNewPassword = !_obscureNewPassword),
+                  ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: const BorderSide(color: AppTheme.bgMuted),
@@ -147,11 +157,19 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
               // Confirm Password Field
               TextField(
                 controller: _confirmPasswordController,
-                obscureText: true,
+                obscureText: _obscureConfirmPassword,
                 style: const TextStyle(color: AppTheme.textPrimary),
                 decoration: InputDecoration(
                   labelText: 'Confirm New Password',
                   labelStyle: const TextStyle(color: AppTheme.textSecondary),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscureConfirmPassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                      color: AppTheme.textMuted,
+                      size: 20,
+                    ),
+                    onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+                  ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: const BorderSide(color: AppTheme.bgMuted),

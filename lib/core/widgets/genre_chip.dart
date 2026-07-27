@@ -17,12 +17,12 @@ class GenreChip extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppTheme.bgElevated,
         border: Border.all(color: AppTheme.textMuted.withValues(alpha: 0.3)),
-        borderRadius: BorderRadius.zero,
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
         label.toUpperCase(),
         style: const TextStyle(
-          fontFamily: 'Inter',
+          fontFamily: 'SFProText',
           fontSize: 10,
           fontWeight: FontWeight.w700,
           color: AppTheme.textPrimary,

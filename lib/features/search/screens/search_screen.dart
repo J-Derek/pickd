@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../../core/config/app_theme.dart';
 import '../../../core/models/media_item.dart';
@@ -115,6 +116,20 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 16),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24),
+              child: Text(
+                'Search',
+                style: TextStyle(
+                  fontFamily: 'SFProDisplay',
+                  fontSize: 34,
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.textPrimary,
+                  letterSpacing: -1.0,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
             // Header & Search Box
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -161,7 +176,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   const Text(
                     'RECENT',
                     style: TextStyle(
-                      fontFamily: 'Inter',
+                      fontFamily: 'SFProText',
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
                       color: AppTheme.textMuted,
@@ -177,7 +192,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                     child: const Text(
                       'Clear All',
                       style: TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: 'SFProText',
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                         color: AppTheme.textMuted,
@@ -223,7 +238,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                             Text(
                               query,
                               style: const TextStyle(
-                                fontFamily: 'Inter',
+                                fontFamily: 'SFProText',
                                 fontSize: 13,
                                 fontWeight: FontWeight.w500,
                                 color: AppTheme.textPrimary,
@@ -246,7 +261,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             child: Text(
               'TRENDING',
               style: TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: 'SFProText',
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
                 color: AppTheme.textMuted,
@@ -275,22 +290,97 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               ),
             )
           else
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: _trendingItems.length,
-              itemBuilder: (context, index) {
-                final item = _trendingItems[index];
-                final rank = index + 1;
-                return _TrendingTile(
-                  rank: rank,
-                  item: item,
-                  onTap: () {
-                    _onSearchSubmitted(item.title);
-                    context.push('/movie/${item.id}', extra: item);
-                  },
-                );
-              },
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  childAspectRatio: 0.65,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                ),
+                itemCount: _trendingItems.length,
+                itemBuilder: (context, index) {
+                  final item = _trendingItems[index];
+                  final rank = index + 1;
+                  return GestureDetector(
+                    onTap: () {
+                      _onSearchSubmitted(item.title);
+                      context.push('/movie/${item.id}', extra: item);
+                    },
+                    child: Stack(
+                      children: [
+                        Container(
+                          width: double.infinity,
+                          height: double.infinity,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16),
+                            color: AppTheme.bgElevated,
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: item.posterPath != null
+                                ? CachedNetworkImage(
+                                    imageUrl: item.posterUrl,
+                                    fit: BoxFit.cover,
+                                    errorWidget: (_, __, ___) => const Icon(
+                                      LucideIcons.imageOff,
+                                      color: AppTheme.textMuted,
+                                    ),
+                                  )
+                                : const Icon(LucideIcons.imageOff, color: AppTheme.textMuted),
+                          ),
+                        ),
+                        Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16),
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.transparent,
+                                Colors.black.withValues(alpha: 0.8),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          bottom: -8,
+                          left: -4,
+                          child: Text(
+                            '$rank',
+                            style: TextStyle(
+                              fontFamily: 'SFProDisplay',
+                              fontSize: 80,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white.withValues(alpha: 0.8),
+                              height: 0.8,
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          bottom: 12,
+                          left: 36,
+                          right: 12,
+                          child: Text(
+                            item.title,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontFamily: 'SFProText',
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.textPrimary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
             ),
         ],
       ),
@@ -393,69 +483,4 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   }
 }
 
-class _TrendingTile extends StatelessWidget {
-  final int rank;
-  final MediaItem item;
-  final VoidCallback onTap;
-
-  const _TrendingTile({
-    required this.rank,
-    required this.item,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-        child: Row(
-          children: [
-            // Rank Number
-            SizedBox(
-              width: 24,
-              child: Text(
-                '$rank',
-                style: TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 15,
-                  fontWeight: FontWeight.w800,
-                  color: rank <= 3 ? AppTheme.accentPrimary : AppTheme.textMuted,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            // Fire Icon
-            const Icon(
-              LucideIcons.flame,
-              color: Colors.orange,
-              size: 16,
-            ),
-            const SizedBox(width: 16),
-            // Title
-            Expanded(
-              child: Text(
-                item.title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: AppTheme.textPrimary,
-                ),
-              ),
-            ),
-            // Chevron
-            const Icon(
-              Icons.chevron_right_rounded,
-              color: AppTheme.textMuted,
-              size: 20,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+// Removed _TrendingTile

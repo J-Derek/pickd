@@ -54,39 +54,61 @@ class MainShell extends StatelessWidget {
       child: Scaffold(
         backgroundColor: AppTheme.bgPrimary,
         body: child,
-        bottomNavigationBar: BottomNavigationBar(
-          backgroundColor: AppTheme.bgPrimary,
-          elevation: 0,
-          type: BottomNavigationBarType.fixed,
-          currentIndex: index,
-          selectedItemColor: AppTheme.accentPrimary,
-          unselectedItemColor: AppTheme.textMuted,
-          onTap: (i) => context.go(_tabs[i]),
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.movie_filter_outlined),
-              activeIcon: Icon(Icons.movie_filter),
-              label: 'Discover',
+        bottomNavigationBar: SafeArea(
+          child: Container(
+            height: 64,
+            decoration: const BoxDecoration(
+              color: AppTheme.bgPrimary,
+              border: Border(top: BorderSide(color: AppTheme.bgMuted, width: 1)),
             ),
-            BottomNavigationBarItem(
-              icon: Icon(LucideIcons.search),
-              activeIcon: Icon(LucideIcons.search),
-              label: 'Search',
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildNavItem(context, 0, index, Icons.movie_filter_outlined, Icons.movie_filter, 'Discover'),
+                _buildNavItem(context, 1, index, LucideIcons.search, LucideIcons.search, 'Search'),
+                _buildNavItem(context, 2, index, Icons.bookmark_border, Icons.bookmark, 'Watchlist'),
+                _buildNavItem(context, 3, index, LucideIcons.gem, LucideIcons.gem, 'Gems'),
+                _buildNavItem(context, 4, index, Icons.person_outline, Icons.person, 'Profile'),
+              ],
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.bookmark_border),
-              activeIcon: Icon(Icons.bookmark),
-              label: 'Watchlist',
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavItem(BuildContext context, int itemIndex, int currentIndex, IconData icon, IconData activeIcon, String label) {
+    final isSelected = itemIndex == currentIndex;
+    final color = isSelected ? AppTheme.accentPrimary : AppTheme.textMuted;
+    
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => context.go(_tabs[itemIndex]),
+      child: SizedBox(
+        width: 64,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(isSelected ? activeIcon : icon, color: color, size: 24),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontFamily: 'SFProText',
+                fontSize: 10,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                color: color,
+              ),
             ),
-            BottomNavigationBarItem(
-              icon: Icon(LucideIcons.gem),
-              activeIcon: Icon(LucideIcons.gem),
-              label: 'Gems',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline),
-              activeIcon: Icon(Icons.person),
-              label: 'Profile',
+            const SizedBox(height: 4),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              height: 3,
+              width: isSelected ? 16 : 0,
+              decoration: BoxDecoration(
+                color: AppTheme.accentPrimary,
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
           ],
         ),

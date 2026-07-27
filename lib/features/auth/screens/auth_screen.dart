@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:open_mail_app/open_mail_app.dart';
 
 import '../../../core/config/app_theme.dart';
 import '../../../core/services/hive_service.dart';
@@ -61,18 +62,25 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   }
 
   Future<void> _openEmailApp() async {
-    final gmailAppUri = Uri.parse('android-app://com.google.android.gm');
-    final mailtoUri = Uri.parse('mailto:');
-    try {
-      if (await canLaunchUrl(gmailAppUri)) {
-        await launchUrl(gmailAppUri, mode: LaunchMode.externalApplication);
-      } else if (await canLaunchUrl(mailtoUri)) {
-        await launchUrl(mailtoUri, mode: LaunchMode.externalApplication);
+    final result = await OpenMailApp.openMailApp();
+    
+    if (!result.didOpen && !result.canOpen) {
+      if (mounted) {
+        showCustomSnackBar(
+          context,
+          message: 'No mail apps installed',
+          isError: true,
+        );
       }
-    } catch (_) {
-      try {
-        await launchUrl(mailtoUri, mode: LaunchMode.externalApplication);
-      } catch (_) {}
+    } else if (!result.didOpen && result.canOpen) {
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (_) => MailAppPickerDialog(
+            mailApps: result.options,
+          ),
+        );
+      }
     }
   }
 
