@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import 'package:showcaseview/showcaseview.dart';
+
 import '../../core/config/app_theme.dart';
 
 /// Main shell with bottom navigation bar wrapping the tab screens.
@@ -53,7 +55,9 @@ class MainShell extends StatelessWidget {
       },
       child: Scaffold(
         backgroundColor: AppTheme.bgPrimary,
-        body: child,
+        body: ShowCaseWidget(
+          builder: (context) => child,
+        ),
         bottomNavigationBar: SafeArea(
           child: Container(
             height: 64,

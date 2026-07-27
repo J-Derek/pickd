@@ -5,6 +5,7 @@ import 'package:flutter_card_swiper/flutter_card_swiper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:showcaseview/showcaseview.dart';
 
 import '../../../core/config/app_theme.dart';
 import '../../../core/models/media_item.dart';
@@ -34,12 +35,22 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
   bool _showWalkthrough = false;
   MediaFilter _activeFilter = MediaFilter.both;
 
+  final GlobalKey _vibeKey = GlobalKey();
+  final GlobalKey _cardKey = GlobalKey();
+  final GlobalKey _likeKey = GlobalKey();
+
   @override
   void initState() {
     super.initState();
     _showWalkthrough = !HiveService.getProfile().hasSeenWalkthrough;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(swipeDeckProvider.notifier).loadDeck();
+      if (_showWalkthrough) {
+        ShowCaseWidget.of(context).startShowCase([_vibeKey, _cardKey, _likeKey]);
+        final profile = HiveService.getProfile();
+        profile.hasSeenWalkthrough = true;
+        profile.save();
+      }
     });
   }
 
@@ -103,15 +114,6 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
               ],
             ),
           ),
-          if (_showWalkthrough)
-            WalkthroughOverlay(
-              onDismiss: () {
-                setState(() => _showWalkthrough = false);
-                final profile = HiveService.getProfile();
-                profile.hasSeenWalkthrough = true;
-                profile.save();
-              },
-            ),
         ],
       ),
     );
@@ -193,25 +195,32 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
           ),
           const Spacer(),
           // Change Vibe
-          GestureDetector(
-            onTap: () {
-              HapticFeedback.lightImpact();
-              // Reset onboarding state so they can start fresh,
-              // but preserve Hive profile until they complete onboarding
-              ref.invalidate(onboardingProvider);
-              context.push('/onboarding/mood');
-            },
-            child: Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: AppTheme.bgElevated,
-                shape: BoxShape.circle,
-                border: Border.all(color: AppTheme.glassBorder),
-              ),
-              child: const Icon(
-                Icons.tune_rounded,
-                color: AppTheme.textSecondary,
-                size: 20,
+          Showcase(
+            key: _vibeKey,
+            title: 'Change Your Vibe',
+            description: 'Tap here anytime to switch up your mood and get new recommendations!',
+            tooltipBackgroundColor: AppTheme.bgElevated,
+            textColor: Colors.white,
+            child: GestureDetector(
+              onTap: () {
+                HapticFeedback.lightImpact();
+                // Reset onboarding state so they can start fresh,
+                // but preserve Hive profile until they complete onboarding
+                ref.invalidate(onboardingProvider);
+                context.push('/onboarding/mood');
+              },
+              child: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: AppTheme.bgElevated,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppTheme.glassBorder),
+                ),
+                child: const Icon(
+                  Icons.tune_rounded,
+                  color: AppTheme.textSecondary,
+                  size: 20,
+                ),
               ),
             ),
           ),
@@ -358,7 +367,13 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
       children: [
         const SizedBox(height: 12),
         Expanded(
-          child: CardSwiper(
+          child: Showcase(
+            key: _cardKey,
+            title: 'Swipe to Decide',
+            description: 'Swipe RIGHT to save to Watchlist, LEFT to pass, and UP to mark as watched. Tap the card for details!',
+            tooltipBackgroundColor: AppTheme.accentPrimary,
+            textColor: Colors.white,
+            child: CardSwiper(
             controller: _swiperController,
             cardsCount: deck.length,
             numberOfCardsDisplayed: deck.length >= 3 ? 3 : deck.length,
@@ -430,9 +445,9 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
               return true;
             },
           ),
-        ),
+        )),
         // Action buttons
-        _ActionButtons(controller: _swiperController),
+        _ActionButtons(controller: _swiperController, likeKey: _likeKey),
         const SizedBox(height: 8),
       ],
     );
@@ -805,8 +820,9 @@ class _SwipeCard extends StatelessWidget {
 
 class _ActionButtons extends StatelessWidget {
   final CardSwiperController controller;
+  final GlobalKey likeKey;
 
-  const _ActionButtons({required this.controller});
+  const _ActionButtons({required this.controller, required this.likeKey});
 
   @override
   Widget build(BuildContext context) {
@@ -837,15 +853,22 @@ class _ActionButtons extends StatelessWidget {
           ),
 
           // Like (Large Glowing)
-          _LargeActionButton(
-            onTap: () {
-              HapticFeedback.mediumImpact();
-              controller.swipe(CardSwiperDirection.right);
-            },
-            icon: Icons.favorite_rounded,
-            iconColor: Colors.white,
-            backgroundColor: AppTheme.errorColor, // Neon Pink
-            isGlowing: true,
+          Showcase(
+            key: likeKey,
+            title: 'Love it!',
+            description: 'Too tired to swipe? Just tap the buttons down here.',
+            tooltipBackgroundColor: AppTheme.errorColor, // Neon Pink
+            textColor: Colors.white,
+            child: _LargeActionButton(
+              onTap: () {
+                HapticFeedback.mediumImpact();
+                controller.swipe(CardSwiperDirection.right);
+              },
+              icon: Icons.favorite_rounded,
+              iconColor: Colors.white,
+              backgroundColor: AppTheme.errorColor, // Neon Pink
+              isGlowing: true,
+            ),
           ),
 
           // Watched (Small)
