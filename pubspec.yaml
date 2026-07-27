@@ -41,6 +41,7 @@ dependencies:
   supabase_flutter: ^2.16.0
   youtube_player_flutter: ^10.0.1
   open_mail_app: ^0.4.5
+  showcaseview: ^5.1.0
 
 dev_dependencies:
   flutter_test:
