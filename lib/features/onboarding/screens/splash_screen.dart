@@ -56,6 +56,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
     await Future.delayed(const Duration(milliseconds: 2200));
     if (!mounted) return;
+    final currentPath = GoRouterState.of(context).uri.path;
+    if (currentPath == '/reset-password') {
+      return;
+    }
     final profile = HiveService.getProfile();
     if (profile.onboardingComplete) {
       context.go('/swipe');

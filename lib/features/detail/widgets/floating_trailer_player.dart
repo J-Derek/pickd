@@ -88,18 +88,16 @@ class _FloatingTrailerPlayerState extends State<FloatingTrailerPlayer> {
       left: clampedX,
       top: clampedY,
       child: GestureDetector(
-        onPanUpdate: (details) {
-          setState(() {
-            _xPos += details.delta.dx;
-            _yPos += details.delta.dy;
-          });
-        },
         onScaleUpdate: (details) {
-          if (details.scale > 1.2 && _playerSize != MiniPlayerSize.large) {
-            setState(() => _playerSize = _playerSize == MiniPlayerSize.small ? MiniPlayerSize.medium : MiniPlayerSize.large);
-          } else if (details.scale < 0.8 && _playerSize != MiniPlayerSize.small) {
-            setState(() => _playerSize = _playerSize == MiniPlayerSize.large ? MiniPlayerSize.medium : MiniPlayerSize.small);
-          }
+          setState(() {
+            _xPos += details.focalPointDelta.dx;
+            _yPos += details.focalPointDelta.dy;
+            if (details.scale > 1.25 && _playerSize != MiniPlayerSize.large) {
+              _playerSize = _playerSize == MiniPlayerSize.small ? MiniPlayerSize.medium : MiniPlayerSize.large;
+            } else if (details.scale < 0.75 && _playerSize != MiniPlayerSize.small) {
+              _playerSize = _playerSize == MiniPlayerSize.large ? MiniPlayerSize.medium : MiniPlayerSize.small;
+            }
+          });
         },
         child: Material(
           elevation: 12,

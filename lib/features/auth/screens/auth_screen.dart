@@ -61,16 +61,18 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   }
 
   Future<void> _openEmailApp() async {
-    final gmailUri = Uri.parse('googlegmail://');
+    final gmailAppUri = Uri.parse('android-app://com.google.android.gm');
     final mailtoUri = Uri.parse('mailto:');
     try {
-      if (await canLaunchUrl(gmailUri)) {
-        await launchUrl(gmailUri, mode: LaunchMode.externalApplication);
-      } else {
+      if (await canLaunchUrl(gmailAppUri)) {
+        await launchUrl(gmailAppUri, mode: LaunchMode.externalApplication);
+      } else if (await canLaunchUrl(mailtoUri)) {
         await launchUrl(mailtoUri, mode: LaunchMode.externalApplication);
       }
     } catch (_) {
-      await launchUrl(mailtoUri, mode: LaunchMode.externalApplication);
+      try {
+        await launchUrl(mailtoUri, mode: LaunchMode.externalApplication);
+      } catch (_) {}
     }
   }
 
@@ -196,6 +198,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       return;
     }
 
+    setState(() => _isLoading = true);
+
     try {
       await ref.read(authServiceProvider).resetPasswordForEmail(email);
       if (mounted) {
@@ -218,6 +222,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           message: _friendlyAuthError(e),
           isError: true,
         );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
       }
     }
   }
