@@ -1,8 +1,17 @@
-# pickd
+# Pickd
+![Pickd Logo](assets/images/pickd_logo_enhanced.jpg)
 
-A new Flutter project.
+Stop scrolling. Start watching. Pickd is a premium, mood-based movie discovery app built with Flutter and Supabase. 
 
-## Getting Started
+## 🎬 Features
+- **Mood-Based Discovery:** Get instant recommendations tailored precisely to your current vibe.
+- **Tinder-Style Swiping:** Swipe right to add to your watchlist, left to pass.
+- **Premium Dark UI:** Designed with a stunning, high-contrast, edge-to-edge cinematic aesthetic.
+- **Cross-Device Sync:** Supabase handles secure authentication and instant cloud sync across your devices.
+- **Offline Mode:** Powered by Hive, ensuring ultra-fast local caching and responsiveness.
+
+## 🚀 Download
+Check out the **Releases** tab to download the latest `.apk` and test it on your Android device!
 
 This project is a starting point for a Flutter application.
 
