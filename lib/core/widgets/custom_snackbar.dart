@@ -7,6 +7,7 @@ void showCustomSnackBar(
   bool isError = false,
   bool isSuccess = false,
   Duration duration = const Duration(seconds: 3),
+  SnackBarAction? action,
 }) {
   final iconColor = isError
       ? AppTheme.accentSecondary
@@ -23,6 +24,7 @@ void showCustomSnackBar(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(color: AppTheme.bgMuted.withValues(alpha: 0.6)),
       ),
+      action: action,
       content: Row(
         children: [
           Icon(

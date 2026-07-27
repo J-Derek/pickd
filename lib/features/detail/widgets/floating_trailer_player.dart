@@ -24,7 +24,7 @@ class FloatingTrailerPlayer extends StatefulWidget {
 class _FloatingTrailerPlayerState extends State<FloatingTrailerPlayer> {
   late YoutubePlayerController _controller;
   double _xPos = 16.0;
-  double _yPos = 80.0;
+  double _yPos = 100.0;
   MiniPlayerSize _playerSize = MiniPlayerSize.medium;
 
   @override
@@ -51,7 +51,7 @@ class _FloatingTrailerPlayerState extends State<FloatingTrailerPlayer> {
       case MiniPlayerSize.small:
         return 180.0;
       case MiniPlayerSize.medium:
-        return 260.0;
+        return 250.0;
       case MiniPlayerSize.large:
         return (maxAvailableWidth - 32.0).clamp(280.0, 340.0);
     }
@@ -72,21 +72,34 @@ class _FloatingTrailerPlayerState extends State<FloatingTrailerPlayer> {
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
+    final safeArea = MediaQuery.of(context).padding;
     final width = _getWidth(screenSize.width);
     final height = width * (9 / 16);
 
-    final clampedRight = _xPos.clamp(12.0, screenSize.width - width - 12.0);
-    final clampedBottom = _yPos.clamp(16.0, screenSize.height - height - 60.0);
+    final minX = 8.0;
+    final maxX = (screenSize.width - width - 8.0).clamp(8.0, double.infinity);
+    final minY = safeArea.top + 8.0;
+    final maxY = (screenSize.height - height - safeArea.bottom - 60.0).clamp(minY, double.infinity);
+
+    final clampedX = _xPos.clamp(minX, maxX);
+    final clampedY = _yPos.clamp(minY, maxY);
 
     return Positioned(
-      right: clampedRight,
-      bottom: clampedBottom,
+      left: clampedX,
+      top: clampedY,
       child: GestureDetector(
         onPanUpdate: (details) {
           setState(() {
-            _xPos -= details.delta.dx;
-            _yPos -= details.delta.dy;
+            _xPos += details.delta.dx;
+            _yPos += details.delta.dy;
           });
+        },
+        onScaleUpdate: (details) {
+          if (details.scale > 1.2 && _playerSize != MiniPlayerSize.large) {
+            setState(() => _playerSize = _playerSize == MiniPlayerSize.small ? MiniPlayerSize.medium : MiniPlayerSize.large);
+          } else if (details.scale < 0.8 && _playerSize != MiniPlayerSize.small) {
+            setState(() => _playerSize = _playerSize == MiniPlayerSize.large ? MiniPlayerSize.medium : MiniPlayerSize.small);
+          }
         },
         child: Material(
           elevation: 12,
@@ -98,10 +111,10 @@ class _FloatingTrailerPlayerState extends State<FloatingTrailerPlayer> {
             decoration: BoxDecoration(
               color: Colors.black,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppTheme.accentPrimary.withValues(alpha: 0.5), width: 1.5),
+              border: Border.all(color: AppTheme.accentPrimary.withValues(alpha: 0.6), width: 1.5),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.7),
+                  color: Colors.black.withValues(alpha: 0.8),
                   blurRadius: 16,
                   spreadRadius: 2,
                   offset: const Offset(0, 6),
@@ -123,29 +136,37 @@ class _FloatingTrailerPlayerState extends State<FloatingTrailerPlayer> {
                   left: 4,
                   right: 4,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                     decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.65),
+                      color: Colors.black.withValues(alpha: 0.75),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        // Drag Indicator Handle
+                        // Drag Handle & Size Badge
                         Row(
                           children: [
                             const Icon(Icons.drag_indicator_rounded, color: AppTheme.textMuted, size: 16),
-                            Text(
-                              _playerSize == MiniPlayerSize.small
-                                  ? 'S'
-                                  : _playerSize == MiniPlayerSize.medium
-                                      ? 'M'
-                                      : 'L',
-                              style: const TextStyle(
-                                fontFamily: 'Inter',
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                                color: AppTheme.accentPrimary,
+                            const SizedBox(width: 2),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                              decoration: BoxDecoration(
+                                color: AppTheme.accentPrimary.withValues(alpha: 0.25),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                _playerSize == MiniPlayerSize.small
+                                    ? 'S'
+                                    : _playerSize == MiniPlayerSize.medium
+                                        ? 'M'
+                                        : 'L',
+                                style: const TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppTheme.accentPrimary,
+                                ),
                               ),
                             ),
                           ],
@@ -157,7 +178,7 @@ class _FloatingTrailerPlayerState extends State<FloatingTrailerPlayer> {
                             GestureDetector(
                               onTap: _cycleSize,
                               child: Container(
-                                padding: const EdgeInsets.all(4),
+                                padding: const EdgeInsets.all(3),
                                 child: const Icon(Icons.aspect_ratio_rounded, color: Colors.white, size: 16),
                               ),
                             ),
@@ -167,7 +188,7 @@ class _FloatingTrailerPlayerState extends State<FloatingTrailerPlayer> {
                               GestureDetector(
                                 onTap: widget.onExpandToFullscreen,
                                 child: Container(
-                                  padding: const EdgeInsets.all(4),
+                                  padding: const EdgeInsets.all(3),
                                   child: const Icon(Icons.fullscreen_rounded, color: Colors.white, size: 18),
                                 ),
                               ),
@@ -176,7 +197,7 @@ class _FloatingTrailerPlayerState extends State<FloatingTrailerPlayer> {
                             GestureDetector(
                               onTap: widget.onClose,
                               child: Container(
-                                padding: const EdgeInsets.all(4),
+                                padding: const EdgeInsets.all(3),
                                 child: const Icon(Icons.close_rounded, color: Colors.white, size: 18),
                               ),
                             ),

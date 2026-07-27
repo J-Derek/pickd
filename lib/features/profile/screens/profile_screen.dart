@@ -517,6 +517,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     _SettingsRow(
                       icon: LucideIcons.userPlus,
                       title: 'Connect Account',
+                      isPromoted: true,
                       onTap: () => context.push('/auth'),
                     )
                   else ...[
@@ -837,6 +838,7 @@ class _SettingsRow extends StatelessWidget {
   final Widget? trailing;
   final VoidCallback? onTap;
   final bool isDestructive;
+  final bool isPromoted;
 
   const _SettingsRow({
     required this.icon,
@@ -844,10 +846,19 @@ class _SettingsRow extends StatelessWidget {
     this.trailing,
     this.onTap,
     this.isDestructive = false,
+    this.isPromoted = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final activeColor = isDestructive
+        ? AppTheme.destructiveRed
+        : (isPromoted ? AppTheme.accentPrimary : AppTheme.textPrimary);
+
+    final iconColor = isDestructive
+        ? AppTheme.destructiveRed
+        : (isPromoted ? AppTheme.accentPrimary : AppTheme.textSecondary);
+
     return Container(
       decoration: isDestructive
           ? BoxDecoration(
@@ -855,8 +866,14 @@ class _SettingsRow extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: AppTheme.destructiveRed.withValues(alpha: 0.2)),
             )
-          : null,
-      margin: isDestructive ? const EdgeInsets.symmetric(horizontal: 12, vertical: 4) : null,
+          : (isPromoted
+              ? BoxDecoration(
+                  color: AppTheme.accentPrimary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppTheme.accentPrimary.withValues(alpha: 0.35)),
+                )
+              : null),
+      margin: (isDestructive || isPromoted) ? const EdgeInsets.symmetric(horizontal: 12, vertical: 4) : null,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
@@ -866,7 +883,7 @@ class _SettingsRow extends StatelessWidget {
             children: [
               Icon(
                 icon,
-                color: isDestructive ? AppTheme.destructiveRed : AppTheme.textSecondary,
+                color: iconColor,
                 size: 20,
               ),
               const SizedBox(width: 16),
@@ -876,8 +893,8 @@ class _SettingsRow extends StatelessWidget {
                   style: TextStyle(
                     fontFamily: 'Inter',
                     fontSize: 15,
-                    fontWeight: isDestructive ? FontWeight.w600 : FontWeight.w500,
-                    color: isDestructive ? AppTheme.destructiveRed : AppTheme.textPrimary,
+                    fontWeight: (isDestructive || isPromoted) ? FontWeight.w600 : FontWeight.w500,
+                    color: activeColor,
                   ),
                 ),
               ),
@@ -886,7 +903,7 @@ class _SettingsRow extends StatelessWidget {
               else if (onTap != null)
                 Icon(
                   Icons.chevron_right_rounded,
-                  color: isDestructive ? AppTheme.destructiveRed : AppTheme.textMuted,
+                  color: activeColor,
                   size: 20,
                 ),
             ],

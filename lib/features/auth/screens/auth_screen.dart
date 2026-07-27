@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/config/app_theme.dart';
 import '../../../core/services/hive_service.dart';
@@ -31,6 +32,46 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
+  }
+
+  String _friendlyAuthError(dynamic e) {
+    final msg = e.toString().toLowerCase();
+    if (msg.contains('invalid login credentials') || msg.contains('invalid_credentials')) {
+      return 'Incorrect email or password. Please try again.';
+    }
+    if (msg.contains('email not confirmed')) {
+      return 'Please verify your email before signing in. Check your inbox.';
+    }
+    if (msg.contains('user not found') || msg.contains('no user found')) {
+      return 'No account found with that email. Try creating an account.';
+    }
+    if (msg.contains('email rate limit') || msg.contains('rate limit')) {
+      return 'Too many attempts. Please wait a moment and try again.';
+    }
+    if (msg.contains('weak password') || msg.contains('password should be')) {
+      return 'Password is too weak. Use at least 6 characters.';
+    }
+    if (msg.contains('already registered') || msg.contains('user already exists')) {
+      return 'An account with this email already exists. Try signing in instead.';
+    }
+    if (msg.contains('network') || msg.contains('socket') || msg.contains('connection')) {
+      return 'Connection error. Please check your internet and try again.';
+    }
+    return 'Authentication error. Please check your details and try again.';
+  }
+
+  Future<void> _openEmailApp() async {
+    final gmailUri = Uri.parse('googlegmail://');
+    final mailtoUri = Uri.parse('mailto:');
+    try {
+      if (await canLaunchUrl(gmailUri)) {
+        await launchUrl(gmailUri, mode: LaunchMode.externalApplication);
+      } else {
+        await launchUrl(mailtoUri, mode: LaunchMode.externalApplication);
+      }
+    } catch (_) {
+      await launchUrl(mailtoUri, mode: LaunchMode.externalApplication);
+    }
   }
 
   Future<void> _submit() async {
@@ -68,7 +109,12 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
               context,
               message: 'Verification email sent! Please check your inbox.',
               isSuccess: true,
-              duration: const Duration(seconds: 5),
+              duration: const Duration(seconds: 8),
+              action: SnackBarAction(
+                label: 'Open Email',
+                textColor: AppTheme.accentPrimary,
+                onPressed: _openEmailApp,
+              ),
             );
             setState(() => _isSignUp = false);
             return;
@@ -128,7 +174,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       if (mounted) {
         showCustomSnackBar(
           context,
-          message: e.toString(),
+          message: _friendlyAuthError(e),
           isError: true,
         );
       }
@@ -155,16 +201,21 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       if (mounted) {
         showCustomSnackBar(
           context,
-          message: 'Password reset email sent to $email! Please check your inbox.',
+          message: 'Password reset email sent to $email!',
           isSuccess: true,
-          duration: const Duration(seconds: 5),
+          duration: const Duration(seconds: 8),
+          action: SnackBarAction(
+            label: 'Open Email',
+            textColor: AppTheme.accentPrimary,
+            onPressed: _openEmailApp,
+          ),
         );
       }
     } catch (e) {
       if (mounted) {
         showCustomSnackBar(
           context,
-          message: e.toString(),
+          message: _friendlyAuthError(e),
           isError: true,
         );
       }
@@ -178,7 +229,16 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded, color: AppTheme.textPrimary),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/swipe');
+            }
+          },
+        ),
       ),
       body: SafeArea(
         child: Padding(

@@ -76,6 +76,16 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded, color: AppTheme.textPrimary),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/swipe');
+            }
+          },
+        ),
         title: const Text(
           'Set New Password',
           style: TextStyle(
@@ -183,6 +193,20 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
                             fontSize: 16,
                           ),
                         ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: TextButton(
+                  onPressed: () => context.go('/swipe'),
+                  child: const Text(
+                    'Cancel & Back to Pickd',
+                    style: TextStyle(
+                      color: AppTheme.textMuted,
+                      fontFamily: 'Inter',
+                      fontSize: 14,
+                    ),
+                  ),
                 ),
               ),
             ],
