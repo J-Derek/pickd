@@ -1,24 +1,19 @@
-# Handoff Doc
-Generated: 2026-07-17
+# Handoff Doc — Pickd v1.2 Production Release
+Generated: 2026-07-28
 
-## What Was Built / Accomplished (Frontend V1.1 Complete)
-- **Unified Media Models:** Merged Movie and TV items into a single sealed `MediaItem` class to power dual-mode swiping.
-- **Swipe History & Undo:** Upgraded `HiveService` to `swipeHistoryV2` to store detailed JSON metadata for history. Built a new `SwipeHistoryScreen` accessible from the Profile screen to view past actions (Skipped, Saved, Watched) and undo them instantly.
-- **Editable Taste Profile:** Made the Profile "Taste Seeds" clickable, routing the user to the Taste Profile screen in edit mode. Saving updates the algorithm and refreshes the deck on the fly.
-- **Where to Watch Links:** TMDB streaming provider links now correctly open a general TMDB web hub when a dedicated app deeplink isn't available.
-- **Android Back Navigation Fix:** Added `android:enableOnBackInvokedCallback="true"` to `AndroidManifest.xml` to squash the app-closing back-gesture bug.
-- **Profile Enhancements:** Added placeholder toggles for Account Details and Push Notifications, and neatly tucked the "Classics Filter" behind a Settings menu.
+## What Was Built / Accomplished (Production Release Complete)
+- **Coach Marks / Feature Discovery:** Integrated `showcaseview` on `SwipeScreen` with mounted-state safety checks and deferred loading so first-time users get a smooth guided walkthrough.
+- **Brand & Logo Overhaul:** Enhanced app logo to high-resolution vector artwork, updated launcher icons via `flutter_launcher_icons`, updated `splash_screen.dart`, and capitalized app label to `Pickd`.
+- **Search Screen Improvements:** Converted trending search layout to a dynamic vertical grid with live TMDB data feeds.
+- **Security & Privacy:** Integrated full user data clearance (`HiveService.clearAllUserData()`) into `SupabaseAuthService.signOut()` to ensure complete data wipe upon logging out.
+- **Password UX:** Added eye-toggle password visibility on `ResetPasswordScreen` and `AuthScreen`.
+- **Build & Release Automation:** Compiled release APK with `--dart-define` keys baked in, deployed to GitHub Releases (`v1.0.0`), and updated repo `README.md` with Shields.io badges and architecture overview.
 
 ## Decisions Made
-- **Frontend V1.1 is Locked:** The local frontend experience is complete and pushed to GitHub's `dev` branch.
-- **Supabase Backend Reset:** The user decided to disconnect and completely rebuild the Supabase backend from scratch rather than trying to untangle the old setup.
-- **Anonymous Auth:** We noted that Anonymous Sign-Ins are currently disabled on the Supabase project, which was blocking the initial connection.
+- **Codebase Cleanliness:** Purged all temporary design screenshots and unused font repositories from local and remote branches.
+- **Release Verification:** Verified production APK build (`86.6MB`) running smoothly on Tecno BG7 device without crashes or black screens.
 
-## What's Next (Backend Redesign)
-- [ ] **Supabase Teardown:** Wipe the current Supabase schema/auth configuration.
-- [ ] **Database Schema Design:** Map out the new database schema for Profiles, Watchlists, and Swipe History.
-- [ ] **Auth Strategy:** Re-configure Supabase Auth (likely starting with Anonymous sessions that can be upgraded).
-- [ ] **Backend Migration:** Swap the local `HiveService` methods over to the newly designed Supabase backend endpoints.
+## Next Steps
+- [ ] **Strix Autonomous Security Audit:** Set up Docker Desktop and run `strix scan .` to perform red-team vulnerability testing.
+- [ ] **V2 Planning:** Multiplayer swiping / shared session rooms.
 
-## Blockers
-- None. Next session starts fresh with the Backend/Auth redesign!

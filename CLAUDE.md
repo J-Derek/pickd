@@ -22,8 +22,8 @@ mood-driven recommendation engine powered by TMDB.
 | Phase | Status |
 |---|---|
 | MVP (v1.0) | Shipped — feature-complete, tested on physical Android device (Tecno BG7) |
-| v1.1 | In progress — see V1.2 Features section below |
-| V2 (multiplayer, auth, backend) | Not started — out of scope until V2 |
+| v1.1 / v1.2 | Shipped to `main` — Full TV/Movie swiping, Watched Vault, Supabase Sync, Showcase Coach Marks, Brand Overhaul |
+| V2 (multiplayer, advanced social) | Planned |
 
 ---
 
@@ -240,15 +240,18 @@ Do not build, suggest, or scaffold any of the following unless explicitly told:
 
 ---
 
-## V1.1 / V1.2 — Currently In Progress
+## V1.1 / V1.2 — Shipped
 
-These features are the active workstream. When in doubt, work on these:
+All features below have been implemented, verified, and shipped to `main`:
 
-- [ ] TV Series Integration — Expand Movie model and TMDB service to handle /tv endpoints. Add MediaType enum (movie | tv). Filter toggle UI: Movies | Both | TV Shows (3-segment pill on SwipeScreen).
-- [ ] Swipe Up -> Watched Vault — Swipe up gesture marks as "Watched", triggers 5-star rating dialog, saves to a new watchedVault Hive box. New screen: WatchedVaultScreen (GridView with star badge on each poster).
-- [ ] Profile Screen — Stats section (total watched, total saved), watched vault CTA, Supabase auth connect/sign-out.
-- [ ] "Allow Classics" Setting — Toggle in SettingsSheet on Profile: when ON, removes the year < 2020 guard from Hidden Gems and allows pre-1990 films.
-- [ ] Streaming Providers on Detail — Show provider logo row on MovieDetailScreen using TMDB /movie/{id}/watch/providers. Display only, no deep links yet.
+- [x] TV Series Integration — Expand Movie model and TMDB service to handle /tv endpoints. Add MediaType enum (movie | tv). Filter toggle UI: Movies | Both | TV Shows (3-segment pill on SwipeScreen).
+- [x] Swipe Up -> Watched Vault — Swipe up gesture marks as "Watched", triggers 5-star rating dialog, saves to watchedVault.
+- [x] Profile Screen — Stats section (total watched, total saved), watched vault CTA, Supabase auth connect/sign-out, data wipe on logout.
+- [x] "Allow Classics" Setting — Toggle in SettingsSheet on Profile: when ON, removes the year < 2020 guard from Hidden Gems and allows pre-1990 films.
+- [x] Streaming Providers on Detail — Show provider logo row on MovieDetailScreen using TMDB /movie/{id}/watch/providers.
+- [x] Password Visibility Toggle — Eye icon in ResetPasswordScreen and AuthScreen.
+- [x] Feature Discovery / Coach Marks — `showcaseview` tooltips on first load.
+- [x] App Branding & Logo — High-res logo asset, app launcher icons, capitalized app label (`Pickd`).
 
 ---
 
