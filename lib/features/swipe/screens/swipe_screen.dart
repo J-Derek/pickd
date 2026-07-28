@@ -45,13 +45,24 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
     _showWalkthrough = !HiveService.getProfile().hasSeenWalkthrough;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(swipeDeckProvider.notifier).loadDeck();
-      if (_showWalkthrough) {
-        ShowCaseWidget.of(context).startShowCase([_vibeKey, _cardKey, _likeKey]);
-        final profile = HiveService.getProfile();
-        profile.hasSeenWalkthrough = true;
-        profile.save();
-      }
     });
+  }
+
+  void _maybeStartShowcase(SwipeDeckState deckState) {
+    if (_showWalkthrough && !deckState.isLoading && deckState.deck.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        try {
+          ShowCaseWidget.of(context).startShowCase([_vibeKey, _cardKey, _likeKey]);
+          final profile = HiveService.getProfile();
+          profile.hasSeenWalkthrough = true;
+          profile.save();
+          setState(() => _showWalkthrough = false);
+        } catch (e) {
+          debugPrint('Showcase error: $e');
+        }
+      });
+    }
   }
 
   @override
@@ -92,6 +103,7 @@ class _SwipeScreenState extends ConsumerState<SwipeScreen> {
   @override
   Widget build(BuildContext context) {
     final deckState = ref.watch(swipeDeckProvider);
+    _maybeStartShowcase(deckState);
 
     // Trigger swipe gate at exactly 5 swipes
     ref.listen<SwipeDeckState>(swipeDeckProvider, (prev, next) {
