@@ -22,6 +22,22 @@
 
 <br />
 
+<div align="center">
+  <h2>📱 App Preview</h2>
+  <p>
+    <img src="assets/screenshots/03_swipe_deck.png" width="22%" />
+    <img src="assets/screenshots/04_movie_detail.png" width="22%" />
+    <img src="assets/screenshots/05_watchlist.png" width="22%" />
+    <img src="assets/screenshots/02_mood_selection.png" width="22%" />
+  </p>
+  <p>
+    <img src="assets/screenshots/06_search.png" width="22%" />
+    <img src="assets/screenshots/07_profile.png" width="22%" />
+  </p>
+</div>
+
+<br />
+
 ## 🌟 The Vision
 
 Endless scrolling on streaming platforms is broken. **Pickd** fixes this by instantly curating movies and TV shows based entirely on your **current mood** and **vibe**. Using a fluid, Tinder-style swipe interface, you make split-second decisions without overthinking.
@@ -88,7 +104,7 @@ Want to test it out right now?
 
 4. **Run Code Generation**
    ```bash
-   flutter pub run build_runner build --delete-conflicting-outputs
+   dart run build_runner build --delete-conflicting-outputs
    ```
 
 5. **Build and Run**
@@ -102,9 +118,47 @@ Want to test it out right now?
 
 Pickd follows a modular, feature-first architecture (`/lib/features/*`) to ensure massive scalability and clean separation of concerns.
 
+```mermaid
+graph TB
+    subgraph Frontend ["📱 Flutter App"]
+        UI["UI Layer<br/>(Screens & Widgets)"]
+        State["State Management<br/>(Riverpod 2.x)"]
+        Local["Local Cache<br/>(Hive NoSQL)"]
+    end
+    
+    subgraph Backend ["☁️ Backend Services"]
+        Supa["Supabase<br/>(Auth + PostgreSQL)"]
+        TMDB["TMDB API<br/>(Movie Data)"]
+    end
+    
+    UI --> State
+    State --> Local
+    State --> Supa
+    State --> TMDB
+```
+
 - **`core/`**: Shared services (Supabase, Hive), network clients, unified `AppTheme`, and base models.
 - **`features/`**: Independent, decoupled domains (`auth`, `swipe`, `watchlist`, `gems`, `search`, `profile`).
 - **`providers/`**: Riverpod state controllers handling business logic and API caching.
+
+---
+
+## 🗺️ Roadmap
+
+- [x] Mood-based swiping engine
+- [x] TV Series support with season/episode browser  
+- [x] Hidden Gems discovery deck
+- [x] Cross-device sync via Supabase
+- [x] Interactive coach marks for new users
+- [ ] Multiplayer swiping rooms (watch with friends)
+- [ ] Streaming provider deep links (Netflix, Prime, Disney+)
+- [ ] iOS release
+
+---
+
+## 📄 License
+
+Distributed under the MIT License. See `LICENSE` for more information.
 
 ---
 
