@@ -48,8 +48,8 @@
     <li>
       <a href="#getting-started">Getting Started</a>
       <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
+        <li><a href="#for-users">For Users</a></li>
+        <li><a href="#for-developers-running-locally">For Developers (Running Locally)</a></li>
       </ul>
     </li>
     <li><a href="#features--usage">Features & Usage</a></li>
@@ -72,13 +72,13 @@ Endless scrolling on streaming platforms is broken. **Pickd** fixes this by inst
 
 ### App Preview
 
-| Swipe | Detail | Watchlist |
+| Onboarding | Swipe Deck | Movie Detail |
 |:---:|:---:|:---:|
-| ![Swipe Deck](assets/screenshots/03_swipe_deck.png) | ![Movie Detail](assets/screenshots/04_movie_detail.png) | ![Watchlist](assets/screenshots/05_watchlist.png) |
+| ![Onboarding](assets/screenshots/03_pick3.png) | ![Swipe Deck](assets/screenshots/04_swipe_deck.png) | ![Movie Detail](assets/screenshots/05_movie_detail.png) |
 
-| Mood Selection | Search | Profile |
+| Mood Selection | Search | Watchlist |
 |:---:|:---:|:---:|
-| ![Mood Selection](assets/screenshots/02_mood_selection.png) | ![Search](assets/screenshots/06_search.png) | ![Profile](assets/screenshots/07_profile.png) |
+| ![Mood Selection](assets/screenshots/02_mood_selection.png) | ![Search](assets/screenshots/06_search.png) | ![Watchlist](assets/screenshots/07_watchlist.png) |
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -98,9 +98,18 @@ This project is built using modern frameworks and robust backend services.
 <!-- GETTING STARTED -->
 ## Getting Started
 
+### For Users
+
+Want to test it out right now without touching any code?
+1. Head over to the [Releases Tab](https://github.com/J-Derek/pickd/releases).
+2. Download the latest `app-release.apk`.
+3. Install it directly on your Android device and start swiping!
+
+### For Developers (Running Locally)
+
 To get a local copy up and running, follow these simple steps.
 
-### Prerequisites
+#### Prerequisites
 
 Make sure you have the following installed on your machine:
 * [Flutter SDK](https://docs.flutter.dev/get-started/install) (v3.0.0 or higher)
@@ -108,7 +117,7 @@ Make sure you have the following installed on your machine:
 * A TMDB API Key from [The Movie Database](https://www.themoviedb.org/documentation/api)
 * A [Supabase](https://supabase.com/) project
 
-### Installation
+#### Installation
 
 1. **Clone the repo**
    ```sh
@@ -147,11 +156,11 @@ Make sure you have the following installed on your machine:
 
 | Feature | Description |
 | :--- | :--- |
-| 🎭 **Mood-Based Engine** | Select your current vibe (e.g., *Chill, Hyped, Spooky*) and let Pickd instantly generate the perfect deck of films. |
-| ⚡ **Tinder-Style Swiping** | Fluid gesture controls. **Swipe Right** to save to Watchlist, **Swipe Left** to pass, **Swipe Up** to mark as watched. |
-| 🎬 **Premium Cinematic UI** | A stunning, edge-to-edge dark mode interface designed using modern HCI principles. |
-| ☁️ **Cross-Device Sync** | Powered by **Supabase**. Your watchlist, history, and profile sync instantly across all your devices. |
-| 📱 **Offline Caching** | Powered by **Hive**. Blazing fast local storage ensures your app loads instantly, even on terrible networks. |
+| **Mood-Based Engine** | Select your current vibe (e.g., *Chill, Hyped, Spooky*) and let Pickd instantly generate the perfect deck of films. |
+| **Tinder-Style Swiping** | Fluid gesture controls. **Swipe Right** to save to Watchlist, **Swipe Left** to pass, **Swipe Up** to mark as watched. |
+| **Premium Cinematic UI** | A stunning, edge-to-edge dark mode interface designed using modern HCI principles. |
+| **Cross-Device Sync** | Powered by **Supabase**. Your watchlist, history, and profile sync instantly across all your devices. |
+| **Offline Caching** | Powered by **Hive**. Blazing fast local storage ensures your app loads instantly, even on terrible networks. |
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -164,13 +173,13 @@ Pickd is built with a feature-first, scalable domain architecture:
 
 ```mermaid
 graph TB
-    subgraph Frontend [📱 Flutter App]
+    subgraph Frontend [Flutter App]
         UI[UI Layer]
         State[State Management - Riverpod]
         Local[Local Cache - Hive]
     end
     
-    subgraph Backend [☁️ Backend Services]
+    subgraph Backend [Backend Services]
         Supa[Supabase]
         TMDB[TMDB API]
     end
