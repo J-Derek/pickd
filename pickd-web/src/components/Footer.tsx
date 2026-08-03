@@ -16,7 +16,10 @@ export default function Footer() {
               <GitHubIcon />
               GitHub
             </FooterLink>
-            <FooterLink href="https://github.com/J-Derek/Pickd/releases" external>
+            <FooterLink
+              href="https://github.com/J-Derek/Pickd/releases"
+              external
+            >
               Releases
             </FooterLink>
             <FooterLink href="https://github.com/J-Derek/Pickd/issues" external>
@@ -25,7 +28,9 @@ export default function Footer() {
           </nav>
 
           {/* Copyright */}
-          <p className="text-[13px] text-muted">© 2026 Pickd. All rights reserved.</p>
+          <p className="text-[13px] text-muted">
+            © 2026 Pickd. All rights reserved.
+          </p>
         </div>
       </div>
     </footer>
@@ -34,12 +39,20 @@ export default function Footer() {
 
 interface FooterLinkProps {
   href: string
+
   external?: boolean
+
   children: React.ReactNode
+
   "aria-label"?: string
 }
 
-function FooterLink({ href, external, children, "aria-label": ariaLabel }: FooterLinkProps) {
+function FooterLink({
+  href,
+  external,
+  children,
+  "aria-label": ariaLabel,
+}: FooterLinkProps) {
   return (
     <a
       href={href}

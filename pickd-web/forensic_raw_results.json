@@ -1,0 +1,1508 @@
+{
+  "0.34": {
+    "progress": 0.34,
+    "scrollY": 3273,
+    "phoneRect": {
+      "top": 210.1875,
+      "bottom": 830.1875,
+      "left": 485,
+      "right": 795,
+      "width": 310,
+      "height": 620
+    },
+    "inViewport": true,
+    "isStickyPinned": false,
+    "stickyRect": {
+      "top": 120.1875,
+      "bottom": 920.1875,
+      "left": 0,
+      "right": 1280,
+      "width": 1280,
+      "height": 800
+    },
+    "phoneStyles": {
+      "opacity": "1",
+      "visibility": "visible",
+      "display": "flex",
+      "transform": "none",
+      "zIndex": "40"
+    },
+    "elementAtCenter": {
+      "tagName": "DIV",
+      "id": "",
+      "className": "sticky top-0 w-full h-screen overflow-hidden flex items-center justify-center",
+      "outerHTML": "<div class=\"sticky top-0 w-full h-screen overflow-hidden flex items-center justify-center\"><div class=\"w-[310px] h-[620px] bg-red-600 z-40 pointer-events-none flex items-center justify-center text-whi",
+      "path": [
+        "HTML.",
+        "BODY.",
+        "DIV.",
+        "DIV.min-h-screen.bg-ink.text-foreground.relative",
+        "MAIN.relative.z-10",
+        "SECTION.relative.w-full.h-[250vh].bg-ink",
+        "DIV.sticky.top-0.w-full.h-screen.overflow-hidden.flex.items-center.justify-center"
+      ]
+    },
+    "isClipped": false,
+    "clippingAncestor": null,
+    "ancestors": [
+      {
+        "tagName": "DIV",
+        "id": "",
+        "className": "sticky top-0 w-full h-screen overflow-hidden flex items-center justify-center",
+        "rect": {
+          "top": 120.1875,
+          "bottom": 920.1875,
+          "left": 0,
+          "right": 1280,
+          "width": 1280,
+          "height": 800
+        },
+        "styles": {
+          "opacity": "1",
+          "visibility": "visible",
+          "display": "flex",
+          "overflow": "hidden",
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "transform": "none",
+          "filter": "none",
+          "clip": "auto",
+          "clipPath": "none",
+          "mask": "none",
+          "contain": "none",
+          "isolation": "auto",
+          "zIndex": "auto"
+        }
+      },
+      {
+        "tagName": "SECTION",
+        "id": "",
+        "className": "relative w-full h-[250vh] bg-ink",
+        "rect": {
+          "top": 120.1875,
+          "bottom": 2120.1875,
+          "left": 0,
+          "right": 1280,
+          "width": 1280,
+          "height": 2000
+        },
+        "styles": {
+          "opacity": "1",
+          "visibility": "visible",
+          "display": "block",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "transform": "none",
+          "filter": "none",
+          "clip": "auto",
+          "clipPath": "none",
+          "mask": "none",
+          "contain": "none",
+          "isolation": "auto",
+          "zIndex": "auto"
+        }
+      },
+      {
+        "tagName": "MAIN",
+        "id": "",
+        "className": "relative z-10",
+        "rect": {
+          "top": -3273,
+          "bottom": 2120.1875,
+          "left": 0,
+          "right": 1280,
+          "width": 1280,
+          "height": 5393.1875
+        },
+        "styles": {
+          "opacity": "1",
+          "visibility": "visible",
+          "display": "block",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "transform": "none",
+          "filter": "none",
+          "clip": "auto",
+          "clipPath": "none",
+          "mask": "none",
+          "contain": "none",
+          "isolation": "auto",
+          "zIndex": "10"
+        }
+      },
+      {
+        "tagName": "DIV",
+        "id": "",
+        "className": "min-h-screen bg-ink text-foreground relative",
+        "rect": {
+          "top": -3273,
+          "bottom": 2120.1875,
+          "left": 0,
+          "right": 1280,
+          "width": 1280,
+          "height": 5393.1875
+        },
+        "styles": {
+          "opacity": "1",
+          "visibility": "visible",
+          "display": "block",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "transform": "none",
+          "filter": "none",
+          "clip": "auto",
+          "clipPath": "none",
+          "mask": "none",
+          "contain": "none",
+          "isolation": "auto",
+          "zIndex": "auto"
+        }
+      },
+      {
+        "tagName": "DIV",
+        "id": "root",
+        "className": "",
+        "rect": {
+          "top": -3273,
+          "bottom": 2120.1875,
+          "left": 0,
+          "right": 1280,
+          "width": 1280,
+          "height": 5393.1875
+        },
+        "styles": {
+          "opacity": "1",
+          "visibility": "visible",
+          "display": "block",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "transform": "none",
+          "filter": "none",
+          "clip": "auto",
+          "clipPath": "none",
+          "mask": "none",
+          "contain": "none",
+          "isolation": "auto",
+          "zIndex": "auto"
+        }
+      },
+      {
+        "tagName": "BODY",
+        "id": "",
+        "className": "",
+        "rect": {
+          "top": -3273,
+          "bottom": 2120.1875,
+          "left": 0,
+          "right": 1280,
+          "width": 1280,
+          "height": 5393.1875
+        },
+        "styles": {
+          "opacity": "1",
+          "visibility": "visible",
+          "display": "block",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "transform": "none",
+          "filter": "none",
+          "clip": "auto",
+          "clipPath": "none",
+          "mask": "none",
+          "contain": "none",
+          "isolation": "auto",
+          "zIndex": "auto"
+        }
+      },
+      {
+        "tagName": "HTML",
+        "id": "",
+        "className": "",
+        "rect": {
+          "top": -3273,
+          "bottom": 2120.1875,
+          "left": 0,
+          "right": 1280,
+          "width": 1280,
+          "height": 5393.1875
+        },
+        "styles": {
+          "opacity": "1",
+          "visibility": "visible",
+          "display": "block",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "transform": "none",
+          "filter": "none",
+          "clip": "auto",
+          "clipPath": "none",
+          "mask": "none",
+          "contain": "none",
+          "isolation": "auto",
+          "zIndex": "auto"
+        }
+      }
+    ]
+  },
+  "0.36": {
+    "progress": 0.36,
+    "scrollY": 3314,
+    "phoneRect": {
+      "top": 169.1875,
+      "bottom": 789.1875,
+      "left": 485,
+      "right": 795,
+      "width": 310,
+      "height": 620
+    },
+    "inViewport": true,
+    "isStickyPinned": false,
+    "stickyRect": {
+      "top": 79.1875,
+      "bottom": 879.1875,
+      "left": 0,
+      "right": 1280,
+      "width": 1280,
+      "height": 800
+    },
+    "phoneStyles": {
+      "opacity": "1",
+      "visibility": "visible",
+      "display": "flex",
+      "transform": "none",
+      "zIndex": "40"
+    },
+    "elementAtCenter": {
+      "tagName": "DIV",
+      "id": "",
+      "className": "sticky top-0 w-full h-screen overflow-hidden flex items-center justify-center",
+      "outerHTML": "<div class=\"sticky top-0 w-full h-screen overflow-hidden flex items-center justify-center\"><div class=\"w-[310px] h-[620px] bg-red-600 z-40 pointer-events-none flex items-center justify-center text-whi",
+      "path": [
+        "HTML.",
+        "BODY.",
+        "DIV.",
+        "DIV.min-h-screen.bg-ink.text-foreground.relative",
+        "MAIN.relative.z-10",
+        "SECTION.relative.w-full.h-[250vh].bg-ink",
+        "DIV.sticky.top-0.w-full.h-screen.overflow-hidden.flex.items-center.justify-center"
+      ]
+    },
+    "isClipped": false,
+    "clippingAncestor": null,
+    "ancestors": [
+      {
+        "tagName": "DIV",
+        "id": "",
+        "className": "sticky top-0 w-full h-screen overflow-hidden flex items-center justify-center",
+        "rect": {
+          "top": 79.1875,
+          "bottom": 879.1875,
+          "left": 0,
+          "right": 1280,
+          "width": 1280,
+          "height": 800
+        },
+        "styles": {
+          "opacity": "1",
+          "visibility": "visible",
+          "display": "flex",
+          "overflow": "hidden",
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "transform": "none",
+          "filter": "none",
+          "clip": "auto",
+          "clipPath": "none",
+          "mask": "none",
+          "contain": "none",
+          "isolation": "auto",
+          "zIndex": "auto"
+        }
+      },
+      {
+        "tagName": "SECTION",
+        "id": "",
+        "className": "relative w-full h-[250vh] bg-ink",
+        "rect": {
+          "top": 79.1875,
+          "bottom": 2079.1875,
+          "left": 0,
+          "right": 1280,
+          "width": 1280,
+          "height": 2000
+        },
+        "styles": {
+          "opacity": "1",
+          "visibility": "visible",
+          "display": "block",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "transform": "none",
+          "filter": "none",
+          "clip": "auto",
+          "clipPath": "none",
+          "mask": "none",
+          "contain": "none",
+          "isolation": "auto",
+          "zIndex": "auto"
+        }
+      },
+      {
+        "tagName": "MAIN",
+        "id": "",
+        "className": "relative z-10",
+        "rect": {
+          "top": -3314,
+          "bottom": 2079.1875,
+          "left": 0,
+          "right": 1280,
+          "width": 1280,
+          "height": 5393.1875
+        },
+        "styles": {
+          "opacity": "1",
+          "visibility": "visible",
+          "display": "block",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "transform": "none",
+          "filter": "none",
+          "clip": "auto",
+          "clipPath": "none",
+          "mask": "none",
+          "contain": "none",
+          "isolation": "auto",
+          "zIndex": "10"
+        }
+      },
+      {
+        "tagName": "DIV",
+        "id": "",
+        "className": "min-h-screen bg-ink text-foreground relative",
+        "rect": {
+          "top": -3314,
+          "bottom": 2079.1875,
+          "left": 0,
+          "right": 1280,
+          "width": 1280,
+          "height": 5393.1875
+        },
+        "styles": {
+          "opacity": "1",
+          "visibility": "visible",
+          "display": "block",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "transform": "none",
+          "filter": "none",
+          "clip": "auto",
+          "clipPath": "none",
+          "mask": "none",
+          "contain": "none",
+          "isolation": "auto",
+          "zIndex": "auto"
+        }
+      },
+      {
+        "tagName": "DIV",
+        "id": "root",
+        "className": "",
+        "rect": {
+          "top": -3314,
+          "bottom": 2079.1875,
+          "left": 0,
+          "right": 1280,
+          "width": 1280,
+          "height": 5393.1875
+        },
+        "styles": {
+          "opacity": "1",
+          "visibility": "visible",
+          "display": "block",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "transform": "none",
+          "filter": "none",
+          "clip": "auto",
+          "clipPath": "none",
+          "mask": "none",
+          "contain": "none",
+          "isolation": "auto",
+          "zIndex": "auto"
+        }
+      },
+      {
+        "tagName": "BODY",
+        "id": "",
+        "className": "",
+        "rect": {
+          "top": -3314,
+          "bottom": 2079.1875,
+          "left": 0,
+          "right": 1280,
+          "width": 1280,
+          "height": 5393.1875
+        },
+        "styles": {
+          "opacity": "1",
+          "visibility": "visible",
+          "display": "block",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "transform": "none",
+          "filter": "none",
+          "clip": "auto",
+          "clipPath": "none",
+          "mask": "none",
+          "contain": "none",
+          "isolation": "auto",
+          "zIndex": "auto"
+        }
+      },
+      {
+        "tagName": "HTML",
+        "id": "",
+        "className": "",
+        "rect": {
+          "top": -3314,
+          "bottom": 2079.1875,
+          "left": 0,
+          "right": 1280,
+          "width": 1280,
+          "height": 5393.1875
+        },
+        "styles": {
+          "opacity": "1",
+          "visibility": "visible",
+          "display": "block",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "transform": "none",
+          "filter": "none",
+          "clip": "auto",
+          "clipPath": "none",
+          "mask": "none",
+          "contain": "none",
+          "isolation": "auto",
+          "zIndex": "auto"
+        }
+      }
+    ]
+  },
+  "0.38": {
+    "progress": 0.38,
+    "scrollY": 3353,
+    "phoneRect": {
+      "top": 130.1875,
+      "bottom": 750.1875,
+      "left": 485,
+      "right": 795,
+      "width": 310,
+      "height": 620
+    },
+    "inViewport": true,
+    "isStickyPinned": false,
+    "stickyRect": {
+      "top": 40.1875,
+      "bottom": 840.1875,
+      "left": 0,
+      "right": 1280,
+      "width": 1280,
+      "height": 800
+    },
+    "phoneStyles": {
+      "opacity": "1",
+      "visibility": "visible",
+      "display": "flex",
+      "transform": "none",
+      "zIndex": "40"
+    },
+    "elementAtCenter": {
+      "tagName": "DIV",
+      "id": "",
+      "className": "sticky top-0 w-full h-screen overflow-hidden flex items-center justify-center",
+      "outerHTML": "<div class=\"sticky top-0 w-full h-screen overflow-hidden flex items-center justify-center\"><div class=\"w-[310px] h-[620px] bg-red-600 z-40 pointer-events-none flex items-center justify-center text-whi",
+      "path": [
+        "HTML.",
+        "BODY.",
+        "DIV.",
+        "DIV.min-h-screen.bg-ink.text-foreground.relative",
+        "MAIN.relative.z-10",
+        "SECTION.relative.w-full.h-[250vh].bg-ink",
+        "DIV.sticky.top-0.w-full.h-screen.overflow-hidden.flex.items-center.justify-center"
+      ]
+    },
+    "isClipped": false,
+    "clippingAncestor": null,
+    "ancestors": [
+      {
+        "tagName": "DIV",
+        "id": "",
+        "className": "sticky top-0 w-full h-screen overflow-hidden flex items-center justify-center",
+        "rect": {
+          "top": 40.1875,
+          "bottom": 840.1875,
+          "left": 0,
+          "right": 1280,
+          "width": 1280,
+          "height": 800
+        },
+        "styles": {
+          "opacity": "1",
+          "visibility": "visible",
+          "display": "flex",
+          "overflow": "hidden",
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "transform": "none",
+          "filter": "none",
+          "clip": "auto",
+          "clipPath": "none",
+          "mask": "none",
+          "contain": "none",
+          "isolation": "auto",
+          "zIndex": "auto"
+        }
+      },
+      {
+        "tagName": "SECTION",
+        "id": "",
+        "className": "relative w-full h-[250vh] bg-ink",
+        "rect": {
+          "top": 40.1875,
+          "bottom": 2040.1875,
+          "left": 0,
+          "right": 1280,
+          "width": 1280,
+          "height": 2000
+        },
+        "styles": {
+          "opacity": "1",
+          "visibility": "visible",
+          "display": "block",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "transform": "none",
+          "filter": "none",
+          "clip": "auto",
+          "clipPath": "none",
+          "mask": "none",
+          "contain": "none",
+          "isolation": "auto",
+          "zIndex": "auto"
+        }
+      },
+      {
+        "tagName": "MAIN",
+        "id": "",
+        "className": "relative z-10",
+        "rect": {
+          "top": -3353,
+          "bottom": 2040.1875,
+          "left": 0,
+          "right": 1280,
+          "width": 1280,
+          "height": 5393.1875
+        },
+        "styles": {
+          "opacity": "1",
+          "visibility": "visible",
+          "display": "block",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "transform": "none",
+          "filter": "none",
+          "clip": "auto",
+          "clipPath": "none",
+          "mask": "none",
+          "contain": "none",
+          "isolation": "auto",
+          "zIndex": "10"
+        }
+      },
+      {
+        "tagName": "DIV",
+        "id": "",
+        "className": "min-h-screen bg-ink text-foreground relative",
+        "rect": {
+          "top": -3353,
+          "bottom": 2040.1875,
+          "left": 0,
+          "right": 1280,
+          "width": 1280,
+          "height": 5393.1875
+        },
+        "styles": {
+          "opacity": "1",
+          "visibility": "visible",
+          "display": "block",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "transform": "none",
+          "filter": "none",
+          "clip": "auto",
+          "clipPath": "none",
+          "mask": "none",
+          "contain": "none",
+          "isolation": "auto",
+          "zIndex": "auto"
+        }
+      },
+      {
+        "tagName": "DIV",
+        "id": "root",
+        "className": "",
+        "rect": {
+          "top": -3353,
+          "bottom": 2040.1875,
+          "left": 0,
+          "right": 1280,
+          "width": 1280,
+          "height": 5393.1875
+        },
+        "styles": {
+          "opacity": "1",
+          "visibility": "visible",
+          "display": "block",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "transform": "none",
+          "filter": "none",
+          "clip": "auto",
+          "clipPath": "none",
+          "mask": "none",
+          "contain": "none",
+          "isolation": "auto",
+          "zIndex": "auto"
+        }
+      },
+      {
+        "tagName": "BODY",
+        "id": "",
+        "className": "",
+        "rect": {
+          "top": -3353,
+          "bottom": 2040.1875,
+          "left": 0,
+          "right": 1280,
+          "width": 1280,
+          "height": 5393.1875
+        },
+        "styles": {
+          "opacity": "1",
+          "visibility": "visible",
+          "display": "block",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "transform": "none",
+          "filter": "none",
+          "clip": "auto",
+          "clipPath": "none",
+          "mask": "none",
+          "contain": "none",
+          "isolation": "auto",
+          "zIndex": "auto"
+        }
+      },
+      {
+        "tagName": "HTML",
+        "id": "",
+        "className": "",
+        "rect": {
+          "top": -3353,
+          "bottom": 2040.1875,
+          "left": 0,
+          "right": 1280,
+          "width": 1280,
+          "height": 5393.1875
+        },
+        "styles": {
+          "opacity": "1",
+          "visibility": "visible",
+          "display": "block",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "transform": "none",
+          "filter": "none",
+          "clip": "auto",
+          "clipPath": "none",
+          "mask": "none",
+          "contain": "none",
+          "isolation": "auto",
+          "zIndex": "auto"
+        }
+      }
+    ]
+  },
+  "0.4": {
+    "progress": 0.4,
+    "scrollY": 3393,
+    "phoneRect": {
+      "top": 90.1875,
+      "bottom": 710.1875,
+      "left": 485,
+      "right": 795,
+      "width": 310,
+      "height": 620
+    },
+    "inViewport": true,
+    "isStickyPinned": true,
+    "stickyRect": {
+      "top": 0.1875,
+      "bottom": 800.1875,
+      "left": 0,
+      "right": 1280,
+      "width": 1280,
+      "height": 800
+    },
+    "phoneStyles": {
+      "opacity": "1",
+      "visibility": "visible",
+      "display": "flex",
+      "transform": "none",
+      "zIndex": "40"
+    },
+    "elementAtCenter": {
+      "tagName": "DIV",
+      "id": "",
+      "className": "sticky top-0 w-full h-screen overflow-hidden flex items-center justify-center",
+      "outerHTML": "<div class=\"sticky top-0 w-full h-screen overflow-hidden flex items-center justify-center\"><div class=\"w-[310px] h-[620px] bg-red-600 z-40 pointer-events-none flex items-center justify-center text-whi",
+      "path": [
+        "HTML.",
+        "BODY.",
+        "DIV.",
+        "DIV.min-h-screen.bg-ink.text-foreground.relative",
+        "MAIN.relative.z-10",
+        "SECTION.relative.w-full.h-[250vh].bg-ink",
+        "DIV.sticky.top-0.w-full.h-screen.overflow-hidden.flex.items-center.justify-center"
+      ]
+    },
+    "isClipped": false,
+    "clippingAncestor": null,
+    "ancestors": [
+      {
+        "tagName": "DIV",
+        "id": "",
+        "className": "sticky top-0 w-full h-screen overflow-hidden flex items-center justify-center",
+        "rect": {
+          "top": 0.1875,
+          "bottom": 800.1875,
+          "left": 0,
+          "right": 1280,
+          "width": 1280,
+          "height": 800
+        },
+        "styles": {
+          "opacity": "1",
+          "visibility": "visible",
+          "display": "flex",
+          "overflow": "hidden",
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "transform": "none",
+          "filter": "none",
+          "clip": "auto",
+          "clipPath": "none",
+          "mask": "none",
+          "contain": "none",
+          "isolation": "auto",
+          "zIndex": "auto"
+        }
+      },
+      {
+        "tagName": "SECTION",
+        "id": "",
+        "className": "relative w-full h-[250vh] bg-ink",
+        "rect": {
+          "top": 0.1875,
+          "bottom": 2000.1875,
+          "left": 0,
+          "right": 1280,
+          "width": 1280,
+          "height": 2000
+        },
+        "styles": {
+          "opacity": "1",
+          "visibility": "visible",
+          "display": "block",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "transform": "none",
+          "filter": "none",
+          "clip": "auto",
+          "clipPath": "none",
+          "mask": "none",
+          "contain": "none",
+          "isolation": "auto",
+          "zIndex": "auto"
+        }
+      },
+      {
+        "tagName": "MAIN",
+        "id": "",
+        "className": "relative z-10",
+        "rect": {
+          "top": -3393,
+          "bottom": 2000.1875,
+          "left": 0,
+          "right": 1280,
+          "width": 1280,
+          "height": 5393.1875
+        },
+        "styles": {
+          "opacity": "1",
+          "visibility": "visible",
+          "display": "block",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "transform": "none",
+          "filter": "none",
+          "clip": "auto",
+          "clipPath": "none",
+          "mask": "none",
+          "contain": "none",
+          "isolation": "auto",
+          "zIndex": "10"
+        }
+      },
+      {
+        "tagName": "DIV",
+        "id": "",
+        "className": "min-h-screen bg-ink text-foreground relative",
+        "rect": {
+          "top": -3393,
+          "bottom": 2000.1875,
+          "left": 0,
+          "right": 1280,
+          "width": 1280,
+          "height": 5393.1875
+        },
+        "styles": {
+          "opacity": "1",
+          "visibility": "visible",
+          "display": "block",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "transform": "none",
+          "filter": "none",
+          "clip": "auto",
+          "clipPath": "none",
+          "mask": "none",
+          "contain": "none",
+          "isolation": "auto",
+          "zIndex": "auto"
+        }
+      },
+      {
+        "tagName": "DIV",
+        "id": "root",
+        "className": "",
+        "rect": {
+          "top": -3393,
+          "bottom": 2000.1875,
+          "left": 0,
+          "right": 1280,
+          "width": 1280,
+          "height": 5393.1875
+        },
+        "styles": {
+          "opacity": "1",
+          "visibility": "visible",
+          "display": "block",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "transform": "none",
+          "filter": "none",
+          "clip": "auto",
+          "clipPath": "none",
+          "mask": "none",
+          "contain": "none",
+          "isolation": "auto",
+          "zIndex": "auto"
+        }
+      },
+      {
+        "tagName": "BODY",
+        "id": "",
+        "className": "",
+        "rect": {
+          "top": -3393,
+          "bottom": 2000.1875,
+          "left": 0,
+          "right": 1280,
+          "width": 1280,
+          "height": 5393.1875
+        },
+        "styles": {
+          "opacity": "1",
+          "visibility": "visible",
+          "display": "block",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "transform": "none",
+          "filter": "none",
+          "clip": "auto",
+          "clipPath": "none",
+          "mask": "none",
+          "contain": "none",
+          "isolation": "auto",
+          "zIndex": "auto"
+        }
+      },
+      {
+        "tagName": "HTML",
+        "id": "",
+        "className": "",
+        "rect": {
+          "top": -3393,
+          "bottom": 2000.1875,
+          "left": 0,
+          "right": 1280,
+          "width": 1280,
+          "height": 5393.1875
+        },
+        "styles": {
+          "opacity": "1",
+          "visibility": "visible",
+          "display": "block",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "transform": "none",
+          "filter": "none",
+          "clip": "auto",
+          "clipPath": "none",
+          "mask": "none",
+          "contain": "none",
+          "isolation": "auto",
+          "zIndex": "auto"
+        }
+      }
+    ]
+  },
+  "0.42": {
+    "progress": 0.42,
+    "scrollY": 3434,
+    "phoneRect": {
+      "top": 90,
+      "bottom": 710,
+      "left": 485,
+      "right": 795,
+      "width": 310,
+      "height": 620
+    },
+    "inViewport": true,
+    "isStickyPinned": true,
+    "stickyRect": {
+      "top": 0,
+      "bottom": 800,
+      "left": 0,
+      "right": 1280,
+      "width": 1280,
+      "height": 800
+    },
+    "phoneStyles": {
+      "opacity": "1",
+      "visibility": "visible",
+      "display": "flex",
+      "transform": "none",
+      "zIndex": "40"
+    },
+    "elementAtCenter": {
+      "tagName": "DIV",
+      "id": "",
+      "className": "sticky top-0 w-full h-screen overflow-hidden flex items-center justify-center",
+      "outerHTML": "<div class=\"sticky top-0 w-full h-screen overflow-hidden flex items-center justify-center\"><div class=\"w-[310px] h-[620px] bg-red-600 z-40 pointer-events-none flex items-center justify-center text-whi",
+      "path": [
+        "HTML.",
+        "BODY.",
+        "DIV.",
+        "DIV.min-h-screen.bg-ink.text-foreground.relative",
+        "MAIN.relative.z-10",
+        "SECTION.relative.w-full.h-[250vh].bg-ink",
+        "DIV.sticky.top-0.w-full.h-screen.overflow-hidden.flex.items-center.justify-center"
+      ]
+    },
+    "isClipped": false,
+    "clippingAncestor": null,
+    "ancestors": [
+      {
+        "tagName": "DIV",
+        "id": "",
+        "className": "sticky top-0 w-full h-screen overflow-hidden flex items-center justify-center",
+        "rect": {
+          "top": 0,
+          "bottom": 800,
+          "left": 0,
+          "right": 1280,
+          "width": 1280,
+          "height": 800
+        },
+        "styles": {
+          "opacity": "1",
+          "visibility": "visible",
+          "display": "flex",
+          "overflow": "hidden",
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "transform": "none",
+          "filter": "none",
+          "clip": "auto",
+          "clipPath": "none",
+          "mask": "none",
+          "contain": "none",
+          "isolation": "auto",
+          "zIndex": "auto"
+        }
+      },
+      {
+        "tagName": "SECTION",
+        "id": "",
+        "className": "relative w-full h-[250vh] bg-ink",
+        "rect": {
+          "top": -40.8125,
+          "bottom": 1959.1875,
+          "left": 0,
+          "right": 1280,
+          "width": 1280,
+          "height": 2000
+        },
+        "styles": {
+          "opacity": "1",
+          "visibility": "visible",
+          "display": "block",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "transform": "none",
+          "filter": "none",
+          "clip": "auto",
+          "clipPath": "none",
+          "mask": "none",
+          "contain": "none",
+          "isolation": "auto",
+          "zIndex": "auto"
+        }
+      },
+      {
+        "tagName": "MAIN",
+        "id": "",
+        "className": "relative z-10",
+        "rect": {
+          "top": -3434,
+          "bottom": 1959.1875,
+          "left": 0,
+          "right": 1280,
+          "width": 1280,
+          "height": 5393.1875
+        },
+        "styles": {
+          "opacity": "1",
+          "visibility": "visible",
+          "display": "block",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "transform": "none",
+          "filter": "none",
+          "clip": "auto",
+          "clipPath": "none",
+          "mask": "none",
+          "contain": "none",
+          "isolation": "auto",
+          "zIndex": "10"
+        }
+      },
+      {
+        "tagName": "DIV",
+        "id": "",
+        "className": "min-h-screen bg-ink text-foreground relative",
+        "rect": {
+          "top": -3434,
+          "bottom": 1959.1875,
+          "left": 0,
+          "right": 1280,
+          "width": 1280,
+          "height": 5393.1875
+        },
+        "styles": {
+          "opacity": "1",
+          "visibility": "visible",
+          "display": "block",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "transform": "none",
+          "filter": "none",
+          "clip": "auto",
+          "clipPath": "none",
+          "mask": "none",
+          "contain": "none",
+          "isolation": "auto",
+          "zIndex": "auto"
+        }
+      },
+      {
+        "tagName": "DIV",
+        "id": "root",
+        "className": "",
+        "rect": {
+          "top": -3434,
+          "bottom": 1959.1875,
+          "left": 0,
+          "right": 1280,
+          "width": 1280,
+          "height": 5393.1875
+        },
+        "styles": {
+          "opacity": "1",
+          "visibility": "visible",
+          "display": "block",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "transform": "none",
+          "filter": "none",
+          "clip": "auto",
+          "clipPath": "none",
+          "mask": "none",
+          "contain": "none",
+          "isolation": "auto",
+          "zIndex": "auto"
+        }
+      },
+      {
+        "tagName": "BODY",
+        "id": "",
+        "className": "",
+        "rect": {
+          "top": -3434,
+          "bottom": 1959.1875,
+          "left": 0,
+          "right": 1280,
+          "width": 1280,
+          "height": 5393.1875
+        },
+        "styles": {
+          "opacity": "1",
+          "visibility": "visible",
+          "display": "block",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "transform": "none",
+          "filter": "none",
+          "clip": "auto",
+          "clipPath": "none",
+          "mask": "none",
+          "contain": "none",
+          "isolation": "auto",
+          "zIndex": "auto"
+        }
+      },
+      {
+        "tagName": "HTML",
+        "id": "",
+        "className": "",
+        "rect": {
+          "top": -3434,
+          "bottom": 1959.1875,
+          "left": 0,
+          "right": 1280,
+          "width": 1280,
+          "height": 5393.1875
+        },
+        "styles": {
+          "opacity": "1",
+          "visibility": "visible",
+          "display": "block",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "transform": "none",
+          "filter": "none",
+          "clip": "auto",
+          "clipPath": "none",
+          "mask": "none",
+          "contain": "none",
+          "isolation": "auto",
+          "zIndex": "auto"
+        }
+      }
+    ]
+  },
+  "0.44": {
+    "progress": 0.44,
+    "scrollY": 3473,
+    "phoneRect": {
+      "top": 90,
+      "bottom": 710,
+      "left": 485,
+      "right": 795,
+      "width": 310,
+      "height": 620
+    },
+    "inViewport": true,
+    "isStickyPinned": true,
+    "stickyRect": {
+      "top": 0,
+      "bottom": 800,
+      "left": 0,
+      "right": 1280,
+      "width": 1280,
+      "height": 800
+    },
+    "phoneStyles": {
+      "opacity": "1",
+      "visibility": "visible",
+      "display": "flex",
+      "transform": "none",
+      "zIndex": "40"
+    },
+    "elementAtCenter": {
+      "tagName": "DIV",
+      "id": "",
+      "className": "sticky top-0 w-full h-screen overflow-hidden flex items-center justify-center",
+      "outerHTML": "<div class=\"sticky top-0 w-full h-screen overflow-hidden flex items-center justify-center\"><div class=\"w-[310px] h-[620px] bg-red-600 z-40 pointer-events-none flex items-center justify-center text-whi",
+      "path": [
+        "HTML.",
+        "BODY.",
+        "DIV.",
+        "DIV.min-h-screen.bg-ink.text-foreground.relative",
+        "MAIN.relative.z-10",
+        "SECTION.relative.w-full.h-[250vh].bg-ink",
+        "DIV.sticky.top-0.w-full.h-screen.overflow-hidden.flex.items-center.justify-center"
+      ]
+    },
+    "isClipped": false,
+    "clippingAncestor": null,
+    "ancestors": [
+      {
+        "tagName": "DIV",
+        "id": "",
+        "className": "sticky top-0 w-full h-screen overflow-hidden flex items-center justify-center",
+        "rect": {
+          "top": 0,
+          "bottom": 800,
+          "left": 0,
+          "right": 1280,
+          "width": 1280,
+          "height": 800
+        },
+        "styles": {
+          "opacity": "1",
+          "visibility": "visible",
+          "display": "flex",
+          "overflow": "hidden",
+          "overflowX": "hidden",
+          "overflowY": "hidden",
+          "transform": "none",
+          "filter": "none",
+          "clip": "auto",
+          "clipPath": "none",
+          "mask": "none",
+          "contain": "none",
+          "isolation": "auto",
+          "zIndex": "auto"
+        }
+      },
+      {
+        "tagName": "SECTION",
+        "id": "",
+        "className": "relative w-full h-[250vh] bg-ink",
+        "rect": {
+          "top": -79.8125,
+          "bottom": 1920.1875,
+          "left": 0,
+          "right": 1280,
+          "width": 1280,
+          "height": 2000
+        },
+        "styles": {
+          "opacity": "1",
+          "visibility": "visible",
+          "display": "block",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "transform": "none",
+          "filter": "none",
+          "clip": "auto",
+          "clipPath": "none",
+          "mask": "none",
+          "contain": "none",
+          "isolation": "auto",
+          "zIndex": "auto"
+        }
+      },
+      {
+        "tagName": "MAIN",
+        "id": "",
+        "className": "relative z-10",
+        "rect": {
+          "top": -3473,
+          "bottom": 1920.1875,
+          "left": 0,
+          "right": 1280,
+          "width": 1280,
+          "height": 5393.1875
+        },
+        "styles": {
+          "opacity": "1",
+          "visibility": "visible",
+          "display": "block",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "transform": "none",
+          "filter": "none",
+          "clip": "auto",
+          "clipPath": "none",
+          "mask": "none",
+          "contain": "none",
+          "isolation": "auto",
+          "zIndex": "10"
+        }
+      },
+      {
+        "tagName": "DIV",
+        "id": "",
+        "className": "min-h-screen bg-ink text-foreground relative",
+        "rect": {
+          "top": -3473,
+          "bottom": 1920.1875,
+          "left": 0,
+          "right": 1280,
+          "width": 1280,
+          "height": 5393.1875
+        },
+        "styles": {
+          "opacity": "1",
+          "visibility": "visible",
+          "display": "block",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "transform": "none",
+          "filter": "none",
+          "clip": "auto",
+          "clipPath": "none",
+          "mask": "none",
+          "contain": "none",
+          "isolation": "auto",
+          "zIndex": "auto"
+        }
+      },
+      {
+        "tagName": "DIV",
+        "id": "root",
+        "className": "",
+        "rect": {
+          "top": -3473,
+          "bottom": 1920.1875,
+          "left": 0,
+          "right": 1280,
+          "width": 1280,
+          "height": 5393.1875
+        },
+        "styles": {
+          "opacity": "1",
+          "visibility": "visible",
+          "display": "block",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "transform": "none",
+          "filter": "none",
+          "clip": "auto",
+          "clipPath": "none",
+          "mask": "none",
+          "contain": "none",
+          "isolation": "auto",
+          "zIndex": "auto"
+        }
+      },
+      {
+        "tagName": "BODY",
+        "id": "",
+        "className": "",
+        "rect": {
+          "top": -3473,
+          "bottom": 1920.1875,
+          "left": 0,
+          "right": 1280,
+          "width": 1280,
+          "height": 5393.1875
+        },
+        "styles": {
+          "opacity": "1",
+          "visibility": "visible",
+          "display": "block",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "transform": "none",
+          "filter": "none",
+          "clip": "auto",
+          "clipPath": "none",
+          "mask": "none",
+          "contain": "none",
+          "isolation": "auto",
+          "zIndex": "auto"
+        }
+      },
+      {
+        "tagName": "HTML",
+        "id": "",
+        "className": "",
+        "rect": {
+          "top": -3473,
+          "bottom": 1920.1875,
+          "left": 0,
+          "right": 1280,
+          "width": 1280,
+          "height": 5393.1875
+        },
+        "styles": {
+          "opacity": "1",
+          "visibility": "visible",
+          "display": "block",
+          "overflow": "visible",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "transform": "none",
+          "filter": "none",
+          "clip": "auto",
+          "clipPath": "none",
+          "mask": "none",
+          "contain": "none",
+          "isolation": "auto",
+          "zIndex": "auto"
+        }
+      }
+    ]
+  }
+}

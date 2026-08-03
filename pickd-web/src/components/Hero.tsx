@@ -1,155 +1,224 @@
-import { useRef, useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import { useReducedMotion } from '../hooks/useReducedMotion'
-import GlassButton from './GlassButton'
+import { motion, useScroll, useTransform } from "framer-motion"
+import { useRef } from "react"
+import { useReducedMotion } from "../hooks/useReducedMotion"
+import GlassButton from "./GlassButton"
+import TrendingMarquee from "./TrendingMarquee"
 
-export default function Hero() {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const [cursor, setCursor] = useState({ x: -999, y: -999 })
-  const [hovering, setHovering] = useState(false)
+export default function Hero({
+  showMarquee = true,
+}: {
+  showMarquee?: boolean
+}) {
   const reduced = useReducedMotion()
+  const containerRef = useRef<HTMLDivElement>(null)
 
-  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect()
-    setCursor({ x: e.clientX - rect.left, y: e.clientY - rect.top })
-  }
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end start"],
+  })
 
-  const mask = `radial-gradient(circle at ${cursor.x}px ${cursor.y}px, #000 80px, transparent 140px)`
+  // Hand-off scroll transitions for the hero text
+  const yParallax = useTransform(scrollYProgress, [0, 1], ["0%", "50%"])
+  const opacityFade = useTransform(scrollYProgress, [0, 0.6], [1, 0])
 
   return (
     <div
       ref={containerRef}
-      className="relative flex flex-col items-center justify-center min-h-screen pt-16 overflow-hidden"
-      style={{ backgroundColor: 'var(--ink)' }}
-      onPointerEnter={() => setHovering(true)}
-      onPointerMove={handlePointerMove}
-      onPointerLeave={() => { setHovering(false); setCursor({ x: -999, y: -999 }) }}
+      className="relative flex flex-col items-center justify-center min-h-screen pt-24 pb-16 overflow-hidden"
+      style={{ backgroundColor: "var(--ink)" }}
     >
-      {/* Base dot grid */}
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundImage: 'radial-gradient(circle at center, rgba(107,78,255,0.18) 1px, transparent 1.2px)',
-          backgroundSize: '24px 24px',
-        }}
-      />
-
-      {/* Revealed dot grid under cursor */}
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 pointer-events-none transition-opacity duration-300"
-        style={{
-          backgroundImage: 'radial-gradient(circle at center, rgba(107,78,255,0.7) 1.6px, transparent 2px)',
-          backgroundSize: '24px 24px',
-          opacity: hovering ? 1 : 0,
-          maskImage: mask,
-          WebkitMaskImage: mask,
-        }}
-      />
-
-      {/* Ambient indigo glow */}
-      <div
-        aria-hidden="true"
-        className="absolute pointer-events-none"
-        style={{
-          bottom: '-10%',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: '70vw',
-          height: '50vh',
-          background: 'radial-gradient(ellipse at center, rgba(107,78,255,0.22) 0%, transparent 70%)',
-          filter: 'blur(60px)',
-        }}
-      />
-
-      {/* Secondary cyan accent glow */}
-      <div
-        aria-hidden="true"
-        className="absolute pointer-events-none"
-        style={{
-          top: '20%',
-          right: '10%',
-          width: '30vw',
-          height: '30vh',
-          background: 'radial-gradient(ellipse at center, rgba(0,240,255,0.06) 0%, transparent 70%)',
-          filter: 'blur(80px)',
-        }}
-      />
+      {/* Background Trending Marquee (Cinematic Reveal) */}
+      {showMarquee && <TrendingMarquee variant="hero" />}
 
       {/* Content */}
       <motion.div
-        className="relative z-10 flex flex-col items-center text-center px-6 max-w-4xl mx-auto"
-        initial={reduced ? false : { opacity: 0, y: 32 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+        className="relative z-10 flex flex-col items-center text-center px-6 max-w-5xl mx-auto w-full"
+        style={{
+          y: reduced ? "0%" : yParallax,
+          opacity: reduced ? 1 : opacityFade,
+        }}
+        initial="hidden"
+        animate="visible"
+        variants={{
+          hidden: { opacity: 0 },
+          visible: {
+            opacity: 1,
+            transition: {
+              staggerChildren: 0.15,
+            },
+          },
+        }}
       >
         {/* Badge */}
         <motion.div
-          initial={reduced ? false : { opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="mb-8 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium"
+          variants={{
+            hidden: { opacity: 0, y: 16, filter: "blur(4px)" },
+            visible: {
+              opacity: 1,
+              y: 0,
+              filter: "blur(0px)",
+              transition: {
+                duration: 0.8,
+                type: "spring",
+                bounce: 0,
+                damping: 20,
+              },
+            },
+          }}
+          className="mb-8 inline-flex items-center gap-2.5 rounded-full px-4 py-1.5 text-xs font-semibold uppercase tracking-widest shadow-xl"
           style={{
-            background: 'rgba(107,78,255,0.12)',
-            border: '1px solid rgba(107,78,255,0.3)',
-            color: '#a891ff',
-            fontFamily: 'var(--font-body)',
+            background: "rgba(255,255,255,0.03)",
+            border: "1px solid rgba(255,255,255,0.1)",
+            color: "rgba(255,255,255,0.6)",
+            fontFamily: "var(--font-body)",
+            backdropFilter: "blur(12px)",
           }}
         >
-          <span className="w-1.5 h-1.5 rounded-full bg-[#6B4EFF] animate-pulse" aria-hidden="true" />
+          <span
+            className="w-1.5 h-1.5 rounded-full bg-[#6B4EFF] animate-pulse shadow-[0_0_8px_#6B4EFF]"
+            aria-hidden="true"
+          />
           Android live · iOS coming soon
         </motion.div>
 
         {/* Headline */}
-        <h1
-          className="text-5xl md:text-7xl lg:text-8xl font-bold leading-[1.05] tracking-tight text-white mb-6"
-          style={{ fontFamily: 'var(--font-display)' }}
+        <motion.h1
+          variants={{
+            hidden: { opacity: 0, y: 24, filter: "blur(8px)" },
+            visible: {
+              opacity: 1,
+              y: 0,
+              filter: "blur(0px)",
+              transition: {
+                duration: 1.2,
+                type: "spring",
+                bounce: 0,
+                damping: 25,
+              },
+            },
+          }}
+          className="text-[4rem] sm:text-7xl md:text-8xl lg:text-[9rem] font-bold leading-[0.95] tracking-tighter text-white mb-8"
+          style={{
+            fontFamily: "var(--font-display)",
+            textShadow: "0 20px 40px rgba(0,0,0,0.5)",
+          }}
         >
           Stop scrolling.
           <br />
-          <span style={{ color: '#6B4EFF' }}>Start watching.</span>
-        </h1>
+          <span className="text-white">Start watching.</span>
+        </motion.h1>
 
         {/* Subhead */}
-        <p
-          className="text-lg md:text-xl text-white/50 max-w-xl mb-10 leading-relaxed"
-          style={{ fontFamily: 'var(--font-body)' }}
+        <motion.p
+          variants={{
+            hidden: { opacity: 0, y: 16, filter: "blur(4px)" },
+            visible: {
+              opacity: 1,
+              y: 0,
+              filter: "blur(0px)",
+              transition: {
+                duration: 1,
+                type: "spring",
+                bounce: 0,
+                damping: 20,
+              },
+            },
+          }}
+          className="text-lg md:text-xl lg:text-2xl text-white/50 max-w-2xl mb-14 leading-relaxed font-medium"
+          style={{ fontFamily: "var(--font-body)" }}
         >
-          Pick three movies you love. Pickd builds your Taste DNA — then swipes a personalized deck so you spend less time choosing and more time watching.
-        </p>
+          Pick three movies you love. We build your Taste DNA and deal a
+          personalized deck. Decisions in seconds, not hours.
+        </motion.p>
 
         {/* CTA row */}
-        <div className="flex flex-col sm:flex-row items-center gap-4">
-          <GlassButton href="https://github.com/J-Derek/Pickd/releases" size="lg" target="_blank" rel="noopener noreferrer">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <motion.div
+          className="flex flex-col sm:flex-row items-center gap-6"
+          variants={{
+            hidden: { opacity: 0, y: 16 },
+            visible: {
+              opacity: 1,
+              y: 0,
+              transition: {
+                duration: 1,
+                type: "spring",
+                bounce: 0,
+                damping: 20,
+              },
+            },
+          }}
+        >
+          <a
+            href="https://github.com/J-Derek/Pickd/releases"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group relative inline-flex items-center gap-3 rounded-full px-8 py-4 text-base font-semibold text-white transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#6B4EFF]/50 focus:ring-offset-2 focus:ring-offset-[#0A0A0F]"
+            style={{
+              background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.1)",
+              backdropFilter: "blur(20px)",
+              boxShadow:
+                "0 10px 30px -10px rgba(107,78,255,0.3), inset 0 1px 0 0 rgba(255,255,255,0.1)",
+            }}
+          >
+            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-[#6B4EFF]/20 to-[#00F0FF]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="relative z-10 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:scale-105 text-[#6B4EFF]"
+              aria-hidden="true"
+            >
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
               <polyline points="7 10 12 15 17 10" />
               <line x1="12" y1="15" x2="12" y2="3" />
             </svg>
-            Download APK
-          </GlassButton>
+            <span className="relative z-10">Download APK</span>
+          </a>
+
           <a
             href="#how-it-works"
-            className="text-sm text-white/40 hover:text-white/70 transition-colors duration-150 flex items-center gap-1.5"
+            className="text-sm font-medium text-white/40 hover:text-white/80 transition-colors duration-300 flex items-center gap-2 group"
           >
             See how it works
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <polyline points="6 9 12 15 18 9" />
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="transition-transform duration-300 group-hover:translate-x-1"
+              aria-hidden="true"
+            >
+              <polyline points="9 18 15 12 9 6" />
             </svg>
           </a>
-        </div>
+        </motion.div>
       </motion.div>
 
-      {/* Scroll nudge */}
+      {/* Scroll nudge - Handoff indicator */}
       <motion.div
-        className="absolute bottom-8 left-1/2 -translate-x-1/2"
+        className="absolute bottom-0 left-1/2 -translate-x-1/2 h-24"
         initial={reduced ? false : { opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 1.5, duration: 0.6 }}
+        transition={{ delay: 1.5, duration: 1 }}
         aria-hidden="true"
       >
-        <div className="w-px h-10 mx-auto" style={{ background: 'linear-gradient(to bottom, rgba(255,255,255,0.15), transparent)' }} />
+        <div
+          className="w-px h-full mx-auto"
+          style={{
+            background:
+              "linear-gradient(to bottom, transparent, rgba(255,255,255,0.2), transparent)",
+          }}
+        />
       </motion.div>
     </div>
   )
