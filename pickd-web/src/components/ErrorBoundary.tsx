@@ -31,8 +31,11 @@ export class ErrorBoundary extends Component<Props, State> {
         <div
           style={{
             padding: "40px",
+
             background: "red",
+
             color: "white",
+
             fontSize: "20px",
           }}
         >

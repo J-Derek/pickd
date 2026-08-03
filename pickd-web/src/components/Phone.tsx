@@ -45,8 +45,11 @@ export default function Phone({ src, alt }: PhoneProps) {
           loading="lazy"
           style={{
             display: "block",
+
             width: "100%",
+
             height: "100%",
+
             objectFit: "cover",
           }}
         />

@@ -11,7 +11,10 @@ import FooterCTA from "./components/FooterCTA"
 import TrendingMarquee from "./components/TrendingMarquee"
 
 import ProblemStatement from "./components/ProblemStatement"
+
 import PhoneRevealV2 from "./components/PhoneRevealV2"
+
+import RecommendationJourney from "./components/RecommendationJourney"
 
 import { ErrorBoundary } from "./components/ErrorBoundary"
 
@@ -75,6 +78,7 @@ export default function App() {
           <Hero showMarquee={SHOW_TRENDING_MARQUEE} />
           <ProblemStatement />
           <PhoneRevealV2 />
+          <RecommendationJourney />
           {/* Temporarily disabled while we perfect the cinematic sequence
           <FeatureShowcase />
           <HowItWorks />

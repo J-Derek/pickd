@@ -98,6 +98,7 @@ export default function FooterCTA() {
           className="text-xs font-semibold tracking-tight"
           style={{
             color: "rgba(255,255,255,0.2)",
+
             fontFamily: "var(--font-display)",
           }}
         >
@@ -112,6 +113,7 @@ export default function FooterCTA() {
             className="text-xs transition-colors duration-150 hover:text-white/40 focus:outline-none focus:underline"
             style={{
               color: "rgba(255,255,255,0.2)",
+
               fontFamily: "var(--font-body)",
             }}
             aria-label="Pickd GitHub repository"
@@ -125,6 +127,7 @@ export default function FooterCTA() {
             className="text-xs transition-colors duration-150 hover:text-white/40 focus:outline-none focus:underline"
             style={{
               color: "rgba(255,255,255,0.2)",
+
               fontFamily: "var(--font-body)",
             }}
             aria-label="Report a bug"
@@ -145,6 +148,7 @@ export default function FooterCTA() {
             className="text-xs"
             style={{
               color: "rgba(255,255,255,0.12)",
+
               fontFamily: "var(--font-body)",
             }}
           >

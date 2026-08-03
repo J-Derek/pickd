@@ -148,16 +148,19 @@ const cardVariants = {
     transition: {
       y: {
         duration: 0.65,
+
         ease: [0.25, 1, 0.35, 1] as [number, number, number, number],
       },
 
       x: {
         duration: 0.65,
+
         ease: [0.25, 1, 0.35, 1] as [number, number, number, number],
       },
 
       rotate: {
         duration: 0.65,
+
         ease: [0.25, 1, 0.35, 1] as [number, number, number, number],
       },
 
@@ -165,19 +168,25 @@ const cardVariants = {
 
       scaleX: {
         duration: 0.65,
+
         times: [0, 0.4, 0.7, 1],
+
         ease: "easeInOut" as const,
       },
 
       scaleY: {
         duration: 0.65,
+
         times: [0, 0.4, 0.7, 1],
+
         ease: "easeInOut" as const,
       },
 
       filter: {
         duration: 0.65,
+
         times: [0, 0.5, 1],
+
         ease: "easeInOut" as const,
       },
     },
@@ -201,16 +210,19 @@ const cardVariants = {
     transition: {
       y: {
         duration: 0.65,
+
         ease: [0.25, 1, 0.35, 1] as [number, number, number, number],
       },
 
       x: {
         duration: 0.65,
+
         ease: [0.25, 1, 0.35, 1] as [number, number, number, number],
       },
 
       rotate: {
         duration: 0.65,
+
         ease: [0.25, 1, 0.35, 1] as [number, number, number, number],
       },
 
@@ -218,19 +230,25 @@ const cardVariants = {
 
       scaleX: {
         duration: 0.65,
+
         times: [0, 0.4, 0.7, 1],
+
         ease: "easeInOut" as const,
       },
 
       scaleY: {
         duration: 0.65,
+
         times: [0, 0.4, 0.7, 1],
+
         ease: "easeInOut" as const,
       },
 
       filter: {
         duration: 0.65,
+
         times: [0, 0.5, 1],
+
         ease: "easeInOut" as const,
       },
     },
@@ -254,16 +272,19 @@ const cardVariants = {
     transition: {
       y: {
         duration: 0.65,
+
         ease: [0.25, 1, 0.35, 1] as [number, number, number, number],
       },
 
       x: {
         duration: 0.65,
+
         ease: [0.25, 1, 0.35, 1] as [number, number, number, number],
       },
 
       rotate: {
         duration: 0.65,
+
         ease: [0.25, 1, 0.35, 1] as [number, number, number, number],
       },
 
@@ -271,19 +292,25 @@ const cardVariants = {
 
       scaleX: {
         duration: 0.65,
+
         times: [0, 0.4, 0.7, 1],
+
         ease: "easeInOut" as const,
       },
 
       scaleY: {
         duration: 0.65,
+
         times: [0, 0.4, 0.7, 1],
+
         ease: "easeInOut" as const,
       },
 
       filter: {
         duration: 0.65,
+
         times: [0, 0.5, 1],
+
         ease: "easeInOut" as const,
       },
     },
@@ -292,9 +319,11 @@ const cardVariants = {
 
 function PhysicalTicketContent({
   feature,
+
   index,
 }: {
   feature: typeof FEATURES[0]
+
   index: number
 }) {
   return (
@@ -368,6 +397,7 @@ function PhysicalTicketContent({
         className="absolute inset-0 bg-[#0d0d0f]"
         style={{
           WebkitMaskImage: `url(#ticket-mask-${index})`,
+
           maskImage: `url(#ticket-mask-${index})`,
         }}
       >
@@ -423,6 +453,7 @@ function PhysicalTicketContent({
               className="text-2xl md:text-3xl font-bold text-white leading-tight mb-4"
               style={{
                 fontFamily: "var(--font-display)",
+
                 textShadow: "0 2px 10px rgba(0,0,0,0.8)",
               }}
             >
@@ -477,11 +508,15 @@ function PhysicalTicketContent({
 
 function FeatureCard({
   feature,
+
   index,
+
   activeIndex,
 }: {
   feature: typeof FEATURES[0]
+
   index: number
+
   activeIndex: number
 }) {
   const reduced = useReducedMotion()
@@ -590,8 +625,11 @@ function MobileCarousel() {
                     transition: {
                       y: {
                         type: "spring",
+
                         bounce: 0,
+
                         duration: 0.6,
+
                         delay: i * 0.1,
                       },
 
@@ -626,7 +664,9 @@ function MobileCarousel() {
 
               child.scrollIntoView({
                 behavior: "smooth",
+
                 block: "nearest",
+
                 inline: "center",
               })
             }}

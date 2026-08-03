@@ -41,7 +41,9 @@ export default function TrendingMarquee({
 
   const marqueeItemsReversed = [
     ...reversedItems,
+
     ...reversedItems,
+
     ...reversedItems,
   ]
 
@@ -53,6 +55,7 @@ export default function TrendingMarquee({
         className="absolute inset-0 z-0 overflow-hidden pointer-events-none select-none flex flex-col justify-center items-center"
         style={{
           y: reduced ? "0%" : yParallax,
+
           opacity: reduced ? 1 : opacityFade,
         }}
       >
@@ -76,8 +79,11 @@ export default function TrendingMarquee({
                 animate={{ x: ["-50%", "0%"] }}
                 transition={{
                   repeat: Infinity,
+
                   repeatType: "loop",
+
                   duration: 90,
+
                   ease: "linear",
                 }}
               >
@@ -120,8 +126,11 @@ export default function TrendingMarquee({
                 animate={{ x: ["0%", "-50%"] }}
                 transition={{
                   repeat: Infinity,
+
                   repeatType: "loop",
+
                   duration: 60,
+
                   ease: "linear",
                 }}
               >
@@ -164,8 +173,11 @@ export default function TrendingMarquee({
                 animate={{ x: ["-50%", "0%"] }}
                 transition={{
                   repeat: Infinity,
+
                   repeatType: "loop",
+
                   duration: 45,
+
                   ease: "linear",
                 }}
               >

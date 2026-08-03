@@ -6,11 +6,14 @@ export default function InteractiveGrid({
   className?: string
 }) {
   const containerRef = useRef<HTMLDivElement>(null)
+
   const [cursor, setCursor] = useState({ x: -999, y: -999 })
+
   const [hovering, setHovering] = useState(false)
 
   const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect()
+
     setCursor({ x: e.clientX - rect.left, y: e.clientY - rect.top })
   }
 
@@ -24,6 +27,7 @@ export default function InteractiveGrid({
       onPointerMove={handlePointerMove}
       onPointerLeave={() => {
         setHovering(false)
+
         setCursor({ x: -999, y: -999 })
       }}
     >
@@ -34,6 +38,7 @@ export default function InteractiveGrid({
         style={{
           backgroundImage:
             "radial-gradient(circle at center, rgba(107,78,255,0.18) 1px, transparent 1.2px)",
+
           backgroundSize: "24px 24px",
         }}
       />
@@ -45,9 +50,13 @@ export default function InteractiveGrid({
         style={{
           backgroundImage:
             "radial-gradient(circle at center, rgba(107,78,255,0.7) 1.6px, transparent 2px)",
+
           backgroundSize: "24px 24px",
+
           opacity: hovering ? 1 : 0,
+
           maskImage: mask,
+
           WebkitMaskImage: mask,
         }}
       />
@@ -58,12 +67,18 @@ export default function InteractiveGrid({
         className="absolute pointer-events-none"
         style={{
           bottom: "-10%",
+
           left: "50%",
+
           transform: "translateX(-50%)",
+
           width: "70vw",
+
           height: "50vh",
+
           background:
             "radial-gradient(ellipse at center, rgba(107,78,255,0.22) 0%, transparent 70%)",
+
           filter: "blur(60px)",
         }}
       />
@@ -74,11 +89,16 @@ export default function InteractiveGrid({
         className="absolute pointer-events-none"
         style={{
           top: "20%",
+
           right: "10%",
+
           width: "30vw",
+
           height: "30vh",
+
           background:
             "radial-gradient(ellipse at center, rgba(0,240,255,0.06) 0%, transparent 70%)",
+
           filter: "blur(80px)",
         }}
       />

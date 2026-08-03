@@ -5,66 +5,100 @@ import {
   useSpring,
   useMotionValueEvent,
 } from "framer-motion"
+
 import { useRef, useState } from "react"
+
 import { useTrendingMovies } from "../hooks/useTrendingMovies"
+
 import { useReducedMotion } from "../hooks/useReducedMotion"
 
 export default function ProblemStatement() {
   const containerRef = useRef<HTMLDivElement>(null)
 
   // Track scroll over the entire container
+
   const { scrollYProgress } = useScroll({
     target: containerRef,
+
     offset: ["start start", "end end"],
   })
 
   // Exact 1:1 mapping with scroll position
+
   const progress = scrollYProgress
 
   const [debugVal, setDebugVal] = useState(0)
+
   useMotionValueEvent(scrollYProgress, "change", (val) => setDebugVal(val))
 
   // Background marquee uses a light spring so it continues moving slightly when scrolling stops
+
   const marqueeProgress = useSpring(scrollYProgress, {
     damping: 40,
+
     stiffness: 200,
   })
 
   const { movies, loading, error } = useTrendingMovies()
+
   const reduced = useReducedMotion()
 
   // -------------------------------------------------------------
+
   // NARRATIVE TYPOGRAPHY (Ends exactly as the section ends)
+
   // -------------------------------------------------------------
+
   const op1 = useTransform(progress, [0.0, 0.05, 0.12, 0.15], [0, 1, 1, 0]) // Another Friday night.
+
   const op2 = useTransform(progress, [0.15, 0.2, 0.25, 0.28], [0, 1, 1, 0]) // Netflix.
+
   const op3 = useTransform(progress, [0.28, 0.33, 0.38, 0.41], [0, 1, 1, 0]) // Prime Video.
+
   const op4 = useTransform(progress, [0.41, 0.46, 0.51, 0.54], [0, 1, 1, 0]) // Disney+.
+
   const op5 = useTransform(progress, [0.54, 0.59, 0.64, 0.67], [0, 1, 1, 0]) // Max.
+
   const op6 = useTransform(progress, [0.67, 0.72, 0.77, 0.8], [0, 1, 1, 0]) // Thousands of movies.
+
   const op8 = useTransform(progress, [0.8, 0.85, 0.9, 0.93], [0, 1, 1, 0]) // Still nothing to watch.
+
   const op9 = useTransform(progress, [0.93, 0.96, 0.99, 1.0], [0, 1, 1, 0]) // Sound familiar?
 
   // -------------------------------------------------------------
+
   // BACKGROUND ATMOSPHERE (Chaotic to dark silence)
+
   // -------------------------------------------------------------
+
   // Cold anxiety lighting fades out at the very end
+
   const coldGlow = useTransform(progress, [0, 0.6, 1.0], [0, 0.6, 0])
 
   // Poster density fades out entirely into blackness by the end
+
   const bgOpacity = useTransform(progress, [0, 0.2, 0.8, 1.0], [0, 0.6, 0.8, 0])
+
   const blurAmount = useTransform(progress, [0, 0.4, 0.9, 1.0], [
     "blur(12px)",
+
     "blur(3px)",
+
     "blur(12px)",
+
     "blur(40px)",
   ])
+
   const scaleAmount = useTransform(progress, [0, 0.5, 1], [1.1, 1, 1.3])
 
   // Endless scrolling effect mapping
+
   const xOffset1 = useTransform(marqueeProgress, [0, 1], ["0%", "-40%"])
+
   const xOffset2 = useTransform(marqueeProgress, [0, 1], ["-40%", "0%"])
+
   const xOffset3 = useTransform(marqueeProgress, [0, 1], ["0%", "-50%"])
+
   const xOffset4 = useTransform(marqueeProgress, [0, 1], ["-50%", "0%"])
 
   if (error || (!loading && movies.length === 0)) return null
@@ -73,10 +107,15 @@ export default function ProblemStatement() {
 
   const textStyle = {
     fontFamily: "var(--font-display)",
+
     position: "absolute" as const,
+
     top: "50%",
+
     left: "50%",
+
     transform: "translate(-50%, -50%)",
+
     width: "100%",
   }
 
@@ -103,7 +142,9 @@ export default function ProblemStatement() {
             className="absolute inset-0 z-0 flex flex-col justify-center gap-4 md:gap-6 transform -rotate-12"
             style={{
               opacity: bgOpacity,
+
               filter: blurAmount,
+
               scale: scaleAmount,
             }}
           >
@@ -247,7 +288,9 @@ export default function ProblemStatement() {
               className="text-4xl md:text-6xl lg:text-[5rem] font-medium tracking-tight text-white"
               style={{
                 ...textStyle,
+
                 opacity: op9,
+
                 textShadow: "0 0 60px rgba(255,255,255,0.3)",
               }}
             >

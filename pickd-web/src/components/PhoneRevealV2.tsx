@@ -1,67 +1,117 @@
-import {
-  motion,
-  useScroll,
-  useTransform,
-} from "framer-motion"
+import { motion, useScroll, useTransform } from "framer-motion"
+
 import { useRef } from "react"
+
 import { useTrendingMovies } from "../hooks/useTrendingMovies"
 
 export default function PhoneRevealV2() {
   const containerRef = useRef<HTMLElement>(null)
 
   // Single Master scrollYProgress
+
   const { scrollYProgress } = useScroll({
     target: containerRef,
+
     offset: ["start end", "end end"],
   })
 
   // -------------------------------------------------------------
+
   // MASTER TIMELINE DERIVATIONS (Clamped Keyframes)
+
   // -------------------------------------------------------------
 
   // 0.00 – 0.20: Phone Emergence
+
   const phoneOpacity = useTransform(scrollYProgress, [0.0, 0.2, 1.0], [0, 1, 1])
+
   const phoneY = useTransform(scrollYProgress, [0.0, 0.2, 1.0], [120, 0, 0])
-  const phoneScale = useTransform(scrollYProgress, [0.0, 0.2, 1.0], [0.93, 1.0, 1.0])
-  const phoneRotateX = useTransform(scrollYProgress, [0.0, 0.2, 1.0], [10, 0, 0])
+
+  const phoneScale = useTransform(
+    scrollYProgress,
+    [0.0, 0.2, 1.0],
+    [0.93, 1.0, 1.0],
+  )
+
+  const phoneRotateX = useTransform(
+    scrollYProgress,
+    [0.0, 0.2, 1.0],
+    [10, 0, 0],
+  )
 
   // 0.20 – 0.40: Phone settles in complete stillness (No changes)
 
   // 0.40 – 0.65: Display wakes naturally & ambient lighting turns on
+
   const ambientGlowOpacity = useTransform(
     scrollYProgress,
+
     [0.4, 0.65, 1.0],
+
     [0, 0.65, 0.65],
   )
+
   const phoneBacklightOpacity = useTransform(
     scrollYProgress,
+
     [0.4, 0.65, 1.0],
+
     [0, 0.8, 0.8],
   )
+
   const screenBacklightOpacity = useTransform(
     scrollYProgress,
-    [0.40, 0.55, 1.0],
+
+    [0.4, 0.55, 1.0],
+
     [0, 0.35, 0.35],
   )
+
   const displayWakeOpacity = useTransform(
     scrollYProgress,
+
     [0.45, 0.65, 1.0],
+
     [0, 1, 1],
   )
+
   const displayWakeScale = useTransform(
     scrollYProgress,
+
     [0.45, 0.65, 1.0],
+
     [0.97, 1.0, 1.0],
   )
 
   // 0.65 – 0.85: One deliberate, satisfying card swipe
-  const swipeX = useTransform(scrollYProgress, [0.65, 0.85, 1.0], [0, 340, 340])
-  const swipeY = useTransform(scrollYProgress, [0.65, 0.85, 1.0], [0, 24, 24])
-  const swipeRotate = useTransform(scrollYProgress, [0.65, 0.85, 1.0], [0, 22, 22])
-  const swipeOpacity = useTransform(scrollYProgress, [0.75, 0.85, 1.0], [1, 0, 0])
 
-  const backCardScale = useTransform(scrollYProgress, [0.65, 0.85, 1.0], [0.88, 1.0, 1.0])
-  const backCardOpacity = useTransform(scrollYProgress, [0.65, 0.85, 1.0], [0.4, 1.0, 1.0])
+  const swipeX = useTransform(scrollYProgress, [0.65, 0.85, 1.0], [0, 340, 340])
+
+  const swipeY = useTransform(scrollYProgress, [0.65, 0.85, 1.0], [0, 24, 24])
+
+  const swipeRotate = useTransform(
+    scrollYProgress,
+    [0.65, 0.85, 1.0],
+    [0, 22, 22],
+  )
+
+  const swipeOpacity = useTransform(
+    scrollYProgress,
+    [0.75, 0.85, 1.0],
+    [1, 0, 0],
+  )
+
+  const backCardScale = useTransform(
+    scrollYProgress,
+    [0.65, 0.85, 1.0],
+    [0.88, 1.0, 1.0],
+  )
+
+  const backCardOpacity = useTransform(
+    scrollYProgress,
+    [0.65, 0.85, 1.0],
+    [0.4, 1.0, 1.0],
+  )
 
   // 0.85 – 1.00: Everything stops.
 
@@ -70,6 +120,7 @@ export default function PhoneRevealV2() {
   if (error || (!loading && movies.length === 0)) return null
 
   const topCardMovie = movies[0]
+
   const backCardMovie = movies[1]
 
   return (
@@ -97,9 +148,13 @@ export default function PhoneRevealV2() {
           className="relative z-40 flex items-center justify-center w-full h-full pointer-events-none"
           style={{
             opacity: phoneOpacity,
+
             y: phoneY,
+
             scale: phoneScale,
+
             rotateX: phoneRotateX,
+
             perspective: 1200,
           }}
         >
@@ -149,6 +204,7 @@ export default function PhoneRevealV2() {
                   className="absolute inset-0 z-20 flex flex-col items-center justify-between pt-18 pb-4 px-4 bg-gradient-to-tr from-[#0a0a0f] via-[#120f26] to-[#0c0c0e]"
                   style={{
                     opacity: displayWakeOpacity,
+
                     scale: displayWakeScale,
                   }}
                 >
@@ -173,6 +229,7 @@ export default function PhoneRevealV2() {
                       className="absolute w-[265px] h-[375px] rounded-2xl overflow-hidden border border-white/10 shadow-lg"
                       style={{
                         scale: backCardScale,
+
                         opacity: backCardOpacity,
                       }}
                     >
@@ -199,9 +256,13 @@ export default function PhoneRevealV2() {
                       className="absolute w-[265px] h-[375px] rounded-2xl overflow-hidden border border-white/20 shadow-[0_20px_40px_rgba(0,0,0,0.8)] bg-black"
                       style={{
                         x: swipeX,
+
                         y: swipeY,
+
                         rotate: swipeRotate,
+
                         opacity: swipeOpacity,
+
                         transformOrigin: "bottom center",
                       }}
                     >

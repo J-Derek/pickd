@@ -1,7 +1,11 @@
 import { motion, useScroll, useTransform } from "framer-motion"
+
 import { useRef } from "react"
+
 import { useReducedMotion } from "../hooks/useReducedMotion"
+
 import GlassButton from "./GlassButton"
+
 import TrendingMarquee from "./TrendingMarquee"
 
 export default function Hero({
@@ -10,15 +14,19 @@ export default function Hero({
   showMarquee?: boolean
 }) {
   const reduced = useReducedMotion()
+
   const containerRef = useRef<HTMLDivElement>(null)
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
+
     offset: ["start start", "end start"],
   })
 
   // Hand-off scroll transitions for the hero text
+
   const yParallax = useTransform(scrollYProgress, [0, 1], ["0%", "50%"])
+
   const opacityFade = useTransform(scrollYProgress, [0, 0.6], [1, 0])
 
   return (
@@ -35,14 +43,17 @@ export default function Hero({
         className="relative z-10 flex flex-col items-center text-center px-6 max-w-5xl mx-auto w-full"
         style={{
           y: reduced ? "0%" : yParallax,
+
           opacity: reduced ? 1 : opacityFade,
         }}
         initial="hidden"
         animate="visible"
         variants={{
           hidden: { opacity: 0 },
+
           visible: {
             opacity: 1,
+
             transition: {
               staggerChildren: 0.15,
             },
@@ -53,14 +64,21 @@ export default function Hero({
         <motion.div
           variants={{
             hidden: { opacity: 0, y: 16, filter: "blur(4px)" },
+
             visible: {
               opacity: 1,
+
               y: 0,
+
               filter: "blur(0px)",
+
               transition: {
                 duration: 0.8,
+
                 type: "spring",
+
                 bounce: 0,
+
                 damping: 20,
               },
             },
@@ -68,9 +86,13 @@ export default function Hero({
           className="mb-8 inline-flex items-center gap-2.5 rounded-full px-4 py-1.5 text-xs font-semibold uppercase tracking-widest shadow-xl"
           style={{
             background: "rgba(255,255,255,0.03)",
+
             border: "1px solid rgba(255,255,255,0.1)",
+
             color: "rgba(255,255,255,0.6)",
+
             fontFamily: "var(--font-body)",
+
             backdropFilter: "blur(12px)",
           }}
         >
@@ -85,14 +107,21 @@ export default function Hero({
         <motion.h1
           variants={{
             hidden: { opacity: 0, y: 24, filter: "blur(8px)" },
+
             visible: {
               opacity: 1,
+
               y: 0,
+
               filter: "blur(0px)",
+
               transition: {
                 duration: 1.2,
+
                 type: "spring",
+
                 bounce: 0,
+
                 damping: 25,
               },
             },
@@ -100,6 +129,7 @@ export default function Hero({
           className="text-[4rem] sm:text-7xl md:text-8xl lg:text-[9rem] font-bold leading-[0.95] tracking-tighter text-white mb-8"
           style={{
             fontFamily: "var(--font-display)",
+
             textShadow: "0 20px 40px rgba(0,0,0,0.5)",
           }}
         >
@@ -112,14 +142,21 @@ export default function Hero({
         <motion.p
           variants={{
             hidden: { opacity: 0, y: 16, filter: "blur(4px)" },
+
             visible: {
               opacity: 1,
+
               y: 0,
+
               filter: "blur(0px)",
+
               transition: {
                 duration: 1,
+
                 type: "spring",
+
                 bounce: 0,
+
                 damping: 20,
               },
             },
@@ -136,13 +173,19 @@ export default function Hero({
           className="flex flex-col sm:flex-row items-center gap-6"
           variants={{
             hidden: { opacity: 0, y: 16 },
+
             visible: {
               opacity: 1,
+
               y: 0,
+
               transition: {
                 duration: 1,
+
                 type: "spring",
+
                 bounce: 0,
+
                 damping: 20,
               },
             },
@@ -155,8 +198,11 @@ export default function Hero({
             className="group relative inline-flex items-center gap-3 rounded-full px-8 py-4 text-base font-semibold text-white transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#6B4EFF]/50 focus:ring-offset-2 focus:ring-offset-[#0A0A0F]"
             style={{
               background: "rgba(255,255,255,0.05)",
+
               border: "1px solid rgba(255,255,255,0.1)",
+
               backdropFilter: "blur(20px)",
+
               boxShadow:
                 "0 10px 30px -10px rgba(107,78,255,0.3), inset 0 1px 0 0 rgba(255,255,255,0.1)",
             }}

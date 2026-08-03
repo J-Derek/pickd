@@ -62,9 +62,11 @@ const STEPS = [
 
 function PhoneMockup({
   color,
+
   children,
 }: {
   color: string
+
   children: React.ReactNode
 }) {
   return (
@@ -99,7 +101,9 @@ function Step({ step, index }: { step: typeof STEPS[0] index: number }) {
       animate={inView ? { opacity: 1, y: 0 } : {}}
       transition={{
         duration: 0.7,
+
         delay: index * 0.15,
+
         ease: [0.16, 1, 0.3, 1],
       }}
     >

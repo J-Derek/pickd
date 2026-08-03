@@ -16,10 +16,15 @@ interface GlassButtonProps
 
 export default function GlassButton({
   children,
+
   href,
+
   onClick,
+
   size = "md",
+
   className = "",
+
   ...rest
 }: GlassButtonProps) {
   const sizeClasses = {

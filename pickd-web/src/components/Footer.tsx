@@ -49,8 +49,11 @@ interface FooterLinkProps {
 
 function FooterLink({
   href,
+
   external,
+
   children,
+
   "aria-label": ariaLabel,
 }: FooterLinkProps) {
   return (
