@@ -1,0 +1,10 @@
+{
+  "description": "A cinematic dark-mode landing page showcasing a mood-based movie matchmaker app with swipe-to-save features, watchlist sync, and user feedback.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
