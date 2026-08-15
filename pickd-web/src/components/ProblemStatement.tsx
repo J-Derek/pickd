@@ -1,304 +1,295 @@
-import {
-  motion,
-  useScroll,
-  useTransform,
-  useSpring,
-  useMotionValueEvent,
-} from "framer-motion"
+import { useRef } from "react";
+import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
+import { useTrendingMovies, type MoviePoster } from "@/hooks/useTrendingMovies";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
-import { useRef, useState } from "react"
+// CSS marquee keyframes injected once — pure GPU transform, no JS per frame
+const KEYFRAMES = `
+@keyframes mq-l { from { transform: translateX(0) } to { transform: translateX(-50%) } }
+@keyframes mq-r { from { transform: translateX(-50%) } to { transform: translateX(0) } }
+`;
 
-import { useTrendingMovies } from "../hooks/useTrendingMovies"
+const NARRATIVE = [
+  { text: "Another movie night.",   t: [0.00, 0.12, 0.15] },
+  { text: "Netflix.",                t: [0.15, 0.18, 0.25, 0.28] },
+  { text: "Prime Video.",            t: [0.28, 0.31, 0.38, 0.41] },
+  { text: "Disney+.",                t: [0.41, 0.44, 0.51, 0.54] },
+  { text: "Max.",                    t: [0.54, 0.57, 0.64, 0.67] },
+  { text: "Thousands of movies.",    t: [0.67, 0.70, 0.77, 0.80] },
+  { text: "Still nothing to watch.", t: [0.80, 0.83, 0.90, 0.93] },
+  { text: "Sound familiar?",         t: [0.93, 0.96, 1.00, 1.00] },
+];
 
-import { useReducedMotion } from "../hooks/useReducedMotion"
+const D_ROWS = [
+  { dur: 28, dir: "l" },
+  { dur: 38, dir: "r" },
+  { dur: 32, dir: "l" },
+  { dur: 30, dir: "r" },
+  { dur: 35, dir: "l" },
+] as const;
 
-export default function ProblemStatement() {
-  const containerRef = useRef<HTMLDivElement>(null)
+const M_ROWS = [
+  { dur: 24, dir: "l" },
+  { dur: 32, dir: "r" },
+  { dur: 28, dir: "l" },
+] as const;
 
-  // Track scroll over the entire container
+import { TMDBPoster } from "@/components/ui/TMDBPoster";
 
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-
-    offset: ["start start", "end end"],
-  })
-
-  // Exact 1:1 mapping with scroll position
-
-  const progress = scrollYProgress
-
-  const [debugVal, setDebugVal] = useState(0)
-
-  useMotionValueEvent(scrollYProgress, "change", (val) => setDebugVal(val))
-
-  // Background marquee uses a light spring so it continues moving slightly when scrolling stops
-
-  const marqueeProgress = useSpring(scrollYProgress, {
-    damping: 40,
-
-    stiffness: 200,
-  })
-
-  const { movies, loading, error } = useTrendingMovies()
-
-  const reduced = useReducedMotion()
-
-  // -------------------------------------------------------------
-
-  // NARRATIVE TYPOGRAPHY (Ends exactly as the section ends)
-
-  // -------------------------------------------------------------
-
-  const op1 = useTransform(progress, [0.0, 0.05, 0.12, 0.15], [0, 1, 1, 0]) // Another Friday night.
-
-  const op2 = useTransform(progress, [0.15, 0.2, 0.25, 0.28], [0, 1, 1, 0]) // Netflix.
-
-  const op3 = useTransform(progress, [0.28, 0.33, 0.38, 0.41], [0, 1, 1, 0]) // Prime Video.
-
-  const op4 = useTransform(progress, [0.41, 0.46, 0.51, 0.54], [0, 1, 1, 0]) // Disney+.
-
-  const op5 = useTransform(progress, [0.54, 0.59, 0.64, 0.67], [0, 1, 1, 0]) // Max.
-
-  const op6 = useTransform(progress, [0.67, 0.72, 0.77, 0.8], [0, 1, 1, 0]) // Thousands of movies.
-
-  const op8 = useTransform(progress, [0.8, 0.85, 0.9, 0.93], [0, 1, 1, 0]) // Still nothing to watch.
-
-  const op9 = useTransform(progress, [0.93, 0.96, 0.99, 1.0], [0, 1, 1, 0]) // Sound familiar?
-
-  // -------------------------------------------------------------
-
-  // BACKGROUND ATMOSPHERE (Chaotic to dark silence)
-
-  // -------------------------------------------------------------
-
-  // Cold anxiety lighting fades out at the very end
-
-  const coldGlow = useTransform(progress, [0, 0.6, 1.0], [0, 0.6, 0])
-
-  // Poster density fades out entirely into blackness by the end
-
-  const bgOpacity = useTransform(progress, [0, 0.2, 0.8, 1.0], [0, 0.6, 0.8, 0])
-
-  const blurAmount = useTransform(progress, [0, 0.4, 0.9, 1.0], [
-    "blur(12px)",
-
-    "blur(3px)",
-
-    "blur(12px)",
-
-    "blur(40px)",
-  ])
-
-  const scaleAmount = useTransform(progress, [0, 0.5, 1], [1.1, 1, 1.3])
-
-  // Endless scrolling effect mapping
-
-  const xOffset1 = useTransform(marqueeProgress, [0, 1], ["0%", "-40%"])
-
-  const xOffset2 = useTransform(marqueeProgress, [0, 1], ["-40%", "0%"])
-
-  const xOffset3 = useTransform(marqueeProgress, [0, 1], ["0%", "-50%"])
-
-  const xOffset4 = useTransform(marqueeProgress, [0, 1], ["-50%", "0%"])
-
-  if (error || (!loading && movies.length === 0)) return null
-
-  const items = [...movies, ...movies, ...movies, ...movies]
-
-  const textStyle = {
-    fontFamily: "var(--font-display)",
-
-    position: "absolute" as const,
-
-    top: "50%",
-
-    left: "50%",
-
-    transform: "translate(-50%, -50%)",
-
-    width: "100%",
-  }
-
+// ── MarqueeRow — pure CSS animation, will-change: transform ──────────────
+function MarqueeRow({ posters, dur, dir }: { posters: MoviePoster[]; dur: number; dir: "l" | "r" }) {
+  // 8 posters duplicated = 16 total for seamless loop; translateX(-50%) = -1 set width
+  const items = [...posters.slice(0, 8), ...posters.slice(0, 8)];
   return (
-    <section ref={containerRef} className="relative w-full h-[300vh] bg-ink">
-      {/* On-Screen Debug HUD */}
-      <div className="fixed top-20 right-4 z-50 bg-black/90 text-green-400 font-mono text-xs p-2 rounded border border-green-500/40 pointer-events-none shadow-lg">
-        ProblemStatement scrollYProgress: {debugVal.toFixed(3)}
-      </div>
-
-      <div className="sticky top-0 w-full h-screen overflow-hidden flex items-center justify-center">
-        {/* Cold Ambient Lighting */}
-        <motion.div
-          className="absolute inset-0 z-10 pointer-events-none mix-blend-screen"
-          style={{ opacity: coldGlow }}
-        >
-          <div className="absolute top-1/4 left-1/4 w-[60vw] h-[60vw] bg-[#6B4EFF] rounded-full blur-[180px]" />
-          <div className="absolute bottom-1/4 right-1/4 w-[60vw] h-[60vw] bg-[#00F0FF] rounded-full blur-[180px]" />
-        </motion.div>
-
-        {/* Dense Poster Ecosystem */}
-        {reduced ? null : (
-          <motion.div
-            className="absolute inset-0 z-0 flex flex-col justify-center gap-4 md:gap-6 transform -rotate-12"
+    <div style={{ overflow: "hidden", flexShrink: 0 }}>
+      <div
+        style={{
+          display: "flex",
+          gap: 12,
+          width: "max-content",
+          animation: `mq-${dir} ${dur}s linear infinite`,
+          willChange: "transform",
+        }}
+      >
+        {items.map((m, i) => (
+          <div
+            key={`${m.id}-${i}`}
             style={{
-              opacity: bgOpacity,
-
-              filter: blurAmount,
-
-              scale: scaleAmount,
+              width: "clamp(72px, 9vw, 112px)",
+              height: "clamp(108px, 13.5vw, 168px)",
+              borderRadius: 12,
+              overflow: "hidden",
+              flexShrink: 0,
             }}
           >
-            <motion.div
-              className="flex gap-4 md:gap-6 pr-6 w-max opacity-30"
-              style={{ x: xOffset1 }}
-            >
-              {items.map((m, i) => (
-                <div
-                  key={`r1-${i}`}
-                  className="w-24 md:w-36 h-36 md:h-52 rounded-xl overflow-hidden border border-white/5 bg-white/5 shadow-lg"
-                >
-                  <img
-                    src={m.posterPath}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              ))}
+            <TMDBPoster
+              movieId={m.id}
+              alt=""
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              loading="lazy"
+              draggable={false}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── PosterGrid — renders all rows; optionally pre-blurred via static CSS ──
+function PosterGrid({
+  rows,
+  config,
+  blurred,
+}: {
+  rows: MoviePoster[][];
+  config: readonly { dur: number; dir: "l" | "r" }[];
+  blurred?: boolean;
+}) {
+  return (
+    <div
+      style={{
+        position: "absolute",
+        inset: 0,
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-around",
+        paddingBlock: "2rem",
+        gap: 12,
+        // Static CSS filter — not animated, zero per-frame cost
+        filter: blurred ? "blur(24px)" : "none",
+        transform: "rotate(-12deg) scale(1.2) translateZ(0)",
+      }}
+    >
+      {config.map(({ dur, dir }, ri) => (
+        <MarqueeRow key={ri} posters={rows[ri % rows.length] ?? rows[0]} dur={dur} dir={dir} />
+      ))}
+    </div>
+  );
+}
+
+// ── Desktop — scroll-scrubbed narrative + two-layer focus arc ─────────────
+function ProblemStatementDesktop() {
+  const ref = useRef<HTMLDivElement>(null);
+  const prefersReduced = useReducedMotion();
+  const { rows } = useTrendingMovies();
+
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
+
+  // Poster visibility envelope
+  const posterOp = useTransform(scrollYProgress, [0, 0.90, 1.0], [0.7, 0.7, 0]);
+
+  // Focus arc via opacity crossfade — no live blur computation
+  // sharpOp peaks in the middle; blurOp peaks at start and end
+  const sharpOp = useTransform(scrollYProgress, [0, 0.20, 0.40, 0.70, 0.88, 1.0], [0.4, 0.7, 1, 1, 0.6, 0]);
+  const blurOp  = useTransform(scrollYProgress, [0, 0.20, 0.40, 0.70, 0.88, 1.0], [0.8, 0.3, 0, 0, 0.5, 1]);
+
+  // Narrative line opacities — individual hooks, never in a loop
+  const op0 = useTransform(scrollYProgress, [0.00, 0.12, 0.15], [1, 1, 0]);
+  const op1 = useTransform(scrollYProgress, NARRATIVE[1].t, [0, 1, 1, 0]);
+  const op2 = useTransform(scrollYProgress, NARRATIVE[2].t, [0, 1, 1, 0]);
+  const op3 = useTransform(scrollYProgress, NARRATIVE[3].t, [0, 1, 1, 0]);
+  const op4 = useTransform(scrollYProgress, NARRATIVE[4].t, [0, 1, 1, 0]);
+  const op5 = useTransform(scrollYProgress, NARRATIVE[5].t, [0, 1, 1, 0]);
+  const op6 = useTransform(scrollYProgress, NARRATIVE[6].t, [0, 1, 1, 0]);
+  const op7 = useTransform(scrollYProgress, NARRATIVE[7].t, [0, 1, 1, 0]);
+  const lineOps = [op0, op1, op2, op3, op4, op5, op6, op7];
+
+  return (
+    <section
+      ref={ref}
+      id="how-it-works"
+      style={{ position: "relative", height: "300vh", background: "var(--bg)" }}
+    >
+      <style>{KEYFRAMES}</style>
+
+      <div
+        style={{
+          position: "sticky",
+          top: 0,
+          height: "100dvh",
+          overflow: "hidden",
+          isolation: "isolate",
+        }}
+      >
+        {/* ── Poster ecosystem: two GPU layers crossfaded, never blurred live ── */}
+        <motion.div style={{ opacity: posterOp, position: "absolute", inset: 0 }}>
+          {/* Blurred layer — static 14px filter, opacity only changes */}
+          {!prefersReduced && (
+            <motion.div style={{ opacity: blurOp, position: "absolute", inset: 0, willChange: "opacity" }}>
+              <PosterGrid rows={rows} config={D_ROWS} blurred />
             </motion.div>
-            <motion.div
-              className="flex gap-4 md:gap-6 pr-6 w-max opacity-50"
-              style={{ x: xOffset2 }}
-            >
-              {items.map((m, i) => (
-                <div
-                  key={`r2-${i}`}
-                  className="w-32 md:w-48 h-48 md:h-72 rounded-2xl overflow-hidden border border-white/5 bg-white/5 shadow-xl"
-                >
-                  <img
-                    src={m.posterPath}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              ))}
-            </motion.div>
-            <motion.div
-              className="flex gap-4 md:gap-6 pr-6 w-max opacity-80"
-              style={{ x: xOffset3 }}
-            >
-              {items.map((m, i) => (
-                <div
-                  key={`r3-${i}`}
-                  className="w-40 md:w-56 h-60 md:h-80 rounded-2xl overflow-hidden border border-white/10 bg-white/5 shadow-2xl"
-                >
-                  <img
-                    src={m.posterPath}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              ))}
-            </motion.div>
-            <motion.div
-              className="flex gap-4 md:gap-6 pr-6 w-max opacity-50"
-              style={{ x: xOffset4 }}
-            >
-              {items.map((m, i) => (
-                <div
-                  key={`r4-${i}`}
-                  className="w-32 md:w-48 h-48 md:h-72 rounded-2xl overflow-hidden border border-white/5 bg-white/5 shadow-xl"
-                >
-                  <img
-                    src={m.posterPath}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              ))}
-            </motion.div>
-            <motion.div
-              className="flex gap-4 md:gap-6 pr-6 w-max opacity-30"
-              style={{ x: xOffset1 }}
-            >
-              {items.map((m, i) => (
-                <div
-                  key={`r5-${i}`}
-                  className="w-24 md:w-36 h-36 md:h-52 rounded-xl overflow-hidden border border-white/5 bg-white/5 shadow-lg"
-                >
-                  <img
-                    src={m.posterPath}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              ))}
-            </motion.div>
+          )}
+          {/* Sharp layer */}
+          <motion.div style={{ opacity: sharpOp, position: "absolute", inset: 0, willChange: "opacity" }}>
+            <PosterGrid rows={rows} config={D_ROWS} />
           </motion.div>
-        )}
+        </motion.div>
 
-        {/* Depth Masks */}
-        <div className="absolute inset-0 z-20 bg-[radial-gradient(ellipse_at_center,transparent_0%,var(--ink)_100%)] pointer-events-none" />
-        <div className="absolute inset-0 z-20 bg-gradient-to-b from-transparent via-ink/40 to-ink pointer-events-none" />
+        {/* ── Ambient glow — baked static gradient, no mix-blend-mode ── */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            pointerEvents: "none",
+            background:
+              "radial-gradient(ellipse 60% 55% at 32% 44%, rgba(107,78,255,0.20), transparent 68%), " +
+              "radial-gradient(ellipse 50% 48% at 72% 62%, rgba(0,240,255,0.11), transparent 66%)",
+          }}
+        />
 
-        {/* Narrative Typography */}
-        <div className="relative z-30 w-full max-w-5xl mx-auto px-6 h-full pointer-events-none">
-          <motion.div className="absolute inset-0 flex items-center justify-center text-center">
-            <motion.h2
-              className="text-4xl md:text-6xl lg:text-[5rem] font-medium tracking-tight text-white/90"
-              style={{ ...textStyle, opacity: op1 }}
-            >
-              Another Friday night.
-            </motion.h2>
+        {/* ── Vignette edge masks ── */}
+        <div style={{ position: "absolute", inset: 0, pointerEvents: "none", background: "radial-gradient(ellipse 72% 72% at 50% 50%, transparent 16%, rgba(10,10,15,0.85) 100%)" }} />
+        <div style={{ position: "absolute", inset: 0, pointerEvents: "none", background: "linear-gradient(to bottom, rgba(10,10,15,0.65) 0%, transparent 20%, transparent 80%, rgba(10,10,15,0.92) 100%)" }} />
 
-            <motion.h2
-              className="text-5xl md:text-7xl lg:text-[7rem] font-bold tracking-tighter text-white"
-              style={{ ...textStyle, opacity: op2 }}
-            >
-              Netflix.
-            </motion.h2>
-            <motion.h2
-              className="text-5xl md:text-7xl lg:text-[7rem] font-bold tracking-tighter text-white"
-              style={{ ...textStyle, opacity: op3 }}
-            >
-              Prime Video.
-            </motion.h2>
-            <motion.h2
-              className="text-5xl md:text-7xl lg:text-[7rem] font-bold tracking-tighter text-white"
-              style={{ ...textStyle, opacity: op4 }}
-            >
-              Disney+.
-            </motion.h2>
-            <motion.h2
-              className="text-5xl md:text-7xl lg:text-[7rem] font-bold tracking-tighter text-white"
-              style={{ ...textStyle, opacity: op5 }}
-            >
-              Max.
-            </motion.h2>
-
-            <motion.h2
-              className="text-4xl md:text-6xl lg:text-[5rem] font-medium tracking-tight text-white/90"
-              style={{ ...textStyle, opacity: op6 }}
-            >
-              Thousands of movies.
-            </motion.h2>
-
-            <motion.h2
-              className="text-5xl md:text-7xl lg:text-[6rem] font-bold tracking-tighter text-white"
-              style={{ ...textStyle, opacity: op8 }}
-            >
-              Still nothing to watch.
-            </motion.h2>
-
-            <motion.h2
-              className="text-4xl md:text-6xl lg:text-[5rem] font-medium tracking-tight text-white"
-              style={{
-                ...textStyle,
-
-                opacity: op9,
-
-                textShadow: "0 0 60px rgba(255,255,255,0.3)",
-              }}
-            >
-              Sound familiar?
-            </motion.h2>
-          </motion.div>
+        {/* ── Narrative crossfade ── */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 30,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            pointerEvents: "none",
+          }}
+        >
+          <div style={{ position: "relative", width: "100%", maxWidth: 900, padding: "0 1.5rem", height: 200 }}>
+            {NARRATIVE.map(({ text }, i) => (
+              <motion.h2
+                key={text}
+                style={{
+                  opacity: lineOps[i],
+                  fontFamily: "var(--font-display)",
+                  fontSize: "clamp(2rem, 6vw, 7rem)",
+                  position: "absolute",
+                  top: "50%",
+                  left: 0,
+                  right: 0,
+                  transform: "translateY(-50%)",
+                  willChange: "opacity",
+                }}
+                className="font-semibold text-white leading-[0.95] tracking-tighter text-center"
+              >
+                {text}
+              </motion.h2>
+            ))}
+          </div>
         </div>
       </div>
     </section>
-  )
+  );
+}
+
+// ── Mobile — viewport-enter fades, not scroll-scrubbed ───────────────────
+const FU = { hidden: { opacity: 0, y: 22 }, visible: { opacity: 1, y: 0 } };
+const T  = { duration: 0.6, ease: [0.22, 1, 0.36, 1] as const };
+const VP = { once: true, amount: 0.5 };
+
+function ProblemStatementMobile() {
+  const { rows } = useTrendingMovies();
+
+  return (
+    <section id="how-it-works" style={{ background: "var(--bg)", overflow: "hidden" }}>
+      <style>{KEYFRAMES}</style>
+
+      {/* Shallow poster strip — 3 rows, reduced tilt, no blur layers */}
+      <div style={{ position: "relative", height: "38svh", overflow: "hidden" }}>
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-around",
+            gap: 8,
+            transform: "rotate(-6deg) scale(1.1) translateZ(0)",
+            opacity: 0.5,
+          }}
+        >
+          {M_ROWS.map(({ dur, dir }, ri) => (
+            <MarqueeRow key={ri} posters={rows[ri % rows.length] ?? rows[0]} dur={dur} dir={dir} />
+          ))}
+        </div>
+        {/* Fade strip into background */}
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, var(--bg) 0%, transparent 28%, transparent 72%, var(--bg) 100%)" }} />
+      </div>
+
+      {/* Sequential viewport-enter narrative — no scroll percentage binding */}
+      <div
+        style={{
+          padding: "2.5rem 1.5rem 5rem",
+          display: "flex",
+          flexDirection: "column",
+          gap: "3rem",
+          maxWidth: 380,
+          margin: "0 auto",
+        }}
+      >
+        {NARRATIVE.map(({ text }) => (
+          <motion.h2
+            key={text}
+            initial="hidden"
+            whileInView="visible"
+            viewport={VP}
+            variants={FU}
+            transition={T}
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize: "clamp(1.7rem, 8vw, 2.8rem)",
+            }}
+            className="font-semibold leading-[0.95] tracking-tighter text-center text-white"
+          >
+            {text}
+          </motion.h2>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// ── Export ────────────────────────────────────────────────────────────────
+export default function ProblemStatement() {
+  const mobile = useIsMobile();
+  return mobile ? <ProblemStatementMobile /> : <ProblemStatementDesktop />;
 }

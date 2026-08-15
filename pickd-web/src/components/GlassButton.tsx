@@ -1,65 +1,39 @@
-import type { ReactNode, MouseEvent } from "react"
-
-interface GlassButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    React.AnchorHTMLAttributes<HTMLAnchorElement> {
-  children: ReactNode
-
-  href?: string
-
-  onClick?: (e: any) => void
-
-  size?: "sm" | "md" | "lg"
-
-  className?: string
+interface GlassButtonProps {
+  href?: string;
+  onClick?: () => void;
+  children: React.ReactNode;
+  className?: string;
 }
 
-export default function GlassButton({
-  children,
-
-  href,
-
-  onClick,
-
-  size = "md",
-
-  className = "",
-
-  ...rest
-}: GlassButtonProps) {
-  const sizeClasses = {
-    sm: "px-4 py-2 text-sm",
-
-    md: "px-6 py-2.5 text-sm",
-
-    lg: "px-8 py-4 text-base",
-  }
-
-  const base =
-    "inline-flex items-center gap-2 rounded-xl font-medium text-white transition-all duration-200 " +
-    "border border-white/10 backdrop-blur-sm " +
-    "hover:border-[#6B4EFF]/60 hover:shadow-[0_0_24px_rgba(107,78,255,0.25)] " +
-    "focus:outline-none focus:ring-2 focus:ring-[#6B4EFF]/50 focus:ring-offset-2 focus:ring-offset-[#0A0A0F] " +
-    sizeClasses[size] +
-    " " +
-    className
-
-  const style = {
-    background:
-      "linear-gradient(135deg, rgba(107,78,255,0.15) 0%, rgba(107,78,255,0.05) 100%)",
-  }
+export default function GlassButton({ href, onClick, children, className = "" }: GlassButtonProps) {
+  const style: React.CSSProperties = {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 8,
+    height: 40,
+    padding: "0 20px",
+    borderRadius: 9999,
+    fontSize: "0.8125rem",
+    fontWeight: 600,
+    letterSpacing: "0.06em",
+    color: "#fff",
+    backdropFilter: "blur(8px)",
+    textDecoration: "none",
+    whiteSpace: "nowrap",
+    cursor: "pointer",
+  };
 
   if (href) {
     return (
-      <a href={href} className={base} style={style} {...rest}>
+      <a href={href} style={style} className={`glass-button ${className}`}>
         {children}
       </a>
-    )
+    );
   }
 
   return (
-    <button onClick={onClick} className={base} style={style} {...rest}>
+    <button onClick={onClick} style={style} className={`glass-button ${className}`}>
       {children}
     </button>
-  )
+  );
 }

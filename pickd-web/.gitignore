@@ -11,3 +11,6 @@ logs/
 *.log
 .claude-replay.*
 .tmp-*
+*.mp4
+screenshots/
+graphify-out/
