@@ -1,0 +1,83 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Sora:wght@400;600;700&display=swap');
+@import 'tailwindcss';
+
+@theme {
+  --font-display: 'Sora', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --color-ink: #0A0A0F;
+  --color-surface: #141418;
+  --color-indigo: #6B4EFF;
+  --color-cyan: #00F0FF;
+  --color-gold: #FFC107;
+}
+
+:root {
+  --bg:            #0A0A0F;
+  --bg-surface:    #141418;
+  --text:          #ffffff;
+  --text-60:       rgba(255,255,255,0.60);
+  --text-45:       rgba(255,255,255,0.45);
+  --text-28:       rgba(255,255,255,0.28);
+  --text-14:       rgba(255,255,255,0.14);
+  --border:        rgba(255,255,255,0.07);
+  --border-strong: rgba(255,255,255,0.13);
+  --nav-bg:        rgba(10,10,15,0.75);
+  --indigo:        #6B4EFF;
+  --indigo-subtle: rgba(107,78,255,0.13);
+  --indigo-glow:   rgba(107,78,255,0.35);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: auto; }
+
+body {
+  background: var(--bg);
+  color: #fff;
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  /* Disable text selection across the whole app */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Allow selection in interactive inputs if ever added */
+input, textarea { user-select: text; -webkit-user-select: text; }
+
+::-webkit-scrollbar { width: 0; }
+
+/* Button Hover States */
+.glass-button {
+  background: rgba(107,78,255,0.18);
+  border: 1px solid rgba(107,78,255,0.4);
+  box-shadow: 0 10px 30px -10px rgba(107,78,255,0.3), inset 0 1px 0 0 rgba(255,255,255,0.1);
+  transition: background 200ms, box-shadow 200ms, border-color 200ms;
+}
+.glass-button:hover {
+  background: rgba(107,78,255,0.32);
+  border-color: rgba(107,78,255,0.65);
+  box-shadow: 0 12px 36px -8px rgba(107,78,255,0.5), inset 0 1px 0 0 rgba(255,255,255,0.15);
+}
+
+.hero-primary-btn {
+  background: #6B4EFF;
+  box-shadow: 0 10px 30px -10px rgba(107,78,255,0.5), inset 0 1px 0 0 rgba(255,255,255,0.1);
+  transition: background 200ms, box-shadow 200ms, transform 200ms;
+}
+.hero-primary-btn:hover {
+  background: #7B5EFF;
+  box-shadow: 0 14px 40px -8px rgba(107,78,255,0.65), inset 0 1px 0 0 rgba(255,255,255,0.15);
+  transform: translateY(-1px);
+}
+
+.scene4-ready-btn {
+  background: #6B4EFF;
+  box-shadow: 0 0 48px rgba(107,78,255,0.5);
+  transition: background 200ms, box-shadow 200ms, transform 200ms;
+}
+.scene4-ready-btn:hover {
+  background: #7B5EFF;
+  box-shadow: 0 0 72px rgba(107,78,255,0.75);
+  transform: translateY(-2px);
+}
